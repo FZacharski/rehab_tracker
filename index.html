@@ -718,7 +718,12 @@ function dayName(k) { return DAYS_PL[dateFromKey(k).getDay()]; }
 
 function getDay(k) {
   if (!D.days[k]) D.days[k] = {completed:[], pain:0, difficulty:0, note:''};
-  return D.days[k];
+  const d = D.days[k];
+  if (!('completed'  in d)) d.completed  = [];
+  if (!('pain'       in d)) d.pain       = 0;
+  if (!('difficulty' in d)) d.difficulty = 0;
+  if (!('note'       in d)) d.note       = '';
+  return d;
 }
 
 // ── STREAK & STATS ─────────────────────────────────────────────
@@ -769,30 +774,46 @@ function checkBadges() {
   const t = today();
 
   const checks = {
-    first_day: total>0 && Object.values(D.days).some(dd=>(dd.completed||[]).length>=total),
-    streak_3: streak>=3, streak_7: streak>=7, streak_14: streak>=14, streak_28: streak>=28,
-    xp_500: xp>=500, xp_1000: xp>=1000,
-    pain_log: Object.values(D.days).filter(dd=>(dd.pain||0)>0).length>=7,
-    no_pain: Object.values(D.days).filter(dd=>(dd.pain||0)===1).length>=3,
+    first_day: total > 0 && Object.values(D.days).some(dd => (dd.completed || []).length >= total),
+    streak_3: streak >= 3, streak_7: streak >= 7, streak_14: streak >= 14, streak_28: streak >= 28,
+    xp_500: xp >= 500, xp_1000: xp >= 1000,
+    pain_log: Object.values(D.days).filter(dd => (dd.pain || 0) > 0).length >= 7,
+    no_pain: Object.values(D.days).filter(dd => (dd.pain || 0) === 1).length >= 3,
   };
-  for (let w=0;w<4;w++) {
-    const ws=weekStart(w);
-    let allDone=true;
-    for(let i=0;i<7;i++){
-      const d=addDays(ws,i);
-      if(d>t){allDone=false;break;}
-      if(total===0||(D.days[d]?.completed||[]).length<total){allDone=false;break;}
+  for (let w = 0; w < 4; w++) {
+    const ws = weekStart(w);
+    let allDone = true;
+    for (let i = 0; i < 7; i++) {
+      const d = addDays(ws, i);
+      if (d > t) {
+        allDone = false;
+        break;
+      }
+      if (total === 0 || (D.days[d]?.completed || []).length < total) {
+        allDone = false;
+        break;
+      }
     }
-    checks[`week${w+1}_done`]=allDone;
+    checks[`week${w + 1}_done`] = allDone;
   }
-  for (const [bid,cond] of Object.entries(checks)) {
-    if (cond && !earned.has(bid)) { earned.add(bid); newBadges.push(bid); }
+// Odznaki jednorazowe (nigdy nie cofane po zdobyciu)
+  const PERMANENT = new Set(['first_day', 'week1_done', 'week2_done', 'week3_done', 'week4_done', 'xp_500', 'xp_1000', 'pain_log', 'no_pain']);
+
+  for (const [bid, cond] of Object.entries(checks)) {
+    if (cond && !earned.has(bid)) {
+      earned.add(bid);
+      newBadges.push(bid);
+    } else if (!cond && earned.has(bid) && !PERMANENT.has(bid)) {
+      // Streak badges cofamy jeśli streak przepadł
+      earned.delete(bid);
+    }
   }
   D.badges = [...earned];
-  D.xp = xp + newBadges.reduce((s,bid)=>s+(BADGES.find(b=>b.id===bid)?.xp||0),0);
+  // XP przeliczamy zawsze od zera żeby nie dało się oszukać
+  const badgeXP = [...earned].reduce((s, bid) => s + (BADGES.find(b => b.id === bid)?.xp || 0), 0);
+  D.xp = xp + badgeXP;
   return newBadges;
 }
-
 // ── THEME ─────────────────────────────────────────────────────
 function toggleTheme() {
   D.theme = D.theme==='light'?'dark':'light';
@@ -837,6 +858,7 @@ function renderHome() {
   renderExList();
   loadPainDiff();
   loadNote();
+  renderRecentNotes();
 }
 
 function renderStreakBanner() {
@@ -915,6 +937,8 @@ function renderExList() {
         <div class="ex-meta">${ex.sets} serie × ${ex.reps} powt. · ${ex.type}</div>
       </div>
       <span class="ex-xp">+${xpVal} XP</span>
+      <button onclick="event.stopPropagation();openEditExercise(${ex.id})"
+        style="background:none;border:none;font-size:16px;cursor:pointer;padding:0 4px;opacity:.5">✏️</button>
     </div>`;
   }).join('');
 }
@@ -964,6 +988,37 @@ function saveNote() {
   const dd = getDay(today());
   dd.note = document.getElementById('note-area').value;
   saveData(); showToast('Notatka zapisana ✓');
+}
+
+function renderRecentNotes() {
+  const existing = document.getElementById('recent-notes');
+  if (existing) existing.remove();
+
+  const entries = [];
+  for (let i = 1; i <= 7; i++) {
+    const k = addDays(today(), -i);
+    const dd = D.days[k];
+    if (dd && dd.note && dd.note.trim()) {
+      const d = dateFromKey(k);
+      entries.push({ k, note: dd.note, d });
+    }
+  }
+  if (!entries.length) return;
+
+  const container = document.createElement('div');
+  container.id = 'recent-notes';
+  container.innerHTML = `
+    <div class="section-hdr mt-8"><span class="section-title">Ostatnie notatki</span></div>
+    ${entries.map(e => `
+      <div class="card" style="border-left:3px solid var(--c-accent)">
+        <div class="text-xs text-muted">${DAYS_PL[e.d.getDay()]}, ${e.d.getDate()} ${MONTHS_PL[e.d.getMonth()]}</div>
+        <div class="text-sm mt-4" style="color:var(--c-text);line-height:1.5">${e.note}</div>
+      </div>`).join('')}
+  `;
+
+  // Insert before the end of page-home content
+  const saveBtn = document.querySelector('#page-home .btn-primary');
+  saveBtn.parentNode.insertBefore(container, saveBtn.nextSibling);
 }
 
 // ── CALENDAR ─────────────────────────────────────────────────
