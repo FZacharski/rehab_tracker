@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0D5C45">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Rehabilitacja">
+<meta name="description" content="Tracker ćwiczeń rehabilitacyjnych">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Tracker Rehabilitacji</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ── reset & tokens ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+:root {
+  --c-bg:       #F2F0EA;
+  --c-bg2:      #E8E5DC;
+  --c-surface:  #FFFFFF;
+  --c-surface2: #F7F5EF;
+  --c-border:   #D6D2C4;
+  --c-text:     #1C1C1A;
+  --c-text2:    #6B6860;
+  --c-text3:    #9B9890;
+  --c-accent:   #0D5C45;
+  --c-accent2:  #18856A;
+  --c-accent-lt:#E0F0EA;
+  --c-amber:    #A86B10;
+  --c-amber-lt: #FDF0DC;
+  --c-coral:    #C44830;
+  --c-coral-lt: #FDEAE5;
+  --c-gold:     #B8890A;
+  --c-gold-lt:  #FEF6DC;
+  --c-purple:   #6058C8;
+  --c-purple-lt:#EEEDFE;
+  --c-green:    #3A7D1E;
+  --c-green-lt: #E8F5E0;
+  --nav-h:      64px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 22px;
+  --r-xl: 28px;
+  --shadow: 0 2px 12px rgba(0,0,0,.07), 0 1px 3px rgba(0,0,0,.05);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,.12), 0 2px 8px rgba(0,0,0,.06);
+}
+[data-theme="dark"] {
+  --c-bg:       #141412;
+  --c-bg2:      #1E1D1A;
+  --c-surface:  #252420;
+  --c-surface2: #2E2C28;
+  --c-border:   #3A3830;
+  --c-text:     #F0EDE4;
+  --c-text2:    #9A9790;
+  --c-text3:    #6A6760;
+  --c-accent:   #2AB88A;
+  --c-accent2:  #1D9E75;
+  --c-accent-lt:#0F2E22;
+  --c-amber:    #D4891E;
+  --c-amber-lt: #2A1E08;
+  --c-coral:    #E06040;
+  --c-coral-lt: #2A100A;
+  --c-gold:     #D4A020;
+  --c-gold-lt:  #2A2008;
+  --c-purple:   #8880E8;
+  --c-purple-lt:#1A1840;
+  --c-green:    #5AAA38;
+  --c-green-lt: #102208;
+}
+html, body { height: 100%; background: var(--c-bg); font-family: 'DM Sans', sans-serif; color: var(--c-text); overflow: hidden; }
+
+/* ── layout ─────────────────────────────────────────────────── */
+#app { display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
+#page-container { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; scroll-behavior: smooth; }
+#bottom-nav { flex-shrink: 0; background: var(--c-surface); border-top: 1px solid var(--c-border); display: flex; height: calc(var(--nav-h) + var(--safe-bottom)); padding-bottom: var(--safe-bottom); }
+.nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; border: none; background: transparent; color: var(--c-text3); font-family: inherit; font-size: 10px; font-weight: 500; cursor: pointer; padding-top: 8px; transition: color .15s; position: relative; }
+.nav-btn.active { color: var(--c-accent); }
+.nav-btn .nav-icon { font-size: 22px; line-height: 1; }
+.nav-btn.active::after { content:''; position:absolute; top:0; left:20%; right:20%; height:2px; background:var(--c-accent); border-radius:0 0 4px 4px; }
+
+/* ── page transitions ────────────────────────────────────────── */
+.page { display: none; min-height: 100%; animation: pageIn .22s ease; }
+.page.active { display: block; }
+@keyframes pageIn { from { opacity:0; transform:translateY(6px) } to { opacity:1; transform:none } }
+
+/* ── top bar ─────────────────────────────────────────────────── */
+.topbar { position: sticky; top: 0; z-index: 100; background: var(--c-bg); border-bottom: 1px solid var(--c-border); padding: 14px 20px 12px; display: flex; align-items: center; justify-content: space-between; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+.topbar-title { font-size: 17px; font-weight: 600; color: var(--c-text); }
+.topbar-sub { font-size: 12px; color: var(--c-text2); margin-top: 1px; }
+.icon-btn { width: 36px; height: 36px; border-radius: 50%; border: none; background: var(--c-surface2); color: var(--c-text); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+/* ── cards ───────────────────────────────────────────────────── */
+.card { background: var(--c-surface); border-radius: var(--r-lg); padding: 16px; box-shadow: var(--shadow); }
+.card + .card, .card + .ex-card, .ex-card + .card { margin-top: 12px; }
+
+/* ── streak banner ───────────────────────────────────────────── */
+.streak-banner { background: linear-gradient(135deg, var(--c-accent) 0%, var(--c-accent2) 100%); border-radius: var(--r-lg); padding: 18px 20px; color: #fff; display: flex; align-items: center; gap: 16px; box-shadow: 0 4px 20px rgba(13,92,69,.25); }
+.streak-fire { font-size: 40px; flex-shrink: 0; }
+.streak-count { font-size: 36px; font-weight: 600; line-height: 1; }
+.streak-label { font-size: 12px; opacity: .8; margin-top: 2px; }
+.streak-msg { font-size: 13px; opacity: .9; margin-top: 4px; }
+
+/* ── progress ring ───────────────────────────────────────────── */
+.progress-ring-wrap { display: flex; align-items: center; gap: 20px; }
+.ring-svg { transform: rotate(-90deg); }
+.ring-bg { fill: none; stroke: var(--c-border); }
+.ring-fill { fill: none; stroke: var(--c-accent); stroke-linecap: round; transition: stroke-dashoffset .6s cubic-bezier(.4,0,.2,1); }
+.ring-center { text-align: center; }
+.ring-pct { font-size: 28px; font-weight: 600; color: var(--c-accent); line-height: 1; }
+.ring-sub { font-size: 12px; color: var(--c-text2); margin-top: 3px; }
+
+/* ── stat chips ──────────────────────────────────────────────── */
+.stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.stat-chip { background: var(--c-surface2); border-radius: var(--r-md); padding: 12px 8px; text-align: center; }
+.stat-val { font-size: 20px; font-weight: 600; color: var(--c-text); }
+.stat-lbl { font-size: 10px; color: var(--c-text3); margin-top: 2px; font-weight: 500; text-transform: uppercase; letter-spacing: .04em; }
+
+/* ── day strip ───────────────────────────────────────────────── */
+.day-strip { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 4px 2px; }
+.day-strip::-webkit-scrollbar { display: none; }
+.day-pill { flex-shrink: 0; width: 44px; border-radius: 14px; padding: 8px 4px; text-align: center; border: 1.5px solid var(--c-border); background: var(--c-surface); cursor: pointer; transition: all .15s; }
+.day-pill.today { border-color: var(--c-accent); background: var(--c-accent-lt); }
+.day-pill.done { background: var(--c-green-lt); border-color: var(--c-green); }
+.day-pill.missed { background: var(--c-coral-lt); border-color: var(--c-coral); }
+.day-pill.selected { box-shadow: 0 0 0 2px var(--c-accent); }
+.day-name { font-size: 10px; color: var(--c-text3); font-weight: 500; }
+.day-num { font-size: 16px; font-weight: 600; color: var(--c-text); margin: 2px 0; }
+.day-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--c-border); margin: 0 auto; }
+.day-pill.done .day-dot { background: var(--c-green); }
+.day-pill.missed .day-dot { background: var(--c-coral); }
+.day-pill.today .day-name, .day-pill.today .day-num { color: var(--c-accent); }
+
+/* ── exercise cards ──────────────────────────────────────────── */
+.ex-card { background: var(--c-surface); border-radius: var(--r-lg); padding: 14px 16px; box-shadow: var(--shadow); display: flex; align-items: center; gap: 14px; transition: transform .1s, box-shadow .1s; cursor: pointer; border: 1.5px solid transparent; -webkit-user-select: none; user-select: none; }
+.ex-card:active { transform: scale(.98); box-shadow: none; }
+.ex-card.done { background: var(--c-green-lt); border-color: var(--c-green); }
+.ex-check { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--c-border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 16px; transition: all .2s; background: transparent; }
+.ex-card.done .ex-check { background: var(--c-green); border-color: var(--c-green); }
+.ex-info { flex: 1; min-width: 0; }
+.ex-name { font-size: 14px; font-weight: 600; color: var(--c-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ex-card.done .ex-name { color: var(--c-green); }
+.ex-meta { font-size: 12px; color: var(--c-text2); margin-top: 2px; }
+.ex-xp { font-size: 11px; font-weight: 500; color: var(--c-accent); background: var(--c-accent-lt); padding: 2px 8px; border-radius: 20px; flex-shrink: 0; font-family: 'DM Mono', monospace; }
+.ex-card.done .ex-xp { background: var(--c-green-lt); color: var(--c-green); }
+
+/* ── section header ──────────────────────────────────────────── */
+.section-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.section-title { font-size: 13px; font-weight: 600; color: var(--c-text2); text-transform: uppercase; letter-spacing: .06em; }
+.section-action { font-size: 13px; font-weight: 500; color: var(--c-accent); background: none; border: none; font-family: inherit; cursor: pointer; }
+
+/* ── pain slider ─────────────────────────────────────────────── */
+.slider-wrap { display: flex; align-items: center; gap: 10px; }
+.slider-wrap label { font-size: 12px; color: var(--c-text2); width: 60px; }
+.slider-wrap input[type=range] { flex: 1; accent-color: var(--c-accent); height: 4px; }
+.slider-val { font-size: 13px; font-weight: 600; color: var(--c-accent); width: 24px; text-align: right; font-family: 'DM Mono', monospace; }
+
+/* ── note textarea ───────────────────────────────────────────── */
+textarea { width: 100%; border: 1.5px solid var(--c-border); border-radius: var(--r-md); padding: 12px; font-family: inherit; font-size: 14px; color: var(--c-text); background: var(--c-surface2); resize: none; outline: none; transition: border-color .15s; }
+textarea:focus { border-color: var(--c-accent); }
+
+/* ── buttons ─────────────────────────────────────────────────── */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 12px 20px; border-radius: var(--r-md); border: none; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity .15s, transform .1s; }
+.btn:active { transform: scale(.97); opacity: .85; }
+.btn-primary { background: var(--c-accent); color: #fff; }
+.btn-secondary { background: var(--c-surface2); color: var(--c-text); border: 1.5px solid var(--c-border); }
+.btn-danger { background: var(--c-coral-lt); color: var(--c-coral); }
+.btn-full { width: 100%; }
+
+/* ── calendar grid ───────────────────────────────────────────── */
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.cal-hdr { font-size: 10px; font-weight: 600; color: var(--c-text3); text-align: center; padding: 4px 0; text-transform: uppercase; }
+.cal-cell { aspect-ratio: 1; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; background: var(--c-surface2); border: 1.5px solid transparent; cursor: pointer; transition: all .15s; }
+.cal-cell.today { border-color: var(--c-accent); color: var(--c-accent); font-weight: 700; }
+.cal-cell.full { background: var(--c-green-lt); border-color: var(--c-green); color: var(--c-green); }
+.cal-cell.partial { background: var(--c-amber-lt); border-color: var(--c-amber); color: var(--c-amber); }
+.cal-cell.missed { background: var(--c-coral-lt); border-color: var(--c-coral); color: var(--c-coral); }
+.cal-cell.future { opacity: .4; }
+.cal-dot { width: 4px; height: 4px; border-radius: 50%; background: currentColor; margin-top: 1px; opacity: .6; }
+
+/* ── badge cards ─────────────────────────────────────────────── */
+.badge-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.badge-card { background: var(--c-surface); border-radius: var(--r-lg); padding: 16px 12px; text-align: center; box-shadow: var(--shadow); border: 1.5px solid var(--c-border); transition: all .2s; }
+.badge-card.earned { background: var(--c-gold-lt); border-color: var(--c-gold); }
+.badge-icon { font-size: 32px; margin-bottom: 6px; }
+.badge-name { font-size: 12px; font-weight: 600; color: var(--c-text); }
+.badge-desc { font-size: 10px; color: var(--c-text2); margin-top: 3px; line-height: 1.4; }
+.badge-xp { font-size: 11px; font-weight: 600; color: var(--c-gold); margin-top: 6px; font-family: 'DM Mono', monospace; }
+.badge-card:not(.earned) .badge-icon { filter: grayscale(1); opacity: .3; }
+.badge-card:not(.earned) .badge-name { color: var(--c-text3); }
+
+/* ── XP level bar ────────────────────────────────────────────── */
+.xp-bar-wrap { background: var(--c-bg2); border-radius: 6px; height: 8px; overflow: hidden; }
+.xp-bar-fill { height: 100%; background: linear-gradient(90deg, var(--c-accent), var(--c-accent2)); border-radius: 6px; transition: width .6s cubic-bezier(.4,0,.2,1); }
+
+/* ── chart bars ──────────────────────────────────────────────── */
+.chart-wrap { display: flex; align-items: flex-end; gap: 3px; height: 80px; padding: 4px 0; }
+.chart-bar { flex: 1; border-radius: 4px 4px 0 0; min-height: 3px; transition: height .4s ease; }
+.chart-week-sep { width: 1px; background: var(--c-border); height: 100%; flex-shrink: 0; }
+
+/* ── form elements ───────────────────────────────────────────── */
+.form-field { margin-bottom: 14px; }
+.form-label { font-size: 12px; font-weight: 600; color: var(--c-text2); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: .04em; }
+.form-input { width: 100%; padding: 12px 14px; border: 1.5px solid var(--c-border); border-radius: var(--r-md); font-family: inherit; font-size: 14px; color: var(--c-text); background: var(--c-surface2); outline: none; transition: border-color .15s; }
+.form-input:focus { border-color: var(--c-accent); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+select.form-input { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23999' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+
+/* ── modal / sheet ───────────────────────────────────────────── */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 1000; display: flex; align-items: flex-end; backdrop-filter: blur(4px); opacity: 0; pointer-events: none; transition: opacity .2s; }
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal-sheet { background: var(--c-surface); border-radius: var(--r-xl) var(--r-xl) 0 0; width: 100%; max-height: 90dvh; overflow-y: auto; padding: 20px 20px calc(20px + var(--safe-bottom)); transform: translateY(20px); transition: transform .2s; }
+.modal-overlay.open .modal-sheet { transform: none; }
+.modal-handle { width: 36px; height: 4px; background: var(--c-border); border-radius: 2px; margin: 0 auto 20px; }
+.modal-title { font-size: 18px; font-weight: 600; margin-bottom: 20px; }
+
+/* ── toast ───────────────────────────────────────────────────── */
+.toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-80px); background: var(--c-text); color: var(--c-bg); padding: 10px 20px; border-radius: 24px; font-size: 14px; font-weight: 500; z-index: 2000; transition: transform .3s cubic-bezier(.34,1.56,.64,1); white-space: nowrap; box-shadow: var(--shadow-lg); }
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ── celebrate overlay ───────────────────────────────────────── */
+.celebrate { position: fixed; inset: 0; z-index: 1500; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.celebrate-card { background: var(--c-surface); border-radius: var(--r-xl); padding: 32px 40px; text-align: center; box-shadow: var(--shadow-lg); transform: scale(0); transition: transform .3s cubic-bezier(.34,1.56,.64,1); max-width: 280px; }
+.celebrate.show .celebrate-card { transform: scale(1); }
+.celebrate-icon { font-size: 56px; }
+.celebrate-title { font-size: 22px; font-weight: 700; margin-top: 8px; }
+.celebrate-sub { font-size: 14px; color: var(--c-text2); margin-top: 6px; }
+
+/* ── toggle switch ───────────────────────────────────────────── */
+.toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid var(--c-border); }
+.toggle-row:last-child { border-bottom: none; }
+.toggle-label { font-size: 14px; font-weight: 500; }
+.toggle-sub { font-size: 12px; color: var(--c-text2); margin-top: 2px; }
+.switch { position: relative; width: 44px; height: 26px; flex-shrink: 0; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.switch-track { position: absolute; inset: 0; background: var(--c-border); border-radius: 13px; cursor: pointer; transition: background .2s; }
+.switch input:checked + .switch-track { background: var(--c-accent); }
+.switch-track::after { content:''; position: absolute; left: 3px; top: 3px; width: 20px; height: 20px; background: #fff; border-radius: 50%; transition: left .2s; box-shadow: 0 1px 4px rgba(0,0,0,.2); }
+.switch input:checked + .switch-track::after { left: 21px; }
+
+/* ── utility ─────────────────────────────────────────────────── */
+.p-page { padding: 16px 16px calc(16px + var(--safe-bottom)); }
+.gap-12 { display: flex; flex-direction: column; gap: 12px; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.text-sm { font-size: 13px; }
+.text-xs { font-size: 11px; }
+.text-muted { color: var(--c-text2); }
+.text-accent { color: var(--c-accent); }
+.fw-600 { font-weight: 600; }
+.mt-4 { margin-top: 4px; }
+.mt-8 { margin-top: 8px; }
+.mt-12 { margin-top: 12px; }
+.mt-16 { margin-top: 16px; }
+.empty-state { text-align: center; padding: 48px 20px; color: var(--c-text2); }
+.empty-icon { font-size: 48px; margin-bottom: 12px; }
+.empty-title { font-size: 16px; font-weight: 600; color: var(--c-text); }
+.empty-sub { font-size: 13px; margin-top: 4px; }
+.divider { height: 1px; background: var(--c-border); margin: 12px 0; }
+
+/* ── splash screen ───────────────────────────────────────────── */
+#splash {
+  position: fixed; inset: 0; z-index: 9999;
+  background: linear-gradient(160deg, #0D5C45 0%, #0F6E56 60%, #18856A 100%);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 40px 32px;
+  animation: splashFadeOut .5s ease .1s forwards;
+  animation-play-state: paused;
+}
+#splash.hiding { animation-play-state: running; pointer-events: none; }
+@keyframes splashFadeOut {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(1.04); display: none; }
+}
+.splash-icon {
+  font-size: 72px; line-height: 1;
+  animation: splashBounce .6s cubic-bezier(.34,1.56,.64,1) .05s both;
+}
+@keyframes splashBounce {
+  from { opacity:0; transform: scale(.5) translateY(20px); }
+  to   { opacity:1; transform: scale(1) translateY(0); }
+}
+.splash-title {
+  font-size: 26px; font-weight: 700; color: #fff;
+  margin-top: 16px; letter-spacing: -.01em;
+  animation: splashSlideUp .5s ease .2s both;
+}
+.splash-version {
+  font-size: 12px; color: rgba(255,255,255,.55);
+  margin-top: 4px; font-family: 'DM Mono', monospace;
+  animation: splashSlideUp .5s ease .25s both;
+}
+.splash-divider {
+  width: 48px; height: 1.5px;
+  background: rgba(255,255,255,.25);
+  border-radius: 2px; margin: 28px auto;
+  animation: splashSlideUp .5s ease .3s both;
+}
+.splash-quote {
+  font-size: 15px; font-style: italic; color: rgba(255,255,255,.82);
+  text-align: center; line-height: 1.6; max-width: 300px;
+  animation: splashSlideUp .5s ease .35s both;
+}
+.splash-author {
+  font-size: 12px; color: rgba(255,255,255,.5);
+  margin-top: 10px; font-weight: 500;
+  animation: splashSlideUp .5s ease .4s both;
+}
+.splash-bar-wrap {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+  background: rgba(255,255,255,.15);
+}
+.splash-bar {
+  height: 100%; width: 0%; background: rgba(255,255,255,.7);
+  border-radius: 2px;
+  animation: splashProgress 2.2s ease forwards;
+}
+@keyframes splashProgress { from { width:0% } to { width:100% } }
+@keyframes splashSlideUp {
+  from { opacity:0; transform: translateY(14px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+</style>
+</head>
+<body>
+
+<!-- ── SPLASH SCREEN ─────────────────────────────────────────── -->
+<div id="splash">
+  <div class="splash-icon">🏃</div>
+  <div class="splash-title">Tracker Rehabilitacji</div>
+  <div class="splash-version">v2.0</div>
+  <div class="splash-divider"></div>
+  <div class="splash-quote" id="splash-quote"></div>
+  <div class="splash-author" id="splash-author"></div>
+  <div class="splash-bar-wrap"><div class="splash-bar"></div></div>
+</div>
+<div id="app">
+  <!-- PAGE CONTAINER -->
+  <div id="page-container">
+
+    <!-- ── PAGE: DZISIAJ ──────────────────────────────────────── -->
+    <div class="page active" id="page-home">
+      <div class="topbar">
+        <div>
+          <div class="topbar-title" id="home-date">Dzisiaj</div>
+          <div class="topbar-sub" id="home-week">Tydzień 1 z 4</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="icon-btn" onclick="toggleTheme()" id="theme-btn">🌙</button>
+          <button class="icon-btn" onclick="openNotifSheet()">🔔</button>
+        </div>
+      </div>
+      <div class="p-page gap-12">
+        <!-- streak -->
+        <div class="streak-banner" id="streak-banner">
+          <div class="streak-fire">🔥</div>
+          <div>
+            <div class="streak-count" id="streak-count">0</div>
+            <div class="streak-label">dni z rzędu</div>
+            <div class="streak-msg" id="streak-msg">Zacznij dzisiaj!</div>
+          </div>
+          <div style="margin-left:auto;text-align:right">
+            <div style="font-size:24px;font-weight:700;color:#fff" id="xp-top">0</div>
+            <div style="font-size:11px;opacity:.8">XP</div>
+          </div>
+        </div>
+
+        <!-- progress ring + stats -->
+        <div class="card">
+          <div class="progress-ring-wrap">
+            <svg class="ring-svg" width="90" height="90" viewBox="0 0 90 90">
+              <circle class="ring-bg" cx="45" cy="45" r="38" stroke-width="8"/>
+              <circle class="ring-fill" id="ring-fill" cx="45" cy="45" r="38" stroke-width="8"
+                stroke-dasharray="238.76" stroke-dashoffset="238.76"/>
+            </svg>
+            <div class="ring-center">
+              <div class="ring-pct" id="ring-pct">0%</div>
+              <div class="ring-sub" id="ring-sub">0 / 0 ćwiczeń</div>
+            </div>
+            <div style="flex:1">
+              <div class="stat-row" style="grid-template-columns:1fr 1fr">
+                <div class="stat-chip"><div class="stat-val" id="stat-streak">0🔥</div><div class="stat-lbl">Streak</div></div>
+                <div class="stat-chip"><div class="stat-val" id="stat-xp">0</div><div class="stat-lbl">XP</div></div>
+                <div class="stat-chip"><div class="stat-val" id="stat-badges">0</div><div class="stat-lbl">Odznaki</div></div>
+                <div class="stat-chip"><div class="stat-val" id="stat-week">0%</div><div class="stat-lbl">Tydzień</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- day strip -->
+        <div class="card" style="padding:14px">
+          <div class="day-strip" id="day-strip"></div>
+        </div>
+
+        <!-- exercises header -->
+        <div class="section-hdr">
+          <span class="section-title">Ćwiczenia</span>
+          <button class="section-action" onclick="openAddExercise()">+ Dodaj</button>
+        </div>
+
+        <!-- pain/difficulty -->
+        <div class="card" id="pain-card">
+          <div class="slider-wrap" style="margin-bottom:10px">
+            <label>Ból</label>
+            <input type="range" min="0" max="10" value="0" id="pain-slider" oninput="document.getElementById('pain-val').textContent=this.value;savePainDiff()">
+            <span class="slider-val" id="pain-val">0</span>
+          </div>
+          <div class="slider-wrap">
+            <label>Trudność</label>
+            <input type="range" min="0" max="10" value="0" id="diff-slider" oninput="document.getElementById('diff-val').textContent=this.value;savePainDiff()">
+            <span class="slider-val" id="diff-val">0</span>
+          </div>
+        </div>
+
+        <!-- exercise list -->
+        <div id="ex-list" class="gap-12"></div>
+
+        <!-- note -->
+        <div class="section-hdr mt-8"><span class="section-title">Notatka dnia</span></div>
+        <textarea id="note-area" rows="3" placeholder="Jak się czujesz? Co sprawiło trudność?"></textarea>
+        <button class="btn btn-primary btn-full" onclick="saveNote()">Zapisz notatkę</button>
+      </div>
+    </div>
+
+    <!-- ── PAGE: KALENDARZ ────────────────────────────────────── -->
+    <div class="page" id="page-calendar">
+      <div class="topbar"><div class="topbar-title">Kalendarz 28 dni</div></div>
+      <div class="p-page">
+        <div class="card">
+          <div class="cal-grid" id="cal-grid"></div>
+        </div>
+        <div style="display:flex;gap:12px;margin-top:14px;flex-wrap:wrap">
+          <span class="text-xs text-muted" style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:3px;background:var(--c-green-lt);border:1.5px solid var(--c-green);display:inline-block"></span>Ukończony</span>
+          <span class="text-xs text-muted" style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:3px;background:var(--c-amber-lt);border:1.5px solid var(--c-amber);display:inline-block"></span>Częściowy</span>
+          <span class="text-xs text-muted" style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:3px;background:var(--c-coral-lt);border:1.5px solid var(--c-coral);display:inline-block"></span>Pominięty</span>
+        </div>
+
+        <!-- selected day detail -->
+        <div class="card mt-12" id="cal-detail" style="display:none">
+          <div class="fw-600" id="cal-detail-date"></div>
+          <div class="text-sm text-muted mt-4" id="cal-detail-body"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PAGE: POSTĘP ───────────────────────────────────────── -->
+    <div class="page" id="page-progress">
+      <div class="topbar"><div class="topbar-title">Postęp</div></div>
+      <div class="p-page gap-12">
+        <!-- week cards -->
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px" id="week-cards"></div>
+
+        <!-- chart -->
+        <div class="card">
+          <div class="section-hdr"><span class="section-title">Ukończenie dzienne</span></div>
+          <div class="chart-wrap" id="chart-bars"></div>
+          <div style="display:flex;justify-content:space-between;margin-top:4px">
+            <span class="text-xs text-muted">T1</span><span class="text-xs text-muted">T2</span>
+            <span class="text-xs text-muted">T3</span><span class="text-xs text-muted">T4</span>
+          </div>
+        </div>
+
+        <!-- pain chart -->
+        <div class="card">
+          <div class="section-hdr"><span class="section-title">Poziom bólu</span></div>
+          <canvas id="pain-canvas" height="70" style="width:100%"></canvas>
+        </div>
+
+        <!-- summary -->
+        <div class="card">
+          <div class="section-hdr"><span class="section-title">Podsumowanie</span></div>
+          <div class="stat-row" id="summary-stats"></div>
+        </div>
+
+        <!-- export JSON -->
+        <button class="btn btn-secondary btn-full" onclick="exportJSON()">📤 Eksportuj dane (JSON)</button>
+        <button class="btn btn-secondary btn-full" onclick="document.getElementById('import-file').click()">📥 Importuj dane</button>
+        <input type="file" id="import-file" accept=".json" style="display:none" onchange="importJSON(this)">
+      </div>
+    </div>
+
+    <!-- ── PAGE: ODZNAKI ──────────────────────────────────────── -->
+    <div class="page" id="page-badges">
+      <div class="topbar"><div class="topbar-title">Odznaki</div></div>
+      <div class="p-page gap-12">
+        <!-- xp level -->
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+            <span class="fw-600" id="level-label">Poziom 1</span>
+            <span class="text-sm text-muted" id="level-xp">0 / 200 XP</span>
+          </div>
+          <div class="xp-bar-wrap"><div class="xp-bar-fill" id="xp-bar" style="width:0%"></div></div>
+        </div>
+        <div class="badge-grid" id="badge-grid"></div>
+      </div>
+    </div>
+
+    <!-- ── PAGE: USTAWIENIA ───────────────────────────────────── -->
+    <div class="page" id="page-settings">
+      <div class="topbar"><div class="topbar-title">Ustawienia</div></div>
+      <div class="p-page gap-12">
+        <!-- profile -->
+        <div class="card">
+          <div class="section-title" style="margin-bottom:14px">Profil pacjenta</div>
+          <div class="form-field">
+            <label class="form-label">Imię i nazwisko</label>
+            <input class="form-input" id="s-name" placeholder="Jan Kowalski">
+          </div>
+          <div class="form-field">
+            <label class="form-label">Diagnoza</label>
+            <input class="form-input" id="s-diagnosis" placeholder="np. Uraz kolana">
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label class="form-label">Fizjoterapeuta</label>
+              <input class="form-input" id="s-therapist" placeholder="Dr Nowak">
+            </div>
+            <div class="form-field">
+              <label class="form-label">Data urazu</label>
+              <input class="form-input" id="s-injury" type="date">
+            </div>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Notatki fizjoterapeuty</label>
+            <textarea id="s-therapist-notes" rows="3" placeholder="Zalecenia, uwagi..."></textarea>
+          </div>
+          <button class="btn btn-primary btn-full" onclick="saveProfile()">Zapisz profil</button>
+        </div>
+
+        <!-- program -->
+        <div class="card">
+          <div class="section-title" style="margin-bottom:14px">Program rehabilitacji</div>
+          <div class="form-row">
+            <div class="form-field">
+              <label class="form-label">Data startu</label>
+              <input class="form-input" id="s-start" type="date">
+            </div>
+            <div class="form-field">
+              <label class="form-label">Cel tygodniowy</label>
+              <select class="form-input" id="s-goal">
+                <option value="3">3 dni</option>
+                <option value="4">4 dni</option>
+                <option value="5" selected>5 dni</option>
+                <option value="6">6 dni</option>
+                <option value="7">7 dni</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-full" onclick="saveSettings()">Zapisz</button>
+        </div>
+
+        <!-- notifications -->
+        <div class="card">
+          <div class="section-title" style="margin-bottom:4px">Powiadomienia</div>
+          <div class="toggle-row">
+            <div><div class="toggle-label">Przypomnienia push</div><div class="toggle-sub" id="notif-status">Sprawdzanie...</div></div>
+            <label class="switch"><input type="checkbox" id="notif-toggle" onchange="toggleNotif(this)"><span class="switch-track"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div><div class="toggle-label">Godzina poranna</div><div class="toggle-sub">Pierwsze przypomnienie</div></div>
+            <input type="time" id="s-hour1" value="09:00" class="form-input" style="width:100px">
+          </div>
+          <div class="toggle-row">
+            <div><div class="toggle-label">Godzina wieczorna</div><div class="toggle-sub">Drugie przypomnienie</div></div>
+            <input type="time" id="s-hour2" value="20:00" class="form-input" style="width:100px">
+          </div>
+          <button class="btn btn-secondary btn-full mt-8" onclick="saveNotifSettings()">Zapisz godziny</button>
+        </div>
+
+        <!-- danger -->
+        <div class="card">
+          <div class="section-title" style="color:var(--c-coral);margin-bottom:12px">Strefa niebezpieczna</div>
+          <button class="btn btn-danger btn-full" onclick="resetData()">🗑 Resetuj wszystkie dane</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /page-container -->
+
+  <!-- ── BOTTOM NAV ─────────────────────────────────────────── -->
+  <nav id="bottom-nav">
+    <button class="nav-btn active" onclick="switchPage('home',this)" data-page="home">
+      <span class="nav-icon">📅</span><span>Dzisiaj</span>
+    </button>
+    <button class="nav-btn" onclick="switchPage('calendar',this)" data-page="calendar">
+      <span class="nav-icon">🗓</span><span>Kalendarz</span>
+    </button>
+    <button class="nav-btn" onclick="switchPage('progress',this)" data-page="progress">
+      <span class="nav-icon">📊</span><span>Postęp</span>
+    </button>
+    <button class="nav-btn" onclick="switchPage('badges',this)" data-page="badges">
+      <span class="nav-icon">🏆</span><span>Odznaki</span>
+    </button>
+    <button class="nav-btn" onclick="switchPage('settings',this)" data-page="settings">
+      <span class="nav-icon">⚙️</span><span>Ustawienia</span>
+    </button>
+  </nav>
+</div>
+
+<!-- ── ADD/EDIT EXERCISE MODAL ───────────────────────────────── -->
+<div class="modal-overlay" id="ex-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="ex-modal-title">Dodaj ćwiczenie</div>
+    <div class="form-field">
+      <label class="form-label">Nazwa ćwiczenia</label>
+      <input class="form-input" id="ex-name" placeholder="np. Skłony w bok">
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label class="form-label">Powtórzenia</label>
+        <input class="form-input" id="ex-reps" type="number" min="1" value="10">
+      </div>
+      <div class="form-field">
+        <label class="form-label">Serie</label>
+        <input class="form-input" id="ex-sets" type="number" min="1" value="3">
+      </div>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Typ</label>
+      <select class="form-input" id="ex-type">
+        <option>Siłowe</option><option selected>Rozciąganie</option>
+        <option>Równowaga</option><option>Aerobowe</option>
+        <option>Oddechowe</option><option>Mobilność</option><option>Inne</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-primary" style="flex:1" onclick="saveExercise()">Zapisz</button>
+      <button class="btn btn-secondary" style="flex:1" onclick="closeModal('ex-modal')">Anuluj</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── NOTIF SHEET ────────────────────────────────────────────── -->
+<div class="modal-overlay" id="notif-sheet">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🔔 Przypomnienie</div>
+    <div id="notif-sheet-body" style="font-size:14px;color:var(--c-text2);line-height:1.6;margin-bottom:20px"></div>
+    <button class="btn btn-primary btn-full" onclick="closeModal('notif-sheet')">OK, ćwiczę!</button>
+  </div>
+</div>
+
+<!-- ── CELEBRATE ─────────────────────────────────────────────── -->
+<div class="celebrate" id="celebrate">
+  <div class="celebrate-card">
+    <div class="celebrate-icon" id="cel-icon">🎉</div>
+    <div class="celebrate-title" id="cel-title">Brawo!</div>
+    <div class="celebrate-sub" id="cel-sub"></div>
+  </div>
+</div>
+
+<!-- ── TOAST ─────────────────────────────────────────────────── -->
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+// ── CONSTANTS ─────────────────────────────────────────────────
+const DAYS_PL   = ['Nd','Pn','Wt','Śr','Cz','Pt','Sb'];
+const MONTHS_PL = ['stycznia','lutego','marca','kwietnia','maja','czerwca','lipca','sierpnia','września','października','listopada','grudnia'];
+const MONTHS_S  = ['sty','lut','mar','kwi','maj','cze','lip','sie','wrz','paź','lis','gru'];
+
+const BADGES = [
+  {id:'first_day',  name:'Pierwszy krok',    desc:'Ukończ pierwszy dzień',        icon:'🌱', xp:50},
+  {id:'streak_3',   name:'3 dni z rzędu',    desc:'Utrzymaj streak przez 3 dni',  icon:'🔥', xp:100},
+  {id:'streak_7',   name:'Tydzień wojownika',desc:'7 dni bez przerwy',            icon:'⚡', xp:250},
+  {id:'streak_14',  name:'Dwie tygodnie',    desc:'14 dni nieprzerwanego treningu',icon:'💎',xp:500},
+  {id:'streak_28',  name:'Mistrz miesiąca',  desc:'Pełne 28 dni rehabilitacji',   icon:'👑', xp:1000},
+  {id:'week1_done', name:'Tydzień 1 gotowy', desc:'Ukończ cały pierwszy tydzień', icon:'🏅', xp:150},
+  {id:'week2_done', name:'Tydzień 2 gotowy', desc:'Ukończ cały drugi tydzień',    icon:'🥈', xp:200},
+  {id:'week3_done', name:'Tydzień 3 gotowy', desc:'Ukończ cały trzeci tydzień',   icon:'🥇', xp:300},
+  {id:'week4_done', name:'Program ukończony',desc:'Ukończyłeś pełny program!',    icon:'🏆', xp:500},
+  {id:'xp_500',     name:'Rosnąca siła',     desc:'Zdobądź 500 XP',              icon:'💪', xp:75},
+  {id:'xp_1000',    name:'Zaawansowany',     desc:'Zdobądź 1000 XP',             icon:'🌟', xp:100},
+  {id:'pain_log',   name:'Świadomy pacjent', desc:'Zapisz 7 notatek z bólem',    icon:'📋', xp:80},
+  {id:'no_pain',    name:'Bez bólu!',        desc:'3 dni z bólem 1/10',          icon:'😊', xp:120},
+];
+
+// ── DATA ───────────────────────────────────────────────────────
+function defaultData() {
+  return {
+    exercises: [], nextId: 0, days: {},
+    startDate: today(),
+    theme: 'light',
+    notifHour1: '09:00', notifHour2: '20:00', notifEnabled: false,
+    weeklyGoal: 5,
+    xp: 0, badges: [],
+    profile: {name:'',diagnosis:'',therapist:'',injuryDate:'',therapistNotes:''},
+  };
+}
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem('rehab_pwa_v2');
+    if (raw) { const d = JSON.parse(raw); Object.keys(defaultData()).forEach(k=>{ if(!(k in d)) d[k]=defaultData()[k]; }); return d; }
+  } catch(e) {}
+  return defaultData();
+}
+
+function saveData() { localStorage.setItem('rehab_pwa_v2', JSON.stringify(D)); }
+
+let D = loadData();
+let editingExId = null;
+
+// ── DATE HELPERS ───────────────────────────────────────────────
+function today() { return new Date().toISOString().split('T')[0]; }
+function dateFromKey(k) { return new Date(k + 'T12:00:00'); }
+function addDays(k, n) { const d=dateFromKey(k); d.setDate(d.getDate()+n); return d.toISOString().split('T')[0]; }
+function diffDays(a, b) { return Math.round((dateFromKey(b)-dateFromKey(a))/86400000); }
+function weekOf(k) { return Math.max(0,Math.min(3, Math.floor(diffDays(D.startDate, k)/7))); }
+function weekStart(w) { return addDays(D.startDate, w*7); }
+function formatDate(k) { const d=dateFromKey(k); return `${d.getDate()} ${MONTHS_PL[d.getMonth()]} ${d.getFullYear()}`; }
+function formatShort(k) { const d=dateFromKey(k); return `${d.getDate()}.${String(d.getMonth()+1).padStart(2,'0')}`; }
+function dayName(k) { return DAYS_PL[dateFromKey(k).getDay()]; }
+
+function getDay(k) {
+  if (!D.days[k]) D.days[k] = {completed:[], pain:0, difficulty:0, note:''};
+  return D.days[k];
+}
+
+// ── STREAK & STATS ─────────────────────────────────────────────
+function computeStreak() {
+  const total = D.exercises.length;
+  if (!total) return 0;
+  let streak = 0;
+  let d = today();
+  while (true) {
+    const dd = D.days[d] || {};
+    if ((dd.completed||[]).length >= total) { streak++; d = addDays(d,-1); }
+    else if (d === today()) { d = addDays(d,-1); const dd2=D.days[d]||{}; if((dd2.completed||[]).length>=total){d=addDays(d,1);continue;} break; }
+    else break;
+  }
+  return streak;
+}
+
+function computeXP() {
+  const total = D.exercises.length;
+  let xp = 0;
+  for (const [k,dd] of Object.entries(D.days)) {
+    const done = (dd.completed||[]).length;
+    xp += done * 10;
+    if (total > 0 && done >= total) xp += 25;
+  }
+  return xp;
+}
+
+function weekPct(w) {
+  const ws = weekStart(w), t = today(), total = D.exercises.length;
+  if (!total) return 0;
+  let done=0, possible=0;
+  for (let i=0;i<7;i++) {
+    const d=addDays(ws,i);
+    if (d > t) continue;
+    possible++;
+    if ((D.days[d]?.completed||[]).length >= total) done++;
+  }
+  return possible ? Math.round(done/possible*100) : 0;
+}
+
+function checkBadges() {
+  const earned = new Set(D.badges);
+  const newBadges = [];
+  const streak = computeStreak();
+  const xp = computeXP();
+  const total = D.exercises.length;
+  const t = today();
+
+  const checks = {
+    first_day: total>0 && Object.values(D.days).some(dd=>(dd.completed||[]).length>=total),
+    streak_3: streak>=3, streak_7: streak>=7, streak_14: streak>=14, streak_28: streak>=28,
+    xp_500: xp>=500, xp_1000: xp>=1000,
+    pain_log: Object.values(D.days).filter(dd=>(dd.pain||0)>0).length>=7,
+    no_pain: Object.values(D.days).filter(dd=>(dd.pain||0)===1).length>=3,
+  };
+  for (let w=0;w<4;w++) {
+    const ws=weekStart(w);
+    let allDone=true;
+    for(let i=0;i<7;i++){
+      const d=addDays(ws,i);
+      if(d>t){allDone=false;break;}
+      if(total===0||(D.days[d]?.completed||[]).length<total){allDone=false;break;}
+    }
+    checks[`week${w+1}_done`]=allDone;
+  }
+  for (const [bid,cond] of Object.entries(checks)) {
+    if (cond && !earned.has(bid)) { earned.add(bid); newBadges.push(bid); }
+  }
+  D.badges = [...earned];
+  D.xp = xp + newBadges.reduce((s,bid)=>s+(BADGES.find(b=>b.id===bid)?.xp||0),0);
+  return newBadges;
+}
+
+// ── THEME ─────────────────────────────────────────────────────
+function toggleTheme() {
+  D.theme = D.theme==='light'?'dark':'light';
+  applyTheme(); saveData();
+}
+function applyTheme() {
+  document.documentElement.setAttribute('data-theme', D.theme);
+  document.getElementById('theme-btn').textContent = D.theme==='dark'?'☀️':'🌙';
+}
+
+// ── PAGE SWITCHING ─────────────────────────────────────────────
+let currentPage = 'home';
+function switchPage(page, btn) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  btn.classList.add('active');
+  document.getElementById('page-container').scrollTop = 0;
+  currentPage = page;
+  renderPage(page);
+}
+function renderPage(page) {
+  if (page==='home') renderHome();
+  else if (page==='calendar') renderCalendar();
+  else if (page==='progress') renderProgress();
+  else if (page==='badges') renderBadges();
+  else if (page==='settings') renderSettings();
+}
+
+// ── HOME PAGE ─────────────────────────────────────────────────
+function renderHome() {
+  const t = today();
+  const d = dateFromKey(t);
+  document.getElementById('home-date').textContent =
+    `${d.getDate()} ${MONTHS_PL[d.getMonth()]}, ${['niedziela','poniedziałek','wtorek','środa','czwartek','piątek','sobota'][d.getDay()]}`;
+  const w = weekOf(t);
+  document.getElementById('home-week').textContent = `Tydzień ${w+1} z 4 · Rehabilitacja`;
+
+  renderStreakBanner();
+  renderRing();
+  renderDayStrip();
+  renderExList();
+  loadPainDiff();
+  loadNote();
+}
+
+function renderStreakBanner() {
+  const streak = computeStreak();
+  const xp = computeXP();
+  document.getElementById('streak-count').textContent = streak;
+  document.getElementById('xp-top').textContent = xp;
+  document.getElementById('stat-streak').textContent = streak+'🔥';
+  document.getElementById('stat-xp').textContent = xp;
+  document.getElementById('stat-badges').textContent = D.badges.length;
+  document.getElementById('stat-week').textContent = weekPct(weekOf(today()))+'%';
+
+  const msgs = streak===0 ? 'Zacznij dzisiaj!' :
+    streak<3 ? 'Dobry start! Kontynuuj!' :
+    streak<7 ? `Świetnie! ${7-streak} dni do odznaki!` :
+    streak<14? `Niesamowite! ${14-streak} dni do diamentu!` : 'Mistrz rehabilitacji! 👑';
+  document.getElementById('streak-msg').textContent = msgs;
+}
+
+function renderRing() {
+  const t = today(), dd = D.days[t]||{};
+  const total = D.exercises.length, done = (dd.completed||[]).length;
+  const pct = total ? Math.round(done/total*100) : 0;
+  const r = 38, circ = 2*Math.PI*r;
+  const fill = document.getElementById('ring-fill');
+  fill.setAttribute('stroke-dasharray', circ);
+  setTimeout(()=>fill.setAttribute('stroke-dashoffset', circ*(1-pct/100)), 50);
+  document.getElementById('ring-pct').textContent = pct+'%';
+  document.getElementById('ring-sub').textContent = `${done} / ${total} ćwiczeń`;
+}
+
+function renderDayStrip() {
+  const strip = document.getElementById('day-strip');
+  const t = today(), w = weekOf(t), ws = weekStart(w), total = D.exercises.length;
+  strip.innerHTML = '';
+  for (let i=0;i<7;i++) {
+    const k = addDays(ws,i);
+    const dd = D.days[k]||{};
+    const done = (dd.completed||[]).length;
+    const isToday = k===t, isFut = k>t, isPast = k<t;
+    let cls = 'day-pill';
+    if (isToday) cls += ' today';
+    if (!isFut && total>0 && done>=total) cls += ' done';
+    else if (isPast && total>0 && done<total) cls += ' missed';
+
+    const dn = dateFromKey(k);
+    strip.innerHTML += `<div class="${cls}" onclick="selectDay('${k}')">
+      <div class="day-name">${DAYS_PL[dn.getDay()]}</div>
+      <div class="day-num">${dn.getDate()}</div>
+      <div class="day-dot"></div>
+    </div>`;
+  }
+}
+
+function selectDay(k) {
+  // highlight selected
+  document.querySelectorAll('.day-pill').forEach(p=>p.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+}
+
+function renderExList() {
+  const t = today(), dd = D.days[t]||{};
+  const doneIds = new Set(dd.completed||[]);
+  const el = document.getElementById('ex-list');
+  if (!D.exercises.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">💪</div><div class="empty-title">Brak ćwiczeń</div><div class="empty-sub">Dodaj pierwsze ćwiczenie powyżej</div></div>`;
+    return;
+  }
+  el.innerHTML = D.exercises.map(ex=>{
+    const done = doneIds.has(ex.id);
+    const xpVal = Math.round(ex.sets*ex.reps/5)+10;
+    return `<div class="ex-card${done?' done':''}" onclick="toggleEx(${ex.id})">
+      <div class="ex-check">${done?'✓':''}</div>
+      <div class="ex-info">
+        <div class="ex-name">${ex.name}</div>
+        <div class="ex-meta">${ex.sets} serie × ${ex.reps} powt. · ${ex.type}</div>
+      </div>
+      <span class="ex-xp">+${xpVal} XP</span>
+    </div>`;
+  }).join('');
+}
+
+function toggleEx(id) {
+  const t = today(), dd = getDay(t);
+  const idx = dd.completed.indexOf(id);
+  if (idx>=0) dd.completed.splice(idx,1);
+  else {
+    dd.completed.push(id);
+    showXPFlash();
+    if (dd.completed.length===D.exercises.length && D.exercises.length>0) {
+      const newBadges = checkBadges();
+      saveData();
+      showCelebrate(newBadges);
+      return;
+    }
+  }
+  checkBadges(); saveData(); renderHome();
+}
+
+function showXPFlash() {
+  showToast('+XP ⭐');
+}
+
+function loadPainDiff() {
+  const dd = D.days[today()]||{};
+  document.getElementById('pain-slider').value = dd.pain||0;
+  document.getElementById('pain-val').textContent = dd.pain||0;
+  document.getElementById('diff-slider').value = dd.difficulty||0;
+  document.getElementById('diff-val').textContent = dd.difficulty||0;
+}
+
+function savePainDiff() {
+  const dd = getDay(today());
+  dd.pain = parseInt(document.getElementById('pain-slider').value);
+  dd.difficulty = parseInt(document.getElementById('diff-slider').value);
+  checkBadges(); saveData();
+}
+
+function loadNote() {
+  const dd = D.days[today()]||{};
+  document.getElementById('note-area').value = dd.note||'';
+}
+
+function saveNote() {
+  const dd = getDay(today());
+  dd.note = document.getElementById('note-area').value;
+  saveData(); showToast('Notatka zapisana ✓');
+}
+
+// ── CALENDAR ─────────────────────────────────────────────────
+function renderCalendar() {
+  const grid = document.getElementById('cal-grid');
+  const t = today(), total = D.exercises.length;
+  const start = D.startDate;
+  const startD = dateFromKey(start);
+  const colOffset = startD.getDay(); // 0=Sun
+
+  grid.innerHTML = ['Pn','Wt','Śr','Cz','Pt','Sb','Nd'].map(d=>`<div class="cal-hdr">${d}</div>`).join('');
+
+  // empty cells before start
+  const startWeekday = (startD.getDay()+6)%7; // Mon=0
+  for(let i=0;i<startWeekday;i++) grid.innerHTML += `<div></div>`;
+
+  for (let i=0;i<28;i++) {
+    const k = addDays(start, i);
+    const dd = D.days[k]||{};
+    const done = (dd.completed||[]).length;
+    const isFut = k>t, isToday = k===t, isPast = k<t;
+    let cls = 'cal-cell';
+    if (isToday) cls += ' today';
+    if (isFut) cls += ' future';
+    else if (total>0 && done>=total) cls += ' full';
+    else if (total>0 && done>0) cls += ' partial';
+    else if (isPast && total>0) cls += ' missed';
+    const dn = dateFromKey(k);
+    grid.innerHTML += `<div class="${cls}" onclick="showCalDetail('${k}')">
+      ${dn.getDate()}<div class="cal-dot"></div>
+    </div>`;
+  }
+}
+
+function showCalDetail(k) {
+  const dd = D.days[k]||{};
+  const total = D.exercises.length;
+  const done = (dd.completed||[]).length;
+  const detail = document.getElementById('cal-detail');
+  document.getElementById('cal-detail-date').textContent = formatDate(k);
+  let body = `${done}/${total} ćwiczeń ukończono`;
+  if (dd.pain) body += ` · Ból: ${dd.pain}/10`;
+  if (dd.difficulty) body += ` · Trudność: ${dd.difficulty}/10`;
+  if (dd.note) body += `<br><em>"${dd.note}"</em>`;
+  document.getElementById('cal-detail-body').innerHTML = body;
+  detail.style.display = 'block';
+}
+
+// ── PROGRESS ──────────────────────────────────────────────────
+function renderProgress() {
+  renderWeekCards();
+  renderChartBars();
+  renderPainCanvas();
+  renderSummaryStats();
+}
+
+function renderWeekCards() {
+  const el = document.getElementById('week-cards');
+  const curW = weekOf(today());
+  el.innerHTML = [0,1,2,3].map(w=>{
+    const pct = weekPct(w);
+    const ws = weekStart(w), we = addDays(ws,6);
+    const isActive = w===curW;
+    return `<div class="card" style="${isActive?'border:2px solid var(--c-accent)':''}">
+      <div class="text-sm fw-600">Tydzień ${w+1}</div>
+      <div style="font-size:24px;font-weight:700;color:var(--c-accent);margin:4px 0">${pct}%</div>
+      <div class="text-xs text-muted">${formatShort(ws)}–${formatShort(we)}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderChartBars() {
+  const el = document.getElementById('chart-bars');
+  const t = today(), total = D.exercises.length, start = D.startDate;
+  el.innerHTML = '';
+  for (let i=0;i<28;i++) {
+    if (i>0 && i%7===0) {
+      const sep = document.createElement('div');
+      sep.className='chart-week-sep'; el.appendChild(sep);
+    }
+    const k = addDays(start,i);
+    const dd = D.days[k]||{};
+    const done=(dd.completed||[]).length;
+    const pct = total>0?Math.round(done/total*100):0;
+    const isFut = k>t;
+    const bar = document.createElement('div');
+    bar.className='chart-bar';
+    bar.style.height=(isFut?'3':'3')+'px';
+    bar.style.background = isFut ? 'var(--c-border)' :
+      pct===100 ? 'var(--c-green)' : pct>0 ? 'var(--c-accent)' : k<t?'var(--c-coral)':'var(--c-border)';
+    el.appendChild(bar);
+    if (!isFut) setTimeout(()=>bar.style.height=(pct/100*76+4)+'px', i*12);
+  }
+}
+
+function renderPainCanvas() {
+  const canvas = document.getElementById('pain-canvas');
+  canvas.width = canvas.offsetWidth * devicePixelRatio;
+  canvas.height = 70 * devicePixelRatio;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+  const W=canvas.offsetWidth, H=70;
+  const t=today(), start=D.startDate;
+  const pts=[];
+  for(let i=0;i<28;i++){
+    const k=addDays(start,i);
+    if(k>t) break;
+    const pain=D.days[k]?.pain||0;
+    if(pain>0) pts.push({x:20+i*((W-40)/27), y:H-8-pain/10*(H-16)});
+  }
+  if(pts.length<2){ctx.fillStyle='var(--c-text3)';ctx.font='12px DM Sans';ctx.fillText('Brak danych bólu',20,H/2);return;}
+  const style = getComputedStyle(document.documentElement);
+  const coral = '#E06040';
+  ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
+  pts.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));
+  ctx.strokeStyle=coral; ctx.lineWidth=2; ctx.stroke();
+  pts.forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,3,0,Math.PI*2);ctx.fillStyle=coral;ctx.fill();});
+}
+
+function renderSummaryStats() {
+  const t=today(), start=D.startDate, total=D.exercises.length;
+  const doneDays=Object.entries(D.days).filter(([k,dd])=>k>=start&&k<addDays(start,28)&&k<=t&&(dd.completed||[]).length>=total&&total>0).length;
+  const streak=computeStreak();
+  const xp=computeXP();
+  const pains=Object.values(D.days).map(dd=>dd.pain||0).filter(p=>p>0);
+  const avgPain=pains.length?Math.round(pains.reduce((a,b)=>a+b,0)/pains.length*10)/10:'–';
+  document.getElementById('summary-stats').innerHTML=[
+    [doneDays,'Pełne dni'],[streak,'Streak'],[xp,'XP'],[avgPain,'Śr. ból'],[D.badges.length,'Odznaki']
+  ].map(([v,l])=>`<div class="stat-chip"><div class="stat-val">${v}</div><div class="stat-lbl">${l}</div></div>`).join('');
+}
+
+// ── BADGES ────────────────────────────────────────────────────
+function renderBadges() {
+  const xp=computeXP(), level=Math.floor(xp/200)+1, pct=Math.min(100,(xp%200)/200*100);
+  document.getElementById('level-label').textContent=`Poziom ${level}`;
+  document.getElementById('level-xp').textContent=`${xp} / ${level*200} XP`;
+  document.getElementById('xp-bar').style.width=pct+'%';
+  const earned=new Set(D.badges);
+  document.getElementById('badge-grid').innerHTML=BADGES.map(b=>`
+    <div class="badge-card${earned.has(b.id)?' earned':''}">
+      <div class="badge-icon">${b.icon}</div>
+      <div class="badge-name">${b.name}</div>
+      <div class="badge-desc">${b.desc}</div>
+      <div class="badge-xp">+${b.xp} XP</div>
+      ${earned.has(b.id)?'<div style="font-size:11px;color:var(--c-green);font-weight:600;margin-top:4px">✓ Zdobyta</div>':''}
+    </div>`).join('');
+}
+
+// ── SETTINGS ──────────────────────────────────────────────────
+function renderSettings() {
+  const p=D.profile||{};
+  document.getElementById('s-name').value=p.name||'';
+  document.getElementById('s-diagnosis').value=p.diagnosis||'';
+  document.getElementById('s-therapist').value=p.therapist||'';
+  document.getElementById('s-injury').value=p.injuryDate||'';
+  document.getElementById('s-therapist-notes').value=p.therapistNotes||'';
+  document.getElementById('s-start').value=D.startDate||today();
+  document.getElementById('s-goal').value=D.weeklyGoal||5;
+  document.getElementById('s-hour1').value=D.notifHour1||'09:00';
+  document.getElementById('s-hour2').value=D.notifHour2||'20:00';
+  document.getElementById('notif-toggle').checked=D.notifEnabled||false;
+  updateNotifStatus();
+}
+
+function saveProfile() {
+  D.profile={
+    name:document.getElementById('s-name').value,
+    diagnosis:document.getElementById('s-diagnosis').value,
+    therapist:document.getElementById('s-therapist').value,
+    injuryDate:document.getElementById('s-injury').value,
+    therapistNotes:document.getElementById('s-therapist-notes').value,
+  };
+  saveData(); showToast('Profil zapisany ✓');
+}
+
+function saveSettings() {
+  D.startDate=document.getElementById('s-start').value||today();
+  D.weeklyGoal=parseInt(document.getElementById('s-goal').value)||5;
+  saveData(); showToast('Ustawienia zapisane ✓');
+}
+
+function saveNotifSettings() {
+  D.notifHour1=document.getElementById('s-hour1').value;
+  D.notifHour2=document.getElementById('s-hour2').value;
+  saveData(); scheduleNotifications(); showToast('Godziny zapisane ✓');
+}
+
+function resetData() {
+  if(confirm('Usunąć wszystkie dane? Tej operacji nie można cofnąć!')) {
+    D=defaultData(); saveData(); location.reload();
+  }
+}
+
+// ── EXERCISE MODAL ────────────────────────────────────────────
+function openAddExercise() {
+  editingExId = null;
+  document.getElementById('ex-modal-title').textContent='Dodaj ćwiczenie';
+  document.getElementById('ex-name').value='';
+  document.getElementById('ex-reps').value=10;
+  document.getElementById('ex-sets').value=3;
+  document.getElementById('ex-type').value='Rozciąganie';
+  openModal('ex-modal');
+}
+
+function openEditExercise(id) {
+  const ex=D.exercises.find(e=>e.id===id);
+  if(!ex) return;
+  editingExId=id;
+  document.getElementById('ex-modal-title').textContent='Edytuj ćwiczenie';
+  document.getElementById('ex-name').value=ex.name;
+  document.getElementById('ex-reps').value=ex.reps;
+  document.getElementById('ex-sets').value=ex.sets;
+  document.getElementById('ex-type').value=ex.type;
+  openModal('ex-modal');
+}
+
+function saveExercise() {
+  const name=document.getElementById('ex-name').value.trim();
+  if(!name){showToast('Podaj nazwę ćwiczenia');return;}
+  const reps=parseInt(document.getElementById('ex-reps').value)||10;
+  const sets=parseInt(document.getElementById('ex-sets').value)||3;
+  const type=document.getElementById('ex-type').value;
+  if(editingExId!==null) {
+    const ex=D.exercises.find(e=>e.id===editingExId);
+    if(ex){Object.assign(ex,{name,reps,sets,type});}
+  } else {
+    D.exercises.push({id:D.nextId++,name,reps,sets,type});
+  }
+  saveData(); closeModal('ex-modal'); renderHome();
+}
+
+// ── MODALS ────────────────────────────────────────────────────
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+// close on overlay click
+document.querySelectorAll('.modal-overlay').forEach(el=>{
+  el.addEventListener('click',e=>{ if(e.target===el) el.classList.remove('open'); });
+});
+
+// ── TOAST ─────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// ── CELEBRATE ─────────────────────────────────────────────────
+function showCelebrate(newBadges) {
+  const streak=computeStreak();
+  document.getElementById('cel-icon').textContent=streak>=7?'👑':streak>=3?'🔥':'🎉';
+  document.getElementById('cel-title').textContent=streak>0?`${streak} dni z rzędu!`:'Dzień zaliczony!';
+  let sub='Wszystkie ćwiczenia ukończone!';
+  if(newBadges.length){
+    const names=newBadges.map(bid=>BADGES.find(b=>b.id===bid)).filter(Boolean);
+    sub+='\n🏆 '+names.map(b=>b.name).join(', ');
+  }
+  document.getElementById('cel-sub').textContent=sub;
+  const cel=document.getElementById('celebrate');
+  cel.classList.add('show');
+  setTimeout(()=>cel.classList.remove('show'),3000);
+  renderHome();
+}
+
+// ── NOTIFICATIONS ─────────────────────────────────────────────
+function updateNotifStatus() {
+  const el=document.getElementById('notif-status');
+  if(!('Notification' in window)){el.textContent='Nie obsługiwane przez tę przeglądarkę';return;}
+  if(Notification.permission==='granted'){el.textContent='Aktywne ✓';}
+  else if(Notification.permission==='denied'){el.textContent='Zablokowane — zmień w ustawieniach przeglądarki';}
+  else{el.textContent='Kliknij, aby włączyć';}
+}
+
+function toggleNotif(checkbox) {
+  if(checkbox.checked){
+    if(!('Notification' in window)){showToast('Przeglądarka nie obsługuje powiadomień');checkbox.checked=false;return;}
+    Notification.requestPermission().then(perm=>{
+      if(perm==='granted'){D.notifEnabled=true;saveData();scheduleNotifications();showToast('Powiadomienia włączone!');}
+      else{checkbox.checked=false;showToast('Uprawnienie odrzucone');}
+      updateNotifStatus();
+    });
+  } else {
+    D.notifEnabled=false; saveData(); updateNotifStatus();
+  }
+}
+
+function scheduleNotifications() {
+  if(!D.notifEnabled||Notification.permission!=='granted') return;
+  if(!('serviceWorker' in navigator)) return;
+  // Schedule via setTimeout for current session
+  const now=new Date();
+  [D.notifHour1||'09:00', D.notifHour2||'20:00'].forEach(hStr=>{
+    const [hh,mm]=hStr.split(':').map(Number);
+    const target=new Date(now); target.setHours(hh,mm,0,0);
+    if(target<=now) target.setDate(target.getDate()+1);
+    const ms=target-now;
+    if(ms<86400000) setTimeout(()=>fireNotif(),ms);
+  });
+}
+
+function fireNotif() {
+  if(!D.notifEnabled||Notification.permission!=='granted') return;
+  const total=D.exercises.length;
+  const dd=D.days[today()]||{};
+  const done=(dd.completed||[]).length;
+  if(done>=total&&total>0) return;
+  const streak=computeStreak();
+  const missed=getMissedDays();
+  let title='🏃 Czas na rehabilitację!';
+  let body=`Masz ${total-done} ćwiczeń do zrobienia.`;
+  if(missed>=2){title='⚠️ Nie zapomnij o rehabilitacji!';body=`Pominąłeś ${missed} dni. Wróć na właściwy tor!`;}
+  else if(streak>0){title=`🔥 Chroń swój streak! (${streak} dni)`;body=`Jeszcze ${total-done} ćwiczeń dzisiaj.`;}
+  new Notification(title,{body,icon:'icon-192.png',badge:'icon-192.png'});
+}
+
+function getMissedDays() {
+  const total=D.exercises.length;
+  if(!total) return 0;
+  let missed=0;
+  for(let i=1;i<=3;i++){
+    const k=addDays(today(),-i);
+    const dd=D.days[k]||{};
+    if((dd.completed||[]).length<total) missed++; else break;
+  }
+  return missed;
+}
+
+function openNotifSheet() {
+  const total=D.exercises.length, dd=D.days[today()]||{};
+  const done=(dd.completed||[]).length, streak=computeStreak();
+  let msg=done>=total&&total>0
+    ? `✅ Świetna robota! Wszystkie ${total} ćwiczenia ukończone dzisiaj!<br>Twój streak: <strong>${streak} dni 🔥</strong>`
+    : `Zostało Ci jeszcze <strong>${total-done} ćwiczeń</strong> na dziś.<br>Streak: <strong>${streak} dni 🔥</strong><br><br>${streak>0?`Nie przerywaj streak! Zostało ${total-done} ćwiczeń.`:'Zacznij budować streak już dziś!'}`;
+  document.getElementById('notif-sheet-body').innerHTML=msg;
+  openModal('notif-sheet');
+}
+
+// ── EXPORT / IMPORT ───────────────────────────────────────────
+function exportJSON() {
+  const blob=new Blob([JSON.stringify(D,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`rehab_backup_${today()}.json`;
+  a.click(); showToast('Eksport gotowy ✓');
+}
+
+function importJSON(input) {
+  const file=input.files[0]; if(!file) return;
+  const r=new FileReader();
+  r.onload=e=>{
+    try{
+      const d=JSON.parse(e.target.result);
+      D=d; saveData(); location.reload();
+    }catch{showToast('Błąd: nieprawidłowy plik JSON');}
+  };
+  r.readAsText(file);
+}
+
+// ── SERVICE WORKER ────────────────────────────────────────────
+if('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
+
+// ── SPLASH ────────────────────────────────────────────────────
+const QUOTES = [
+  ["Każdy dzień to nowy krok naprzód.", "Anonimowy"],
+  ["Nie musisz być świetny, żeby zacząć.\nAle musisz zacząć, żeby być świetny.", "Zig Ziglar"],
+  ["Postęp, nie perfekcja.", "Anonimowy"],
+  ["Twoje ciało może to zrobić.\nTo umysł musisz przekonać.", "Anonimowy"],
+  ["Małe kroki prowadzą do wielkich zmian.", "Anonimowy"],
+  ["Każde powtórzenie przybliża Cię do celu.", "Anonimowy"],
+  ["Ból jest tymczasowy. Duma jest wieczna.", "Anonimowy"],
+  ["Zdrowie jest największym bogactwem.", "Wergiliusz"],
+  ["Zadbaj o swoje ciało. To jedyne miejsce,\nw którym musisz mieszkać.", "Jim Rohn"],
+];
+
+function initSplash() {
+  const [quote, author] = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+  document.getElementById('splash-quote').textContent = '„' + quote.replace(/\n/g, ' ') + '"';
+  document.getElementById('splash-author').textContent = '– ' + author;
+  setTimeout(() => {
+    const el = document.getElementById('splash');
+    if (el) {
+      el.classList.add('hiding');
+      el.addEventListener('animationend', () => el.remove(), { once: true });
+    }
+  }, 2300);
+}
+initSplash();
+
+// ── INIT ──────────────────────────────────────────────────────
+applyTheme();
+renderHome();
+scheduleNotifications();
+
+// Daily notif check
+setTimeout(()=>{
+  if(D.notifEnabled && getMissedDays()>=2) openNotifSheet();
+}, 3000);
+</script>
+</body>
+</html>
