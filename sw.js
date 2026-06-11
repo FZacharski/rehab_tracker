@@ -1,7 +1,9 @@
-const CACHE = 'rehabflow-v3.0.0';
+const CACHE = 'rehabflow-v3.1.0';
 const ASSETS = [
   './',
   './index.html',
+  './core.js',
+  './prywatnosc.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
