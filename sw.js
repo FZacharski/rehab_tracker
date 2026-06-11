@@ -1,5 +1,12 @@
-const CACHE = 'rehab-pwa-v2';
-const ASSETS = ['/', '/index.html', '/manifest.json'];
+const CACHE = 'rehabflow-v3.0.0';
+const ASSETS = [
+  './',
+  './index.html',
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png',
+  './icon-512-maskable.png',
+];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
@@ -9,33 +16,44 @@ self.addEventListener('install', e => {
 self.addEventListener('activate', e => {
   e.waitUntil(caches.keys().then(keys =>
     Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-  ));
-  self.clients.claim();
+  ).then(() => self.clients.claim()));
 });
 
+// stale-while-revalidate: szybki start z cache, ciche odświeżenie w tle
 self.addEventListener('fetch', e => {
+  if (e.request.method !== 'GET') return;
   e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request).catch(() => cached))
+    caches.open(CACHE).then(cache =>
+      cache.match(e.request).then(cached => {
+        const fetched = fetch(e.request).then(resp => {
+          if (resp && resp.ok && (e.request.url.startsWith(self.location.origin) || resp.type === 'cors')) {
+            cache.put(e.request, resp.clone());
+          }
+          return resp;
+        }).catch(() => cached);
+        return cached || fetched;
+      })
+    )
   );
 });
 
-// Push notifications
+// Powiadomienia push
 self.addEventListener('push', e => {
-  const data = e.data?.json() || {};
+  let data = {};
+  try { data = e.data ? e.data.json() : {}; } catch (err) {}
   e.waitUntil(
-    self.registration.showNotification(data.title || '🏃 Rehabilitacja', {
+    self.registration.showNotification(data.title || '🏃 RehabFlow', {
       body: data.body || 'Czas na ćwiczenia!',
-      icon: '/icon-192.png',
-      badge: '/icon-192.png',
+      icon: 'icon-192.png',
+      badge: 'icon-192.png',
       vibrate: [200, 100, 200],
-      tag: 'rehab-reminder',
+      tag: 'rehabflow-reminder',
       renotify: true,
-      actions: [{ action: 'open', title: 'Otwórz aplikację' }]
     })
   );
 });
 
 self.addEventListener('notificationclick', e => {
   e.notification.close();
-  e.waitUntil(clients.openWindow('/'));
+  e.waitUntil(clients.openWindow('./'));
 });

@@ -1,0 +1,5 @@
+.idea/
+.iconbuild/
+node_modules/
+twa-build/
+*.log
