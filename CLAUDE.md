@@ -73,7 +73,19 @@ font Outfit, animowane tło „aurora", glassmorphism.
 - Testy jednostkowe + CI, polityka prywatności (`prywatnosc.html`),
   najlepszy streak, podsumowanie tygodnia, duża czcionka, baner zaległych dni
 
+✅ ZROBIONE w v3.2 — „wariant 0" współpracy z fizjoterapeutą (bez backendu):
+- `fizjo.html` — panel fizjoterapeuty: wczytuje JSON pacjenta (drag&drop, 100%
+  lokalnie), pokazuje frekwencję/ból/pomiary/notatki; kreator programu ćwiczeń
+  z biblioteki → eksport pliku programu
+- Plik programu: `{rehabflowProgram: true, name, author, notes, exercises[]}` —
+  pacjent wczytuje przez Postęp → Importuj; podmienia TYLKO listę ćwiczeń
+  (funkcja `importProgram` w index.html), historia/XP/odznaki zostają
+- Biblioteka ćwiczeń wydzielona do `exdb.js` (wspólna dla index.html i fizjo.html)
+
 POZOSTAŁO (duże decyzje, wymagają zgody właściciela):
+- „Wariant 1" współpracy z fizjo: konta + synchronizacja live przez Supabase
+  (właściciel musi założyć projekt i podać URL + klucz anon; uwaga RODO — dane
+  zdrowotne, hosting UE)
 - Capacitor zamiast TWA (natywne przypomnienia AlarmManager — obecne działają
   tylko przy otwartej aplikacji)
 - Backup w chmurze (Supabase/Firebase — wymaga założenia konta przez właściciela)
