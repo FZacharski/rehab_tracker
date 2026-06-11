@@ -1,77 +1,88 @@
-# 📱 Tracker Rehabilitacji — Wersja Mobilna (PWA)
+# 📱 RehabFlow v3.0 — Tracker Rehabilitacji
 
-## Co to jest PWA?
-Progressive Web App — strona internetowa działająca jak aplikacja mobilna.
-Działa offline, można ją zainstalować na ekranie głównym telefonu.
-
----
-
-## Jak uruchomić?
-
-### Opcja A: Lokalnie na komputerze (udostępnienie przez Wi-Fi)
-
-1. Upewnij się, że masz Python:
-   ```
-   py --version
-   ```
-
-2. Uruchom serwer:
-   ```
-   py -m http.server 8080
-   ```
-
-3. Sprawdź IP swojego komputera:
-   - Windows: wpisz `ipconfig` w CMD → szukaj "Adres IPv4" (np. 192.168.1.10)
-
-4. Na telefonie (podłączonym do tego samego Wi-Fi) otwórz przeglądarkę i wpisz:
-   ```
-   http://192.168.1.10:8080
-   ```
-
-5. Zainstaluj na ekranie głównym:
-   - **Android (Chrome)**: menu ⋮ → "Dodaj do ekranu głównego"
-   - **iPhone (Safari)**: przycisk Udostępnij → "Dodaj do ekranu głównego"
+Nowoczesna aplikacja PWA do śledzenia 28-dniowego programu rehabilitacji.
+Ciemny gradientowy design (granat → fiolet → róż), animacje, konfetti, odznaki i XP.
 
 ---
 
-### Opcja B: GitHub Pages (dostęp z internetu, bezpłatnie)
+## 🌐 Aplikacja online
 
-1. Załóż konto na github.com
-2. Utwórz nowe repozytorium (publiczne)
-3. Wgraj wszystkie pliki z tego folderu
-4. Wejdź w Settings → Pages → Branch: main → Save
-5. Twoja aplikacja będzie pod adresem:
-   `https://TWOJA_NAZWA.github.io/NAZWA_REPO`
+**https://fzacharski.github.io/rehab_tracker/**
+
+Działa w każdej przeglądarce. Po pierwszym otwarciu działa też **offline**.
 
 ---
 
-### Opcja C: Netlify Drop (najłatwiejsza — 30 sekund)
+## 📲 Instalacja na telefonie (Android) — sposób 1: PWA (najprostszy)
 
-1. Wejdź na https://app.netlify.com/drop
-2. Przeciągnij cały folder `rehab_pwa` na stronę
-3. Gotowe! Dostaniesz link, który otworzysz na telefonie
+1. Otwórz w **Chrome** na telefonie: `https://fzacharski.github.io/rehab_tracker/`
+2. Pojawi się baner **„Zainstaluj"** — kliknij go
+   (albo: menu ⋮ → **„Dodaj do ekranu głównego"** / **„Zainstaluj aplikację"**)
+3. Gotowe — ikona RehabFlow pojawi się na ekranie głównym.
+   Aplikacja otwiera się na pełnym ekranie, bez paska przeglądarki, działa offline.
 
----
-
-## Synchronizacja danych z wersją desktopową
-
-Dane mobilne i desktopowe są oddzielne (każda wersja trzyma swoje dane).
-Aby synchronizować:
-- W aplikacji mobilnej: Postęp → **Eksportuj dane (JSON)**
-- W aplikacji desktopowej: użyj tego pliku jako backup
+### iPhone (Safari)
+Przycisk **Udostępnij** → **„Dodaj do ekranu głównego"**.
 
 ---
 
-## Funkcje wersji mobilnej
+## 📦 Instalacja na telefonie — sposób 2: plik APK
 
-- ✅ Wszystkie funkcje wersji desktopowej
-- ✅ Działa offline (po pierwszym wczytaniu)
-- ✅ Instalacja na ekranie głównym (ikona jak normalna aplikacja)
-- ✅ Dark mode
-- ✅ Powiadomienia push (Android Chrome)
-- ✅ Eksport/import danych JSON
-- ✅ Interfejs zoptymalizowany pod dotyk
+**Pobierz APK bezpośrednio na telefon:**
+
+https://github.com/FZacharski/rehab_tracker/releases/download/v3.0.0/app-release-signed.apk
+
+1. Otwórz powyższy link na telefonie (Android) i pobierz plik
+2. Otwórz pobrany plik i zgódź się na instalację
+   (telefon zapyta jednorazowo o zgodę na „instalację z nieznanych źródeł")
+3. Gotowe — RehabFlow działa jak normalna aplikacja ze sklepu:
+   pełny ekran bez paska adresu (Digital Asset Links skonfigurowane),
+   własna ikona, działa offline.
+
+Kopia pliku znajduje się też lokalnie w `twa-build/app-release-signed.apk`.
+
+> Treść aplikacji ładuje się z GitHub Pages, więc poprawki publikowane w repo
+> pojawiają się w aplikacji automatycznie — bez ponownej instalacji APK.
+
+⚠️ **Ważne:** plik `twa-build/android.keystore` to klucz podpisujący aplikację.
+Nie usuwaj go i nie udostępniaj — jest potrzebny do każdej przyszłej aktualizacji APK
+(i do ewentualnej publikacji w Sklepie Play).
 
 ---
 
-*Tracker Rehabilitacji v2.0 Mobile*
+## 🚀 Aktualizacja aplikacji
+
+1. Edytuj pliki (`index.html`, `manifest.json`, `sw.js`)
+2. Podbij wersję cache w `sw.js` (np. `rehabflow-v3.0.1`)
+3. `git add -A && git commit -m "opis" && git push`
+4. Po 1-2 minutach zmiany są live — aplikacja na telefonie zaktualizuje się sama.
+
+---
+
+## 🏪 Publikacja w Sklepie Play (opcjonalnie, w przyszłości)
+
+Wszystko jest gotowe — wystarczy:
+1. Konto Google Play Console (25 USD jednorazowo): https://play.google.com/console
+2. W `twa-build/` zbuduj pakiet AAB: `bubblewrap build` (powstaje `app-release-bundle.aab`)
+3. Wgraj AAB w Play Console, uzupełnij opisy i grafiki
+4. Nowe konta osobiste: wymagany test zamknięty (12 testerów / 14 dni) przed publikacją
+
+---
+
+## ✨ Funkcje
+
+- ✅ Lista ćwiczeń z seriami/powtórzeniami (dodawanie, edycja, usuwanie)
+- ✅ Odhaczanie z animacją, konfetti po ukończeniu dnia
+- ✅ Suwaki bólu i trudności + notatki dzienne
+- ✅ Kalendarz 28 dni z podglądem każdego dnia
+- ✅ Wykresy postępu i poziomu bólu
+- ✅ System XP, poziomy i 13 odznak
+- ✅ Streak (dni z rzędu) z ochroną bieżącego dnia
+- ✅ Ciemny i jasny motyw
+- ✅ Przypomnienia (powiadomienia)
+- ✅ Eksport / import danych JSON
+- ✅ Pełne działanie offline
+
+---
+
+*RehabFlow v3.0 · dane przechowywane lokalnie na urządzeniu*
