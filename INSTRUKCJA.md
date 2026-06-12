@@ -30,7 +30,7 @@ Przycisk **Udostępnij** → **„Dodaj do ekranu głównego"**.
 
 **Pobierz APK bezpośrednio na telefon:**
 
-https://github.com/FZacharski/rehab_tracker/releases/download/v3.0.0/app-release-signed.apk
+https://github.com/FZacharski/rehab_tracker/releases/download/v3.2.0/app-release-signed.apk
 
 1. Otwórz powyższy link na telefonie (Android) i pobierz plik
 2. Otwórz pobrany plik i zgódź się na instalację
