@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="RehabFlow">
-<meta name="description" content="RehabFlow — Twój dziennik rehabilitacji na 28 dni">
+<meta name="description" content="RehabFlow — Twój dziennik rehabilitacji">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" type="image/png" href="icon-192.png">
@@ -71,6 +71,7 @@
 }
 html, body { height: 100%; background: var(--bg); font-family: 'Outfit', system-ui, sans-serif; color: var(--text); overflow: hidden; }
 body { font-variant-numeric: tabular-nums; }
+html[data-font="large"] body { zoom: 1.14; }
 
 /* ══ AURORA BACKGROUND ═══════════════════════════════════════ */
 .aurora { position: fixed; border-radius: 50%; filter: blur(90px); pointer-events: none; z-index: 0; opacity: .32; }
@@ -144,15 +145,20 @@ body { font-variant-numeric: tabular-nums; }
 .day-pill.missed .day-dot { background: var(--danger); }
 .day-pill.today .day-name, .day-pill.today .day-num { color: var(--violet); }
 
+/* ══ TRAIN BUTTON ════════════════════════════════════════════ */
+.train-btn { position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 16px; border: none; border-radius: var(--r-lg); background: var(--grad); color: #fff; font-family: inherit; font-size: 16px; font-weight: 800; letter-spacing: .01em; cursor: pointer; box-shadow: var(--shadow-glow); transition: transform .12s; }
+.train-btn:active { transform: scale(.97); }
+.train-btn::after { content: ''; position: absolute; top: -60%; left: -30%; width: 50%; height: 220%; background: linear-gradient(100deg, transparent, rgba(255,255,255,.22), transparent); transform: rotate(8deg); animation: shine 4.5s ease-in-out infinite; }
+
 /* ══ EXERCISE CARDS ══════════════════════════════════════════ */
 .ex-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 14px 16px; box-shadow: var(--shadow); display: flex; align-items: center; gap: 14px; cursor: pointer; transition: transform .12s, border-color .2s, background .2s; -webkit-user-select: none; user-select: none; position: relative; overflow: hidden; }
 .ex-card:active { transform: scale(.97); }
 .ex-card.done { background: var(--success-bg); border-color: var(--success); }
 .ex-check { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all .25s cubic-bezier(.34,1.56,.64,1); }
-.ex-card.done .ex-check { background: var(--success); border-color: var(--success); transform: scale(1.08); box-shadow: 0 0 12px rgba(52,211,153,.4); }
+.ex-card.done .ex-check, .dm-row.done .ex-check { background: var(--success); border-color: var(--success); transform: scale(1.08); box-shadow: 0 0 12px rgba(52,211,153,.4); }
 .ex-check svg { width: 16px; height: 16px; }
 .ex-check path { stroke: #fff; stroke-width: 3.2; fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 24; stroke-dashoffset: 24; }
-.ex-card.done .ex-check path { animation: drawCheck .35s ease .05s forwards; }
+.ex-card.done .ex-check path, .dm-row.done .ex-check path { animation: drawCheck .35s ease .05s forwards; }
 @keyframes drawCheck { to { stroke-dashoffset: 0; } }
 .ex-info { flex: 1; min-width: 0; }
 .ex-name { font-size: 14.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -169,7 +175,7 @@ body { font-variant-numeric: tabular-nums; }
 
 /* ══ SLIDERS ═════════════════════════════════════════════════ */
 .slider-wrap { display: flex; align-items: center; gap: 12px; }
-.slider-wrap label { font-size: 13px; color: var(--text2); width: 70px; font-weight: 500; }
+.slider-wrap label { font-size: 13px; color: var(--text2); width: 80px; font-weight: 500; }
 input[type=range] { flex: 1; appearance: none; -webkit-appearance: none; height: 6px; border-radius: 4px; background: var(--surface2); outline: none; }
 input[type=range]::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: var(--grad); border: 2.5px solid #fff; box-shadow: 0 2px 10px rgba(168,85,247,.5); cursor: pointer; }
 .slider-val { font-size: 15px; font-weight: 800; width: 28px; text-align: right; background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
@@ -193,10 +199,52 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
 .btn-danger { background: var(--danger-bg); color: var(--danger); border: 1.5px solid var(--danger); }
 .btn-full { width: 100%; }
 
+/* ══ TABS ════════════════════════════════════════════════════ */
+.tab-row { display: flex; gap: 6px; background: var(--surface2); border-radius: var(--r-md); padding: 4px; margin-bottom: 16px; }
+.tab-btn { flex: 1; padding: 9px 8px; border: none; border-radius: 12px; background: transparent; color: var(--text2); font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; transition: all .2s; }
+.tab-btn.active { background: var(--grad); color: #fff; box-shadow: 0 2px 10px rgba(168,85,247,.35); }
+
+/* ══ LIBRARY ═════════════════════════════════════════════════ */
+.lib-chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 8px; }
+.lib-chips::-webkit-scrollbar { display: none; }
+.lib-chip { flex-shrink: 0; padding: 7px 13px; border-radius: 20px; border: 1.5px solid var(--border); background: var(--surface2); color: var(--text2); font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer; transition: all .15s; }
+.lib-chip.active { background: var(--grad); border-color: transparent; color: #fff; }
+.lib-list { max-height: 44dvh; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.lib-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); padding: 12px 14px; cursor: pointer; transition: border-color .15s, transform .1s; }
+.lib-item:active { transform: scale(.98); border-color: var(--violet); }
+.lib-name { font-size: 14px; font-weight: 700; }
+.lib-meta { font-size: 11.5px; color: var(--text3); margin-top: 2px; }
+.lib-desc { font-size: 12px; color: var(--text2); margin-top: 5px; line-height: 1.45; }
+
+/* ══ TRAINER ═════════════════════════════════════════════════ */
+.trainer { position: fixed; inset: 0; z-index: 3000; background: linear-gradient(165deg, var(--bg) 0%, var(--bg2) 60%, #1a1040 100%); display: none; flex-direction: column; padding: calc(16px + var(--safe-top)) 20px calc(24px + var(--safe-bottom)); }
+.trainer.open { display: flex; }
+.tr-top { display: flex; align-items: center; gap: 14px; }
+.tr-progress { flex: 1; height: 8px; background: var(--surface2); border-radius: 6px; overflow: hidden; }
+.tr-progress-fill { height: 100%; background: var(--grad); border-radius: 6px; transition: width .4s cubic-bezier(.4,0,.2,1); box-shadow: 0 0 10px rgba(168,85,247,.5); }
+.tr-count { font-size: 12px; font-weight: 700; color: var(--text2); white-space: nowrap; }
+.tr-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 10px; animation: trIn .35s cubic-bezier(.21,1.02,.73,1); }
+@keyframes trIn { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: none; } }
+.tr-emoji { font-size: 64px; filter: drop-shadow(0 6px 20px rgba(168,85,247,.4)); }
+.tr-name { font-size: 26px; font-weight: 800; letter-spacing: -.01em; line-height: 1.2; }
+.tr-sets { font-size: 16px; font-weight: 700; background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.tr-desc { font-size: 14.5px; color: var(--text2); line-height: 1.6; max-width: 320px; }
+.tr-set-dots { display: flex; gap: 8px; justify-content: center; margin-top: 4px; }
+.tr-set-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--surface2); border: 1.5px solid var(--border); transition: all .25s; }
+.tr-set-dot.done { background: var(--grad); border-color: transparent; box-shadow: 0 0 8px rgba(168,85,247,.5); }
+.tr-bottom { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+.tr-action { width: 100%; padding: 18px; font-size: 17px; border-radius: var(--r-lg); }
+.tr-skip { background: none; border: none; color: var(--text3); font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; padding: 6px 12px; }
+.tr-rest { display: flex; flex-direction: column; align-items: center; gap: 8px; animation: trIn .3s ease; }
+.tr-rest-ring { position: relative; width: 150px; height: 150px; }
+.tr-rest-num { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 42px; font-weight: 800; }
+.tr-rest-lbl { font-size: 11px; color: var(--text3); font-weight: 700; text-transform: uppercase; letter-spacing: .1em; }
+
 /* ══ CALENDAR ════════════════════════════════════════════════ */
 .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
 .cal-hdr { font-size: 10px; font-weight: 700; color: var(--text3); text-align: center; padding: 4px 0; text-transform: uppercase; }
-.cal-cell { aspect-ratio: 1; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; background: var(--surface2); border: 1.5px solid transparent; cursor: pointer; transition: all .15s; }
+.cal-cell { aspect-ratio: 1; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; background: var(--surface2); border: 1.5px solid transparent; cursor: pointer; transition: all .15s; animation: calIn .35s both; animation-delay: calc(var(--i, 0) * 14ms); }
+@keyframes calIn { from { opacity: 0; transform: scale(.7); } to { opacity: 1; transform: scale(1); } }
 .cal-cell:active { transform: scale(.9); }
 .cal-cell.today { border-color: var(--violet); color: var(--violet); font-weight: 800; box-shadow: 0 0 12px rgba(168,85,247,.3); }
 .cal-cell.full { background: var(--success-bg); border-color: var(--success); color: var(--success); }
@@ -207,6 +255,13 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
 .legend { display: flex; gap: 14px; margin-top: 14px; flex-wrap: wrap; }
 .legend span { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text2); }
 .legend i { width: 11px; height: 11px; border-radius: 4px; display: inline-block; }
+
+/* ══ DAY EDIT MODAL ══════════════════════════════════════════ */
+.dm-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); cursor: pointer; margin-bottom: 8px; transition: all .2s; -webkit-user-select: none; user-select: none; }
+.dm-row.done { background: var(--success-bg); border-color: var(--success); }
+.dm-row .ex-check { width: 28px; height: 28px; }
+.dm-name { font-size: 13.5px; font-weight: 600; flex: 1; }
+.dm-row.done .dm-name { color: var(--success); }
 
 /* ══ BADGES ══════════════════════════════════════════════════ */
 .badge-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
@@ -237,6 +292,19 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
 .week-card.active { border-color: var(--violet); box-shadow: 0 0 16px rgba(168,85,247,.25); }
 .week-pct { font-size: 26px; font-weight: 800; background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin: 4px 0; }
 
+/* ══ MEASUREMENTS ════════════════════════════════════════════ */
+.meas-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.meas-row:last-child { border-bottom: none; }
+.meas-val { font-weight: 800; background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.meas-del { margin-left: auto; background: none; border: none; color: var(--text3); font-size: 14px; cursor: pointer; padding: 4px 8px; }
+
+/* ══ COMPLETE CARD ═══════════════════════════════════════════ */
+.complete-card { position: relative; border-radius: var(--r-xl); padding: 24px; color: #fff; overflow: hidden; background: linear-gradient(135deg, #059669, #10B981 50%, #34D399); box-shadow: 0 4px 28px rgba(16,185,129,.4); text-align: center; }
+.complete-card .cc-icon { font-size: 48px; }
+.complete-card .cc-title { font-size: 22px; font-weight: 800; margin-top: 6px; }
+.complete-card .cc-sub { font-size: 13.5px; opacity: .92; margin-top: 6px; line-height: 1.5; }
+.complete-card .btn { margin-top: 14px; background: #fff; color: #059669; }
+
 /* ══ TOGGLES ═════════════════════════════════════════════════ */
 .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid var(--border); gap: 12px; }
 .toggle-row:last-child { border-bottom: none; }
@@ -258,11 +326,11 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
 .modal-title { font-size: 19px; font-weight: 800; margin-bottom: 18px; letter-spacing: -.01em; }
 
 /* ══ TOAST ═══════════════════════════════════════════════════ */
-.toast { position: fixed; top: calc(18px + var(--safe-top)); left: 50%; transform: translateX(-50%) translateY(-90px); background: var(--surface2); color: var(--text); border: 1px solid var(--border); padding: 11px 22px; border-radius: 26px; font-size: 14px; font-weight: 600; z-index: 2000; transition: transform .35s cubic-bezier(.34,1.56,.64,1); white-space: nowrap; box-shadow: var(--shadow-glow); }
+.toast { position: fixed; top: calc(18px + var(--safe-top)); left: 50%; transform: translateX(-50%) translateY(-90px); background: var(--surface2); color: var(--text); border: 1px solid var(--border); padding: 11px 22px; border-radius: 26px; font-size: 14px; font-weight: 600; z-index: 4000; transition: transform .35s cubic-bezier(.34,1.56,.64,1); white-space: nowrap; box-shadow: var(--shadow-glow); }
 .toast.show { transform: translateX(-50%) translateY(0); }
 
 /* ══ CELEBRATE ═══════════════════════════════════════════════ */
-.celebrate { position: fixed; inset: 0; z-index: 1500; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.celebrate { position: fixed; inset: 0; z-index: 3500; display: flex; align-items: center; justify-content: center; pointer-events: none; }
 .celebrate-card { background: var(--bg2); border: 1px solid var(--violet); border-radius: var(--r-xl); padding: 32px 38px; text-align: center; box-shadow: 0 12px 60px rgba(168,85,247,.4); transform: scale(0); transition: transform .4s cubic-bezier(.34,1.56,.64,1); max-width: 300px; }
 .celebrate.show .celebrate-card { transform: scale(1); }
 .celebrate-icon { font-size: 58px; animation: celebPop .6s cubic-bezier(.34,1.56,.64,1); }
@@ -271,17 +339,44 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
 .celebrate-sub { font-size: 14px; color: var(--text2); margin-top: 6px; white-space: pre-line; line-height: 1.5; }
 
 /* ══ XP FLOAT ════════════════════════════════════════════════ */
-.xp-float { position: fixed; z-index: 1800; font-size: 17px; font-weight: 800; background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; pointer-events: none; animation: xpRise 1.1s cubic-bezier(.2,.8,.3,1) forwards; transform: translate(-50%, -50%); filter: drop-shadow(0 2px 8px rgba(168,85,247,.5)); }
+.xp-float { position: fixed; z-index: 3800; font-size: 17px; font-weight: 800; background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; pointer-events: none; animation: xpRise 1.1s cubic-bezier(.2,.8,.3,1) forwards; transform: translate(-50%, -50%); filter: drop-shadow(0 2px 8px rgba(168,85,247,.5)); }
 @keyframes xpRise { 0% { opacity: 0; margin-top: 0; } 15% { opacity: 1; } 100% { opacity: 0; margin-top: -70px; } }
 
 /* ══ CONFETTI ════════════════════════════════════════════════ */
-#confetti { position: fixed; inset: 0; z-index: 1600; pointer-events: none; display: none; width: 100%; height: 100%; }
+#confetti { position: fixed; inset: 0; z-index: 3600; pointer-events: none; display: none; width: 100%; height: 100%; }
 
 /* ══ INSTALL BANNER ══════════════════════════════════════════ */
 .install-banner { display: none; align-items: center; gap: 12px; background: var(--grad-soft); border: 1.5px solid var(--violet); border-radius: var(--r-lg); padding: 13px 16px; }
 .install-banner.show { display: flex; }
 .install-banner .ib-txt { flex: 1; font-size: 13px; font-weight: 600; line-height: 1.4; }
 .install-banner button { flex-shrink: 0; }
+
+/* ══ ONBOARDING ══════════════════════════════════════════════ */
+#onboard { position: fixed; inset: 0; z-index: 6000; background: linear-gradient(155deg, #0A0D20 0%, #1E1B4B 35%, #4C1D95 70%, #831843 100%); display: none; flex-direction: column; align-items: center; justify-content: center; padding: 30px 24px calc(30px + var(--safe-bottom)); overflow-y: auto; }
+#onboard.open { display: flex; }
+.ob-card { width: 100%; max-width: 380px; animation: trIn .4s cubic-bezier(.21,1.02,.73,1); }
+.ob-dots { display: flex; gap: 8px; justify-content: center; margin-bottom: 26px; }
+.ob-dot { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,.2); transition: all .3s; }
+.ob-dot.active { width: 26px; border-radius: 5px; background: linear-gradient(90deg, #818CF8, #F472B6); }
+.ob-logo { width: 76px; height: 76px; border-radius: 22px; background: var(--grad); display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; box-shadow: 0 10px 40px rgba(168,85,247,.5); }
+.ob-logo svg { width: 42px; height: 42px; }
+.ob-title { font-size: 25px; font-weight: 800; color: #fff; text-align: center; letter-spacing: -.01em; }
+.ob-sub { font-size: 14px; color: rgba(255,255,255,.65); text-align: center; margin-top: 8px; line-height: 1.55; }
+.ob-body { margin-top: 24px; }
+.ob-body .form-input, .ob-body textarea { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.18); color: #fff; }
+.ob-body .form-input::placeholder { color: rgba(255,255,255,.4); }
+.ob-body .form-label { color: rgba(255,255,255,.6); }
+.ob-prog { display: flex; align-items: center; gap: 13px; background: rgba(255,255,255,.07); border: 1.5px solid rgba(255,255,255,.14); border-radius: var(--r-lg); padding: 14px 16px; cursor: pointer; margin-bottom: 9px; transition: all .2s; }
+.ob-prog.sel { border-color: #F472B6; background: rgba(236,72,153,.16); box-shadow: 0 0 18px rgba(236,72,153,.25); }
+.ob-prog-icon { font-size: 28px; flex-shrink: 0; }
+.ob-prog-name { font-size: 15px; font-weight: 700; color: #fff; }
+.ob-prog-desc { font-size: 11.5px; color: rgba(255,255,255,.55); margin-top: 2px; }
+.ob-nav { display: flex; gap: 10px; margin-top: 22px; }
+.ob-nav .btn { flex: 1; padding: 15px; }
+.ob-back { background: rgba(255,255,255,.1); color: #fff; border: 1.5px solid rgba(255,255,255,.2); }
+.ob-time-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: rgba(255,255,255,.07); border-radius: var(--r-md); padding: 12px 16px; margin-bottom: 10px; }
+.ob-time-row span { font-size: 14px; font-weight: 600; color: #fff; }
+.ob-time-row input { background: rgba(255,255,255,.1); border: 1.5px solid rgba(255,255,255,.2); color: #fff; border-radius: 10px; padding: 8px 10px; font-family: inherit; font-size: 14px; color-scheme: dark; outline: none; }
 
 /* ══ BOTTOM NAV ══════════════════════════════════════════════ */
 #bottom-nav { flex-shrink: 0; background: color-mix(in srgb, var(--bg2) 92%, transparent); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-top: 1px solid var(--border); display: flex; height: calc(var(--nav-h) + var(--safe-bottom)); padding-bottom: var(--safe-bottom); position: relative; z-index: 50; }
@@ -330,6 +425,9 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
     <linearGradient id="ringGrad" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#6366F1"/><stop offset=".5" stop-color="#A855F7"/><stop offset="1" stop-color="#EC4899"/>
     </linearGradient>
+    <linearGradient id="restGrad" x1="0" y1="0" x2="150" y2="150" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6366F1"/><stop offset=".5" stop-color="#A855F7"/><stop offset="1" stop-color="#EC4899"/>
+    </linearGradient>
   </defs>
 </svg>
 
@@ -341,11 +439,16 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
     </svg>
   </div>
   <div class="splash-title">RehabFlow</div>
-  <div class="splash-version">TRACKER REHABILITACJI · v3.0</div>
+  <div class="splash-version">TRACKER REHABILITACJI · v3.2</div>
   <div class="splash-divider"></div>
   <div class="splash-quote" id="splash-quote"></div>
   <div class="splash-author" id="splash-author"></div>
   <div class="splash-bar-wrap"><div class="splash-bar"></div></div>
+</div>
+
+<!-- ══ ONBOARDING ══ -->
+<div id="onboard">
+  <div class="ob-card" id="ob-card"></div>
 </div>
 
 <!-- aurora background -->
@@ -361,7 +464,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
       <div class="topbar">
         <div>
           <div class="topbar-title" id="home-date">Dzisiaj</div>
-          <div class="topbar-sub" id="home-week">Tydzień 1 z 4</div>
+          <div class="topbar-sub" id="home-week">Tydzień 1</div>
         </div>
         <div style="display:flex;gap:8px">
           <button class="icon-btn" onclick="toggleTheme()" id="theme-btn" aria-label="Motyw">☀️</button>
@@ -375,6 +478,15 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
           <div class="ib-txt">📲 Zainstaluj RehabFlow na ekranie głównym — działa jak normalna aplikacja!</div>
           <button class="btn btn-primary" style="padding:9px 14px;font-size:12px" onclick="promptInstall()">Zainstaluj</button>
         </div>
+
+        <!-- missed-day banner -->
+        <div class="install-banner" id="missed-banner" style="border-color:var(--warn)">
+          <div class="ib-txt" id="missed-banner-txt"></div>
+          <button class="btn btn-secondary" style="padding:9px 14px;font-size:12px" onclick="this.parentElement.classList.remove('show')">OK</button>
+        </div>
+
+        <!-- program complete -->
+        <div id="complete-area"></div>
 
         <!-- hero / streak -->
         <div class="hero">
@@ -420,6 +532,9 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
           <div class="day-strip" id="day-strip"></div>
         </div>
 
+        <!-- training button -->
+        <button class="train-btn" id="train-btn" onclick="startTraining()" style="display:none">▶ &nbsp;Rozpocznij trening</button>
+
         <!-- exercises -->
         <div class="section-hdr">
           <span class="section-title">Ćwiczenia</span>
@@ -452,7 +567,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
 
     <!-- ══ PAGE: KALENDARZ ══ -->
     <div class="page" id="page-calendar">
-      <div class="topbar"><div><div class="topbar-title">Kalendarz</div><div class="topbar-sub">28 dni programu</div></div></div>
+      <div class="topbar"><div><div class="topbar-title">Kalendarz</div><div class="topbar-sub" id="cal-sub">Program</div></div></div>
       <div class="p-page">
         <div class="card">
           <div class="cal-grid" id="cal-grid"></div>
@@ -463,7 +578,10 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
           </div>
         </div>
         <div class="card mt-12" id="cal-detail" style="display:none">
-          <div class="fw-700" id="cal-detail-date"></div>
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div class="fw-700" id="cal-detail-date"></div>
+            <button class="section-action" id="cal-detail-edit" onclick="openDayEdit(selectedCalDay)">✏️ Edytuj</button>
+          </div>
           <div class="text-sm text-muted mt-4" id="cal-detail-body"></div>
         </div>
       </div>
@@ -473,23 +591,46 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
     <div class="page" id="page-progress">
       <div class="topbar"><div><div class="topbar-title">Postęp</div><div class="topbar-sub">Twoje statystyki</div></div></div>
       <div class="p-page gap-12">
+        <!-- week summary -->
+        <div class="card" id="week-summary"></div>
+
         <div class="week-grid" id="week-cards"></div>
         <div class="card">
           <div class="section-hdr"><span class="section-title">Ukończenie dzienne</span></div>
           <div class="chart-wrap" id="chart-bars"></div>
-          <div class="chart-labels">
-            <span class="text-xs text-muted">T1</span><span class="text-xs text-muted">T2</span>
-            <span class="text-xs text-muted">T3</span><span class="text-xs text-muted">T4</span>
-          </div>
+          <div class="chart-labels" id="chart-labels"></div>
         </div>
         <div class="card">
           <div class="section-hdr"><span class="section-title">Poziom bólu</span></div>
           <canvas id="pain-canvas" height="70" style="width:100%"></canvas>
         </div>
+
+        <!-- measurements -->
+        <div class="card">
+          <div class="section-hdr"><span class="section-title">Pomiary postępu</span></div>
+          <div class="form-row" style="grid-template-columns:1.3fr 1fr">
+            <select class="form-input" id="meas-type" onchange="renderMeasures()">
+              <option value="rom">Zakres ruchu (°)</option>
+              <option value="obwod">Obwód (cm)</option>
+              <option value="waga">Waga (kg)</option>
+              <option value="inne">Inne</option>
+            </select>
+            <input class="form-input" id="meas-val" type="number" step="0.1" placeholder="Wartość">
+          </div>
+          <button class="btn btn-secondary btn-full mt-8" onclick="addMeasure()">+ Dodaj pomiar</button>
+          <canvas id="meas-canvas" height="70" style="width:100%;margin-top:12px;display:none"></canvas>
+          <div id="meas-list" class="mt-8"></div>
+        </div>
+
         <div class="card">
           <div class="section-hdr"><span class="section-title">Podsumowanie</span></div>
           <div class="stat-grid" style="grid-template-columns:repeat(3,1fr)" id="summary-stats"></div>
         </div>
+
+        <!-- archive -->
+        <div id="archive-area"></div>
+
+        <button class="btn btn-primary btn-full" onclick="openReport()">📄 Raport dla fizjoterapeuty</button>
         <button class="btn btn-secondary btn-full" onclick="exportJSON()">📤 Eksportuj dane (JSON)</button>
         <button class="btn btn-secondary btn-full" onclick="document.getElementById('import-file').click()">📥 Importuj dane</button>
         <input type="file" id="import-file" accept=".json" style="display:none" onchange="importJSON(this)">
@@ -550,11 +691,30 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
               <input class="form-input" id="s-start" type="date">
             </div>
             <div class="form-field">
+              <label class="form-label">Długość programu</label>
+              <select class="form-input" id="s-weeks">
+                <option value="2">2 tygodnie</option>
+                <option value="4" selected>4 tygodnie</option>
+                <option value="6">6 tygodni</option>
+                <option value="8">8 tygodni</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
               <label class="form-label">Cel tygodniowy</label>
               <select class="form-input" id="s-goal">
                 <option value="3">3 dni</option><option value="4">4 dni</option>
                 <option value="5" selected>5 dni</option><option value="6">6 dni</option>
                 <option value="7">7 dni</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="form-label">Przerwa między seriami</label>
+              <select class="form-input" id="s-rest">
+                <option value="15">15 s</option><option value="20">20 s</option>
+                <option value="30" selected>30 s</option><option value="45">45 s</option>
+                <option value="60">60 s</option><option value="90">90 s</option>
               </select>
             </div>
           </div>
@@ -576,12 +736,25 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
             <input type="time" id="s-hour2" value="20:00" class="form-input" style="width:108px">
           </div>
           <button class="btn btn-secondary btn-full mt-8" onclick="saveNotifSettings()">Zapisz godziny</button>
+          <div class="text-xs text-muted mt-8" style="line-height:1.5">ℹ️ Przypomnienia działają, gdy aplikacja jest otwarta lub uruchomiona w tle przeglądarki. Po ponownym otwarciu aplikacja przypomni też o zaległych dniach.</div>
+        </div>
+
+        <div class="card">
+          <div class="section-title" style="margin-bottom:4px">Wygląd</div>
+          <div class="toggle-row">
+            <div><div class="toggle-label">Duża czcionka</div><div class="toggle-sub">Powiększa cały interfejs</div></div>
+            <label class="switch"><input type="checkbox" id="font-toggle" onchange="toggleFont(this)"><span class="switch-track"></span></label>
+          </div>
         </div>
 
         <div class="card">
           <div class="section-title" style="margin-bottom:14px">Aplikacja</div>
           <button class="btn btn-secondary btn-full" id="install-btn" style="display:none" onclick="promptInstall()">📲 Zainstaluj na telefonie</button>
-          <div class="text-xs text-muted mt-8" style="text-align:center">RehabFlow v3.0 · dane przechowywane lokalnie na urządzeniu</div>
+          <div class="text-xs text-muted mt-8" style="text-align:center">
+            RehabFlow v3.2 · dane przechowywane lokalnie na urządzeniu<br>
+            <a href="prywatnosc.html" style="color:var(--violet)">Polityka prywatności</a> ·
+            <a href="fizjo.html" style="color:var(--violet)">Panel fizjoterapeuty</a>
+          </div>
         </div>
 
         <div class="card" style="border-color:var(--danger)">
@@ -618,38 +791,95 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
   </nav>
 </div>
 
-<!-- ══ EXERCISE MODAL ══ -->
+<!-- ══ TRAINER ══ -->
+<div class="trainer" id="trainer">
+  <div class="tr-top">
+    <button class="icon-btn" onclick="trClose()" aria-label="Zamknij">✕</button>
+    <div class="tr-progress"><div class="tr-progress-fill" id="tr-progress" style="width:0%"></div></div>
+    <div class="tr-count" id="tr-count"></div>
+  </div>
+  <div class="tr-body" id="tr-body"></div>
+  <div class="tr-bottom" id="tr-bottom"></div>
+</div>
+
+<!-- ══ EXERCISE MODAL (form + library) ══ -->
 <div class="modal-overlay" id="ex-modal">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
     <div class="modal-title" id="ex-modal-title">Dodaj ćwiczenie</div>
-    <div class="form-field">
-      <label class="form-label">Nazwa ćwiczenia</label>
-      <input class="form-input" id="ex-name" placeholder="np. Skłony w bok">
+    <div class="tab-row" id="ex-tabs">
+      <button class="tab-btn active" id="tab-form" onclick="switchExTab('form')">✏️ Formularz</button>
+      <button class="tab-btn" id="tab-lib" onclick="switchExTab('lib')">📚 Biblioteka</button>
     </div>
-    <div class="form-row">
+
+    <!-- form panel -->
+    <div id="ex-form-panel">
       <div class="form-field">
-        <label class="form-label">Powtórzenia</label>
-        <input class="form-input" id="ex-reps" type="number" min="1" value="10">
+        <label class="form-label">Nazwa ćwiczenia</label>
+        <input class="form-input" id="ex-name" placeholder="np. Skłony w bok">
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label class="form-label">Powtórzenia</label>
+          <input class="form-input" id="ex-reps" type="number" min="1" value="10">
+        </div>
+        <div class="form-field">
+          <label class="form-label">Serie</label>
+          <input class="form-input" id="ex-sets" type="number" min="1" value="3">
+        </div>
       </div>
       <div class="form-field">
-        <label class="form-label">Serie</label>
-        <input class="form-input" id="ex-sets" type="number" min="1" value="3">
+        <label class="form-label">Typ</label>
+        <select class="form-input" id="ex-type">
+          <option>Siłowe</option><option selected>Rozciąganie</option>
+          <option>Równowaga</option><option>Aerobowe</option>
+          <option>Oddechowe</option><option>Mobilność</option><option>Inne</option>
+        </select>
       </div>
+      <div class="form-field">
+        <label class="form-label">Opis wykonania (opcjonalnie)</label>
+        <textarea id="ex-desc" rows="2" placeholder="Jak wykonać ćwiczenie..."></textarea>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-primary" style="flex:1" onclick="saveExercise()">Zapisz</button>
+        <button class="btn btn-secondary" style="flex:1" onclick="closeModal('ex-modal')">Anuluj</button>
+      </div>
+      <button class="btn btn-danger btn-full mt-12" id="ex-delete-btn" style="display:none" onclick="deleteExercise()">🗑 Usuń ćwiczenie</button>
     </div>
-    <div class="form-field">
-      <label class="form-label">Typ</label>
-      <select class="form-input" id="ex-type">
-        <option>Siłowe</option><option selected>Rozciąganie</option>
-        <option>Równowaga</option><option>Aerobowe</option>
-        <option>Oddechowe</option><option>Mobilność</option><option>Inne</option>
-      </select>
+
+    <!-- library panel -->
+    <div id="ex-lib-panel" style="display:none">
+      <input class="form-input" id="lib-search" placeholder="🔍 Szukaj ćwiczenia..." oninput="renderLibrary()" style="margin-bottom:10px">
+      <div class="lib-chips" id="lib-chips"></div>
+      <div class="lib-list" id="lib-list"></div>
     </div>
-    <div style="display:flex;gap:10px">
-      <button class="btn btn-primary" style="flex:1" onclick="saveExercise()">Zapisz</button>
-      <button class="btn btn-secondary" style="flex:1" onclick="closeModal('ex-modal')">Anuluj</button>
+  </div>
+</div>
+
+<!-- ══ DAY EDIT MODAL ══ -->
+<div class="modal-overlay" id="day-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="day-modal-title">Edytuj dzień</div>
+    <div class="section-title" style="margin-bottom:10px">Wykonane ćwiczenia</div>
+    <div id="dm-list"></div>
+    <div class="section-title" style="margin:16px 0 10px">Samopoczucie</div>
+    <div class="slider-wrap" style="margin-bottom:12px">
+      <label>😣 Ból</label>
+      <input type="range" min="0" max="10" value="0" id="dm-pain" oninput="document.getElementById('dm-pain-val').textContent=this.value">
+      <span class="slider-val" id="dm-pain-val">0</span>
     </div>
-    <button class="btn btn-danger btn-full mt-12" id="ex-delete-btn" style="display:none" onclick="deleteExercise()">🗑 Usuń ćwiczenie</button>
+    <div class="slider-wrap" style="margin-bottom:16px">
+      <label>💪 Trudność</label>
+      <input type="range" min="0" max="10" value="0" id="dm-diff" oninput="document.getElementById('dm-diff-val').textContent=this.value">
+      <span class="slider-val" id="dm-diff-val">0</span>
+    </div>
+    <div class="section-title" style="margin-bottom:10px">Notatka</div>
+    <textarea id="dm-note" rows="2" placeholder="Notatka z tego dnia..."></textarea>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn btn-primary" style="flex:1" onclick="saveDayEdit()">Zapisz</button>
+      <button class="btn btn-secondary" style="flex:1" onclick="closeModal('day-modal')">Anuluj</button>
+    </div>
   </div>
 </div>
 
@@ -674,10 +904,12 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
 <div class="toast" id="toast"></div>
 <canvas id="confetti"></canvas>
 
+<script src="core.js"></script>
+<script src="exdb.js"></script>
 <script>
 'use strict';
 
-/* ══ CONSTANTS ══════════════════════════════════════════════ */
+/* ══ CONSTANTS (biblioteka ćwiczeń: exdb.js) ════════════════ */
 const DAYS_PL   = ['Nd','Pn','Wt','Śr','Cz','Pt','Sb'];
 const DAYS_FULL = ['niedziela','poniedziałek','wtorek','środa','czwartek','piątek','sobota'];
 const MONTHS_PL = ['stycznia','lutego','marca','kwietnia','maja','czerwca','lipca','sierpnia','września','października','listopada','grudnia'];
@@ -691,7 +923,7 @@ const BADGES = [
   {id:'week1_done', name:'Tydzień 1 gotowy',  desc:'Ukończ cały pierwszy tydzień',   icon:'🏅', xp:150},
   {id:'week2_done', name:'Tydzień 2 gotowy',  desc:'Ukończ cały drugi tydzień',      icon:'🥈', xp:200},
   {id:'week3_done', name:'Tydzień 3 gotowy',  desc:'Ukończ cały trzeci tydzień',     icon:'🥇', xp:300},
-  {id:'week4_done', name:'Program ukończony', desc:'Ukończyłeś pełny program!',      icon:'🏆', xp:500},
+  {id:'week4_done', name:'Tydzień 4 gotowy',  desc:'Ukończ cały czwarty tydzień',    icon:'🏆', xp:500},
   {id:'xp_500',     name:'Rosnąca siła',      desc:'Zdobądź 500 XP',                 icon:'💪', xp:75},
   {id:'xp_1000',    name:'Zaawansowany',      desc:'Zdobądź 1000 XP',                icon:'🌟', xp:100},
   {id:'pain_log',   name:'Świadomy pacjent',  desc:'Zapisz 7 notatek z bólem',       icon:'📋', xp:80},
@@ -721,7 +953,14 @@ function defaultData() {
     theme: 'dark',
     notifHour1: '09:00', notifHour2: '20:00', notifEnabled: false,
     weeklyGoal: 5,
+    programWeeks: 4,
+    restSec: 30,
+    fontScale: 'normal',
     xp: 0, badges: [],
+    bestStreak: 0,
+    archive: [],
+    measurements: [],
+    onboarded: false,
     profile: { name:'', diagnosis:'', therapist:'', injuryDate:'', therapistNotes:'' },
   };
 }
@@ -733,6 +972,8 @@ function loadData() {
       const d = JSON.parse(raw);
       const def = defaultData();
       Object.keys(def).forEach(k => { if (!(k in d)) d[k] = def[k]; });
+      // istniejący użytkownicy nie przechodzą onboardingu od nowa
+      if (!d.onboarded && (d.exercises.length || Object.keys(d.days).length)) d.onboarded = true;
       return d;
     }
   } catch (e) {}
@@ -744,14 +985,26 @@ function saveData() { localStorage.setItem(STORE_KEY, JSON.stringify(D)); }
 let D = loadData();
 let editingExId = null;
 let deferredPrompt = null;
+let selectedCalDay = null;
 
-/* ══ DATE HELPERS ═══════════════════════════════════════════ */
-function today() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
-function dateFromKey(k) { return new Date(k + 'T12:00:00'); }
-function addDays(k, n) { const d = dateFromKey(k); d.setDate(d.getDate()+n); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
-function diffDays(a, b) { return Math.round((dateFromKey(b) - dateFromKey(a)) / 86400000); }
-function weekOf(k) { return Math.max(0, Math.min(3, Math.floor(diffDays(D.startDate, k) / 7))); }
-function weekStart(w) { return addDays(D.startDate, w*7); }
+/* ══ CORE WRAPPERS (logika w core.js) ═══════════════════════ */
+function today() { return RFCore.keyFromDate(new Date()); }
+function dateFromKey(k) { return RFCore.dateFromKey(k); }
+function addDays(k, n) { return RFCore.addDays(k, n); }
+function diffDays(a, b) { return RFCore.diffDays(a, b); }
+function exIds() { return D.exercises.map(e => e.id); }
+function doneCount(k) { return RFCore.doneCount(D.days, exIds(), k); }
+function isFull(k) { return RFCore.isFull(D.days, exIds(), k); }
+function computeStreak() { return RFCore.computeStreak(D.days, exIds(), today()); }
+function computeXP() { return RFCore.computeXP(D.days, exIds()); }
+function weekPct(w) { return RFCore.weekPct(D.days, exIds(), D.startDate, w, today()); }
+
+function totalDays() { return (D.programWeeks || 4) * 7; }
+function totalWeeks() { return D.programWeeks || 4; }
+function weekOf(k) { return Math.max(0, Math.min(totalWeeks() - 1, Math.floor(diffDays(D.startDate, k) / 7))); }
+function weekStart(w) { return addDays(D.startDate, w * 7); }
+function programEnd() { return addDays(D.startDate, totalDays() - 1); }
+function isProgramOver() { return diffDays(D.startDate, today()) >= totalDays(); }
 function formatDate(k) { const d = dateFromKey(k); return `${d.getDate()} ${MONTHS_PL[d.getMonth()]} ${d.getFullYear()}`; }
 function formatShort(k) { const d = dateFromKey(k); return `${d.getDate()}.${String(d.getMonth()+1).padStart(2,'0')}`; }
 
@@ -766,47 +1019,9 @@ function getDay(k) {
 }
 
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function exXP(ex) { return Math.round(ex.sets * ex.reps / 5) + 10; }
 
-/* count only completions of exercises that still exist */
-function doneCount(k) {
-  const ids = new Set(D.exercises.map(e => e.id));
-  return ((D.days[k] || {}).completed || []).filter(id => ids.has(id)).length;
-}
-function isFull(k) { const t = D.exercises.length; return t > 0 && doneCount(k) >= t; }
-
-/* ══ STATS ══════════════════════════════════════════════════ */
-function computeStreak() {
-  if (!D.exercises.length) return 0;
-  let streak = 0, d = today();
-  if (!isFull(d)) d = addDays(d, -1); // niedokończone "dziś" nie przerywa streaka
-  while (isFull(d)) { streak++; d = addDays(d, -1); }
-  return streak;
-}
-
-function computeXP() {
-  const total = D.exercises.length;
-  let xp = 0;
-  for (const k of Object.keys(D.days)) {
-    const done = doneCount(k);
-    xp += done * 10;
-    if (total > 0 && done >= total) xp += 25;
-  }
-  return xp;
-}
-
-function weekPct(w) {
-  const ws = weekStart(w), t = today();
-  if (!D.exercises.length) return 0;
-  let done = 0, possible = 0;
-  for (let i = 0; i < 7; i++) {
-    const d = addDays(ws, i);
-    if (d > t) continue;
-    possible++;
-    if (isFull(d)) done++;
-  }
-  return possible ? Math.round(done / possible * 100) : 0;
-}
-
+/* ══ BADGES ═════════════════════════════════════════════════ */
 function checkBadges() {
   const earned = new Set(D.badges);
   const newBadges = [];
@@ -814,6 +1029,7 @@ function checkBadges() {
   const xp = computeXP();
   const total = D.exercises.length;
   const t = today();
+  if (streak > (D.bestStreak || 0)) D.bestStreak = streak;
 
   const checks = {
     first_day: total > 0 && Object.keys(D.days).some(k => isFull(k)),
@@ -822,7 +1038,7 @@ function checkBadges() {
     pain_log: Object.values(D.days).filter(dd => (dd.pain || 0) > 0).length >= 7,
     no_pain: Object.values(D.days).filter(dd => (dd.pain || 0) === 1).length >= 3,
   };
-  for (let w = 0; w < 4; w++) {
+  for (let w = 0; w < Math.min(4, totalWeeks()); w++) {
     let allDone = true;
     for (let i = 0; i < 7; i++) {
       const d = addDays(weekStart(w), i);
@@ -831,7 +1047,6 @@ function checkBadges() {
     checks[`week${w+1}_done`] = allDone;
   }
 
-  // odznaki jednorazowe — nigdy nie cofane
   const PERMANENT = new Set(['first_day','week1_done','week2_done','week3_done','week4_done','xp_500','xp_1000','pain_log','no_pain']);
   for (const [bid, cond] of Object.entries(checks)) {
     if (cond && !earned.has(bid)) { earned.add(bid); newBadges.push(bid); }
@@ -843,7 +1058,7 @@ function checkBadges() {
   return newBadges;
 }
 
-/* ══ THEME ══════════════════════════════════════════════════ */
+/* ══ THEME & FONT ═══════════════════════════════════════════ */
 function toggleTheme() {
   D.theme = D.theme === 'dark' ? 'light' : 'dark';
   applyTheme(); saveData();
@@ -852,6 +1067,13 @@ function applyTheme() {
   document.documentElement.setAttribute('data-theme', D.theme);
   document.getElementById('theme-btn').textContent = D.theme === 'dark' ? '☀️' : '🌙';
   document.querySelector('meta[name=theme-color]').setAttribute('content', D.theme === 'dark' ? '#0A0D20' : '#F3F2FB');
+}
+function toggleFont(cb) {
+  D.fontScale = cb.checked ? 'large' : 'normal';
+  applyFont(); saveData();
+}
+function applyFont() {
+  document.documentElement.setAttribute('data-font', D.fontScale || 'normal');
 }
 
 /* ══ NAVIGATION ═════════════════════════════════════════════ */
@@ -878,10 +1100,14 @@ function renderPage(page) {
 function renderHome() {
   const t = today(), d = dateFromKey(t);
   document.getElementById('home-date').textContent = `${d.getDate()} ${MONTHS_PL[d.getMonth()]}, ${DAYS_FULL[d.getDay()]}`;
-  document.getElementById('home-week').textContent = `Tydzień ${weekOf(t)+1} z 4 · RehabFlow`;
+  document.getElementById('home-week').textContent = isProgramOver()
+    ? 'Program zakończony · RehabFlow'
+    : `Tydzień ${weekOf(t)+1} z ${totalWeeks()} · RehabFlow`;
   renderHero();
   renderRing();
   renderDayStrip();
+  renderCompleteCard();
+  renderTrainBtn();
   renderExList();
   loadPainDiff();
   loadNote();
@@ -929,7 +1155,7 @@ function renderDayStrip() {
     if (!(k > t) && isFull(k)) cls += ' done';
     else if (isPast && D.exercises.length > 0) cls += ' missed';
     const dn = dateFromKey(k);
-    strip.innerHTML += `<div class="${cls}">
+    strip.innerHTML += `<div class="${cls}" onclick="openDayEdit('${k}')">
       <div class="day-name">${DAYS_PL[dn.getDay()]}</div>
       <div class="day-num">${dn.getDate()}</div>
       <div class="day-dot"></div>
@@ -937,24 +1163,57 @@ function renderDayStrip() {
   }
 }
 
+function renderTrainBtn() {
+  const btn = document.getElementById('train-btn');
+  const show = D.exercises.length > 0 && !isFull(today());
+  btn.style.display = show ? 'flex' : 'none';
+}
+
+function renderCompleteCard() {
+  const area = document.getElementById('complete-area');
+  if (!isProgramOver() || !D.exercises.length) { area.innerHTML = ''; return; }
+  const st = RFCore.cycleStats(D.days, exIds(), D.startDate, totalWeeks(), today());
+  area.innerHTML = `
+    <div class="complete-card">
+      <div class="cc-icon">🎓</div>
+      <div class="cc-title">Program ukończony!</div>
+      <div class="cc-sub">Ukończone dni: <strong>${st.doneDays}/${st.totalDays}</strong>${st.avgPain !== null ? ` · średni ból: <strong>${st.avgPain}/10</strong>` : ''}<br>Świetna robota! Możesz rozpocząć kolejny cykl.</div>
+      <button class="btn" onclick="startNewCycle()">🔄 Rozpocznij nowy cykl</button>
+    </div>`;
+}
+
+function startNewCycle() {
+  if (!confirm('Rozpocząć nowy cykl od dzisiaj? Obecny cykl trafi do archiwum (historia i odznaki zostają).')) return;
+  const st = RFCore.cycleStats(D.days, exIds(), D.startDate, totalWeeks(), today());
+  D.archive.push({
+    start: D.startDate,
+    weeks: totalWeeks(),
+    doneDays: st.doneDays,
+    totalDays: st.totalDays,
+    avgPain: st.avgPain,
+  });
+  D.startDate = today();
+  checkBadges(); saveData(); renderHome();
+  showToast('Nowy cykl rozpoczęty! 💪');
+}
+
 function renderExList() {
   const t = today();
   const doneIds = new Set((D.days[t] || {}).completed || []);
   const el = document.getElementById('ex-list');
   if (!D.exercises.length) {
-    el.innerHTML = `<div class="empty-state"><div class="empty-icon">💪</div><div class="empty-title">Brak ćwiczeń</div><div class="empty-sub">Dodaj pierwsze ćwiczenie przyciskiem „+ Dodaj"</div></div>`;
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">💪</div><div class="empty-title">Brak ćwiczeń</div><div class="empty-sub">Dodaj ćwiczenie przyciskiem „+ Dodaj" — możesz wybrać z gotowej biblioteki</div></div>`;
     return;
   }
   el.innerHTML = D.exercises.map(ex => {
     const done = doneIds.has(ex.id);
-    const xpVal = Math.round(ex.sets * ex.reps / 5) + 10;
     return `<div class="ex-card${done ? ' done' : ''}" onclick="toggleEx(${ex.id}, event)">
       <div class="ex-check"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-10"/></svg></div>
       <div class="ex-info">
         <div class="ex-name">${esc(ex.name)}</div>
         <div class="ex-meta">${ex.sets} serie × ${ex.reps} powt. · ${esc(ex.type)}</div>
       </div>
-      <span class="ex-xp">+${xpVal} XP</span>
+      <span class="ex-xp">+${exXP(ex)} XP</span>
       <button class="ex-edit" onclick="event.stopPropagation();openEditExercise(${ex.id})" aria-label="Edytuj">✏️</button>
     </div>`;
   }).join('');
@@ -968,8 +1227,7 @@ function toggleEx(id, ev) {
   } else {
     dd.completed.push(id);
     const ex = D.exercises.find(e => e.id === id);
-    const xpVal = ex ? Math.round(ex.sets * ex.reps / 5) + 10 : 10;
-    xpFloat(ev, `+${xpVal} XP`);
+    xpFloat(ev, `+${ex ? exXP(ex) : 10} XP`);
     if (navigator.vibrate) navigator.vibrate(12);
     if (isFull(today())) {
       const newBadges = checkBadges();
@@ -1035,15 +1293,162 @@ function renderRecentNotes() {
       </div>`).join('')}</div>`;
 }
 
+/* ══ TRAINER ════════════════════════════════════════════════ */
+const TR = { queue: [], i: 0, set: 1, resting: false, restLeft: 0, restTotal: 0, timer: null };
+
+function startTraining() {
+  const doneIds = new Set((D.days[today()] || {}).completed || []);
+  TR.queue = D.exercises.filter(e => !doneIds.has(e.id)).map(e => e.id);
+  if (!TR.queue.length) { showToast('Wszystko już zrobione! 🎉'); return; }
+  TR.i = 0; TR.set = 1; TR.resting = false;
+  document.getElementById('trainer').classList.add('open');
+  trRender();
+}
+
+function trCurrentEx() { return D.exercises.find(e => e.id === TR.queue[TR.i]); }
+
+function trRender() {
+  const ex = trCurrentEx();
+  if (!ex) { trClose(); return; }
+  const body = document.getElementById('tr-body');
+  const bottom = document.getElementById('tr-bottom');
+  document.getElementById('tr-count').textContent = `${TR.i + 1} / ${TR.queue.length}`;
+  document.getElementById('tr-progress').style.width = (TR.i / TR.queue.length * 100) + '%';
+
+  const dots = Array.from({ length: ex.sets }, (_, s) =>
+    `<div class="tr-set-dot${s < TR.set - 1 ? ' done' : ''}"></div>`).join('');
+
+  if (TR.resting) {
+    body.innerHTML = `
+      <div class="tr-emoji">😮‍💨</div>
+      <div class="tr-name">Przerwa</div>
+      <div class="tr-desc">Następna: seria ${TR.set} z ${ex.sets} · ${esc(ex.name)}</div>`;
+    const circ = 2 * Math.PI * 66;
+    bottom.innerHTML = `
+      <div class="tr-rest">
+        <div class="tr-rest-ring">
+          <svg width="150" height="150" viewBox="0 0 150 150" style="transform:rotate(-90deg)">
+            <circle cx="75" cy="75" r="66" stroke-width="10" fill="none" style="stroke:var(--surface2)"/>
+            <circle id="tr-rest-circle" cx="75" cy="75" r="66" stroke-width="10" fill="none"
+              stroke="url(#restGrad)" stroke-linecap="round"
+              stroke-dasharray="${circ}" stroke-dashoffset="0" style="transition:stroke-dashoffset .95s linear"/>
+          </svg>
+          <div class="tr-rest-num"><span id="tr-rest-sec">${TR.restLeft}</span><span class="tr-rest-lbl">sekund</span></div>
+        </div>
+        <button class="tr-skip" onclick="trSkipRest()">Pomiń przerwę ▸</button>
+      </div>`;
+  } else {
+    body.innerHTML = `
+      <div class="tr-emoji">${TYPE_EMOJI[ex.type] || '💫'}</div>
+      <div class="tr-name">${esc(ex.name)}</div>
+      <div class="tr-sets">Seria ${TR.set} z ${ex.sets} · ${ex.reps} powtórzeń</div>
+      <div class="tr-set-dots">${dots}</div>
+      <div class="tr-desc">${esc(ex.desc || 'Wykonuj ruch powoli i kontrolowanie. Przerwij, jeśli poczujesz ostry ból.')}</div>`;
+    bottom.innerHTML = `
+      <button class="btn btn-primary btn-full tr-action" onclick="trDoneSet()">✓ Seria ukończona</button>
+      <button class="tr-skip" onclick="trSkipEx()">Pomiń to ćwiczenie ▸</button>`;
+  }
+}
+
+function trDoneSet() {
+  const ex = trCurrentEx();
+  if (!ex) return;
+  if (navigator.vibrate) navigator.vibrate(15);
+  if (TR.set >= ex.sets) { trFinishEx(); return; }
+  TR.set++;
+  TR.resting = true;
+  TR.restTotal = TR.restLeft = D.restSec || 30;
+  trRender();
+  clearInterval(TR.timer);
+  TR.timer = setInterval(() => {
+    TR.restLeft--;
+    const secEl = document.getElementById('tr-rest-sec');
+    const circEl = document.getElementById('tr-rest-circle');
+    if (secEl) secEl.textContent = Math.max(0, TR.restLeft);
+    if (circEl) {
+      const circ = 2 * Math.PI * 66;
+      circEl.setAttribute('stroke-dashoffset', circ * (1 - TR.restLeft / TR.restTotal));
+    }
+    if (TR.restLeft <= 3 && TR.restLeft > 0) beep(660, .1);
+    if (TR.restLeft <= 0) {
+      clearInterval(TR.timer);
+      beep(990, .25);
+      if (navigator.vibrate) navigator.vibrate([80, 60, 80]);
+      TR.resting = false;
+      trRender();
+    }
+  }, 1000);
+}
+
+function trSkipRest() {
+  clearInterval(TR.timer);
+  TR.resting = false;
+  trRender();
+}
+
+function trSkipEx() {
+  clearInterval(TR.timer);
+  TR.resting = false;
+  TR.set = 1;
+  TR.i++;
+  if (TR.i >= TR.queue.length) { trClose(); renderHome(); return; }
+  trRender();
+}
+
+function trFinishEx() {
+  const ex = trCurrentEx();
+  clearInterval(TR.timer);
+  const dd = getDay(today());
+  if (ex && !dd.completed.includes(ex.id)) {
+    dd.completed.push(ex.id);
+    xpFloat(null, `+${exXP(ex)} XP`);
+  }
+  checkBadges(); saveData();
+  if (isFull(today())) {
+    trClose();
+    const newBadges = checkBadges();
+    saveData();
+    burstConfetti();
+    showCelebrate(newBadges);
+    return;
+  }
+  TR.set = 1;
+  TR.resting = false;
+  TR.i++;
+  if (TR.i >= TR.queue.length) { trClose(); renderHome(); return; }
+  trRender();
+}
+
+function trClose() {
+  clearInterval(TR.timer);
+  document.getElementById('trainer').classList.remove('open');
+  renderHome();
+}
+
+function beep(freq, dur) {
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!beep.ctx) beep.ctx = new Ctx();
+    const ctx = beep.ctx;
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.frequency.value = freq || 880;
+    o.connect(g); g.connect(ctx.destination);
+    g.gain.setValueAtTime(.2, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + (dur || .15));
+    o.start(); o.stop(ctx.currentTime + (dur || .15));
+  } catch (e) {}
+}
+
 /* ══ CALENDAR ═══════════════════════════════════════════════ */
 function renderCalendar() {
   const grid = document.getElementById('cal-grid');
   const t = today(), start = D.startDate;
   const startD = dateFromKey(start);
+  document.getElementById('cal-sub').textContent = `${totalDays()} dni programu · od ${formatShort(start)}`;
   grid.innerHTML = ['Pn','Wt','Śr','Cz','Pt','Sb','Nd'].map(d => `<div class="cal-hdr">${d}</div>`).join('');
   const startWeekday = (startD.getDay() + 6) % 7; // Mon=0
   for (let i = 0; i < startWeekday; i++) grid.innerHTML += `<div></div>`;
-  for (let i = 0; i < 28; i++) {
+  for (let i = 0; i < totalDays(); i++) {
     const k = addDays(start, i);
     const done = doneCount(k);
     const total = D.exercises.length;
@@ -1054,15 +1459,17 @@ function renderCalendar() {
     else if (total > 0 && done >= total) cls += ' full';
     else if (total > 0 && done > 0) cls += ' partial';
     else if (isPast && total > 0) cls += ' missed';
-    grid.innerHTML += `<div class="${cls}" onclick="showCalDetail('${k}')">${dateFromKey(k).getDate()}<div class="cal-dot"></div></div>`;
+    grid.innerHTML += `<div class="${cls}" style="--i:${i}" onclick="showCalDetail('${k}')">${dateFromKey(k).getDate()}<div class="cal-dot"></div></div>`;
   }
 }
 
 function showCalDetail(k) {
+  selectedCalDay = k;
   const dd = D.days[k] || {};
   const total = D.exercises.length, done = doneCount(k);
   const detail = document.getElementById('cal-detail');
   document.getElementById('cal-detail-date').textContent = formatDate(k);
+  document.getElementById('cal-detail-edit').style.display = (k <= today()) ? 'inline' : 'none';
   let body = `${done}/${total} ćwiczeń ukończono`;
   if (dd.pain) body += ` · Ból: ${dd.pain}/10`;
   if (dd.difficulty) body += ` · Trudność: ${dd.difficulty}/10`;
@@ -1071,20 +1478,103 @@ function showCalDetail(k) {
   detail.style.display = 'block';
 }
 
+/* ══ DAY EDIT (przeszłe dni) ════════════════════════════════ */
+let editDayKey = null;
+
+function openDayEdit(k) {
+  if (k > today()) { showToast('Nie można edytować przyszłości 😉'); return; }
+  editDayKey = k;
+  const dd = D.days[k] || { completed: [], pain: 0, difficulty: 0, note: '' };
+  const d = dateFromKey(k);
+  document.getElementById('day-modal-title').textContent =
+    (k === today() ? 'Dzisiaj — ' : '') + `${DAYS_FULL[d.getDay()]}, ${d.getDate()} ${MONTHS_PL[d.getMonth()]}`;
+  const doneIds = new Set(dd.completed || []);
+  document.getElementById('dm-list').innerHTML = D.exercises.length
+    ? D.exercises.map(ex => `
+      <div class="dm-row${doneIds.has(ex.id) ? ' done' : ''}" data-exid="${ex.id}" onclick="dmToggle(this)">
+        <div class="ex-check"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-10"/></svg></div>
+        <div class="dm-name">${esc(ex.name)}</div>
+      </div>`).join('')
+    : '<div class="text-sm text-muted">Brak ćwiczeń w programie.</div>';
+  document.getElementById('dm-pain').value = dd.pain || 0;
+  document.getElementById('dm-pain-val').textContent = dd.pain || 0;
+  document.getElementById('dm-diff').value = dd.difficulty || 0;
+  document.getElementById('dm-diff-val').textContent = dd.difficulty || 0;
+  document.getElementById('dm-note').value = dd.note || '';
+  openModal('day-modal');
+}
+
+function dmToggle(row) {
+  row.classList.toggle('done');
+  if (navigator.vibrate) navigator.vibrate(8);
+}
+
+function saveDayEdit() {
+  if (!editDayKey) return;
+  const dd = getDay(editDayKey);
+  const checked = [...document.querySelectorAll('#dm-list .dm-row.done')].map(r => parseInt(r.dataset.exid, 10));
+  dd.completed = checked;
+  dd.pain = parseInt(document.getElementById('dm-pain').value, 10);
+  dd.difficulty = parseInt(document.getElementById('dm-diff').value, 10);
+  dd.note = document.getElementById('dm-note').value;
+  const newBadges = checkBadges();
+  saveData();
+  closeModal('day-modal');
+  if (currentPage === 'calendar') { renderCalendar(); if (selectedCalDay) showCalDetail(selectedCalDay); }
+  else renderHome();
+  showToast('Dzień zaktualizowany ✓');
+  if (newBadges.length) setTimeout(() => showCelebrate(newBadges), 350);
+}
+
 /* ══ PROGRESS ═══════════════════════════════════════════════ */
 function renderProgress() {
+  renderWeekSummary();
   renderWeekCards();
   renderChartBars();
   renderPainCanvas();
+  renderMeasures();
   renderSummaryStats();
+  renderArchive();
+}
+
+function avgPainInRange(from, len) {
+  let sum = 0, n = 0;
+  for (let i = 0; i < len; i++) {
+    const p = (D.days[addDays(from, i)] || {}).pain || 0;
+    if (p > 0) { sum += p; n++; }
+  }
+  return n ? Math.round(sum / n * 10) / 10 : null;
+}
+
+function renderWeekSummary() {
+  const el = document.getElementById('week-summary');
+  const t = today(), w = weekOf(t), ws = weekStart(w);
+  let done = 0, elapsed = 0;
+  for (let i = 0; i < 7; i++) {
+    const k = addDays(ws, i);
+    if (k > t) break;
+    elapsed++;
+    if (isFull(k)) done++;
+  }
+  const painNow = avgPainInRange(ws, 7);
+  const painPrev = w > 0 ? avgPainInRange(weekStart(w - 1), 7) : null;
+  let painTxt = painNow !== null ? `średni ból <strong>${painNow}/10</strong>` : 'brak danych o bólu';
+  if (painNow !== null && painPrev !== null) {
+    const diff = Math.round((painNow - painPrev) * 10) / 10;
+    painTxt += diff < 0 ? ` <span style="color:var(--success)">▼ ${Math.abs(diff)} vs poprzedni</span>`
+      : diff > 0 ? ` <span style="color:var(--danger)">▲ ${diff} vs poprzedni</span>` : ' (bez zmian)';
+  }
+  el.innerHTML = `
+    <div class="section-hdr" style="margin-bottom:6px"><span class="section-title">Ten tydzień</span><span class="text-xs text-muted">Tydzień ${w+1} z ${totalWeeks()}</span></div>
+    <div style="font-size:15px;line-height:1.6">Pełne dni: <strong class="grad-text">${done}/${elapsed}</strong> · cel: ${D.weeklyGoal}/7<br><span class="text-sm text-muted">${painTxt}</span></div>`;
 }
 
 function renderWeekCards() {
   const el = document.getElementById('week-cards');
   const curW = weekOf(today());
-  el.innerHTML = [0,1,2,3].map(w => {
+  el.innerHTML = Array.from({ length: totalWeeks() }, (_, w) => {
     const ws = weekStart(w), we = addDays(ws, 6);
-    return `<div class="week-card${w === curW ? ' active' : ''}">
+    return `<div class="week-card${w === curW && !isProgramOver() ? ' active' : ''}">
       <div class="text-sm fw-700">Tydzień ${w+1}</div>
       <div class="week-pct">${weekPct(w)}%</div>
       <div class="text-xs text-muted">${formatShort(ws)}–${formatShort(we)}</div>
@@ -1096,7 +1586,7 @@ function renderChartBars() {
   const el = document.getElementById('chart-bars');
   const t = today(), total = D.exercises.length, start = D.startDate;
   el.innerHTML = '';
-  for (let i = 0; i < 28; i++) {
+  for (let i = 0; i < totalDays(); i++) {
     if (i > 0 && i % 7 === 0) {
       const sep = document.createElement('div');
       sep.className = 'chart-week-sep'; el.appendChild(sep);
@@ -1115,6 +1605,8 @@ function renderChartBars() {
     el.appendChild(bar);
     if (!isFut) setTimeout(() => bar.style.height = (pct / 100 * 78 + 4) + 'px', i * 14);
   }
+  document.getElementById('chart-labels').innerHTML =
+    Array.from({ length: totalWeeks() }, (_, w) => `<span class="text-xs text-muted">T${w+1}</span>`).join('');
 }
 
 function renderPainCanvas() {
@@ -1126,18 +1618,19 @@ function renderPainCanvas() {
   ctx.scale(dpr, dpr);
   const W = canvas.offsetWidth, H = 70;
   const t = today(), start = D.startDate;
+  const n = totalDays();
   const pts = [];
-  for (let i = 0; i < 28; i++) {
+  for (let i = 0; i < n; i++) {
     const k = addDays(start, i);
     if (k > t) break;
     const pain = (D.days[k] || {}).pain || 0;
-    if (pain > 0) pts.push({ x: 20 + i * ((W - 40) / 27), y: H - 8 - pain / 10 * (H - 16) });
+    if (pain > 0) pts.push({ x: 20 + i * ((W - 40) / (n - 1)), y: H - 8 - pain / 10 * (H - 16) });
   }
   const styles = getComputedStyle(document.documentElement);
   if (pts.length < 2) {
     ctx.fillStyle = styles.getPropertyValue('--text3').trim() || '#888';
     ctx.font = '12px Outfit, sans-serif';
-    ctx.fillText('Za mało danych o bólu (zapisuj suwakiem na stronie głównej)', 16, H / 2);
+    ctx.fillText('Za mało danych — zapisuj ból suwakiem na stronie głównej', 16, H / 2);
     return;
   }
   const grad = ctx.createLinearGradient(0, 0, W, 0);
@@ -1148,10 +1641,74 @@ function renderPainCanvas() {
   pts.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2); ctx.fillStyle = '#F472B6'; ctx.fill(); });
 }
 
+/* ══ MEASUREMENTS ═══════════════════════════════════════════ */
+const MEAS_LABELS = { rom: 'Zakres ruchu', obwod: 'Obwód', waga: 'Waga', inne: 'Inne' };
+const MEAS_UNITS  = { rom: '°', obwod: 'cm', waga: 'kg', inne: '' };
+
+function addMeasure() {
+  const type = document.getElementById('meas-type').value;
+  const val = parseFloat(document.getElementById('meas-val').value);
+  if (isNaN(val)) { showToast('Podaj wartość pomiaru'); return; }
+  D.measurements.push({ date: today(), type, value: val });
+  document.getElementById('meas-val').value = '';
+  saveData(); renderMeasures(); showToast('Pomiar zapisany ✓');
+}
+
+function delMeasure(idx) {
+  D.measurements.splice(idx, 1);
+  saveData(); renderMeasures();
+}
+
+function renderMeasures() {
+  const type = document.getElementById('meas-type').value;
+  const list = document.getElementById('meas-list');
+  const entries = D.measurements
+    .map((m, idx) => ({ ...m, idx }))
+    .filter(m => m.type === type)
+    .sort((a, b) => a.date < b.date ? -1 : 1);
+  drawMeasureChart(entries);
+  if (!entries.length) {
+    list.innerHTML = `<div class="text-xs text-muted">Brak pomiarów typu „${MEAS_LABELS[type]}". Dodaj pierwszy powyżej.</div>`;
+    return;
+  }
+  list.innerHTML = entries.slice().reverse().map(m => `
+    <div class="meas-row">
+      <span class="text-muted">${formatShort(m.date)}</span>
+      <span class="meas-val">${m.value}${MEAS_UNITS[m.type]}</span>
+      <button class="meas-del" onclick="delMeasure(${m.idx})">✕</button>
+    </div>`).join('');
+}
+
+function drawMeasureChart(entries) {
+  const canvas = document.getElementById('meas-canvas');
+  if (entries.length < 2) { canvas.style.display = 'none'; return; }
+  canvas.style.display = 'block';
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = canvas.offsetWidth * dpr;
+  canvas.height = 70 * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  const W = canvas.offsetWidth, H = 70;
+  const vals = entries.map(e => e.value);
+  const min = Math.min(...vals), max = Math.max(...vals);
+  const span = (max - min) || 1;
+  const pts = entries.map((e, i) => ({
+    x: 16 + i * ((W - 32) / (entries.length - 1)),
+    y: H - 12 - ((e.value - min) / span) * (H - 24),
+  }));
+  ctx.clearRect(0, 0, W, H);
+  const grad = ctx.createLinearGradient(0, 0, W, 0);
+  grad.addColorStop(0, '#818CF8'); grad.addColorStop(.5, '#C084FC'); grad.addColorStop(1, '#F472B6');
+  ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
+  pts.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
+  ctx.strokeStyle = grad; ctx.lineWidth = 2.5; ctx.lineJoin = 'round'; ctx.stroke();
+  pts.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2); ctx.fillStyle = '#C084FC'; ctx.fill(); });
+}
+
 function renderSummaryStats() {
   const t = today(), start = D.startDate, total = D.exercises.length;
   let doneDays = 0;
-  for (let i = 0; i < 28; i++) {
+  for (let i = 0; i < totalDays(); i++) {
     const k = addDays(start, i);
     if (k <= t && isFull(k)) doneDays++;
   }
@@ -1159,12 +1716,103 @@ function renderSummaryStats() {
   const avgPain = pains.length ? Math.round(pains.reduce((a,b) => a+b, 0) / pains.length * 10) / 10 : '–';
   checkBadges();
   document.getElementById('summary-stats').innerHTML = [
-    [doneDays, 'Pełne dni'], [computeStreak(), 'Streak'], [D.xp, 'XP'],
-    [avgPain, 'Śr. ból'], [D.badges.length, 'Odznaki'], [total, 'Ćwiczeń'],
+    [doneDays, 'Pełne dni'], [computeStreak(), 'Streak'], [(D.bestStreak || 0) + '🔥', 'Rekord'],
+    [D.xp, 'XP'], [avgPain, 'Śr. ból'], [D.badges.length, 'Odznaki'],
   ].map(([v,l]) => `<div class="stat-chip"><div class="stat-val">${v}</div><div class="stat-lbl">${l}</div></div>`).join('');
 }
 
-/* ══ BADGES ═════════════════════════════════════════════════ */
+function renderArchive() {
+  const area = document.getElementById('archive-area');
+  if (!D.archive.length) { area.innerHTML = ''; return; }
+  area.innerHTML = `
+    <div class="section-hdr"><span class="section-title">Ukończone cykle</span></div>
+    <div class="gap-12">${D.archive.map((c, i) => {
+      const end = addDays(c.start, c.weeks * 7 - 1);
+      return `<div class="card" style="border-left:3px solid var(--success)">
+        <div class="fw-700 text-sm">Cykl ${i+1} · ${formatShort(c.start)}–${formatShort(end)}</div>
+        <div class="text-xs text-muted mt-4">Pełne dni: ${c.doneDays}/${c.totalDays}${c.avgPain !== null && c.avgPain !== undefined ? ` · śr. ból: ${c.avgPain}/10` : ''} · ${c.weeks} tyg.</div>
+      </div>`;
+    }).join('')}</div>`;
+}
+
+/* ══ REPORT (okno wydruku → zapis jako PDF) ═════════════════ */
+function openReport() {
+  const p = D.profile || {};
+  const t = today(), start = D.startDate;
+  const st = RFCore.cycleStats(D.days, exIds(), start, totalWeeks(), t);
+  const streak = computeStreak();
+
+  let daysRows = '';
+  for (let i = 0; i < totalDays(); i++) {
+    const k = addDays(start, i);
+    if (k > t) break;
+    const dd = D.days[k] || {};
+    const done = doneCount(k);
+    daysRows += `<tr>
+      <td>${formatShort(k)} (${DAYS_PL[dateFromKey(k).getDay()]})</td>
+      <td style="text-align:center">${done}/${D.exercises.length}</td>
+      <td style="text-align:center">${dd.pain || '–'}</td>
+      <td style="text-align:center">${dd.difficulty || '–'}</td>
+      <td>${esc(dd.note || '')}</td>
+    </tr>`;
+  }
+
+  const measRows = D.measurements.slice().sort((a,b) => a.date < b.date ? -1 : 1).map(m =>
+    `<tr><td>${formatShort(m.date)}</td><td>${MEAS_LABELS[m.type]}</td><td>${m.value}${MEAS_UNITS[m.type]}</td></tr>`).join('');
+
+  const exRows = D.exercises.map(ex =>
+    `<tr><td>${esc(ex.name)}</td><td>${ex.sets}×${ex.reps}</td><td>${esc(ex.type)}</td></tr>`).join('');
+
+  const html = `<!DOCTYPE html><html lang="pl"><head><meta charset="UTF-8">
+<title>Raport rehabilitacji — ${esc(p.name || 'pacjent')}</title>
+<style>
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a2e; margin: 32px; font-size: 13px; }
+  h1 { font-size: 22px; margin-bottom: 2px; color: #4C1D95; }
+  h2 { font-size: 15px; margin: 22px 0 8px; color: #6D28D9; border-bottom: 2px solid #E9D5FF; padding-bottom: 4px; }
+  .sub { color: #666; font-size: 12px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+  th, td { border: 1px solid #ddd; padding: 6px 8px; text-align: left; font-size: 12px; }
+  th { background: #F3E8FF; color: #4C1D95; }
+  .grid { display: flex; gap: 24px; flex-wrap: wrap; margin-top: 8px; }
+  .stat { background: #FAF5FF; border: 1px solid #E9D5FF; border-radius: 8px; padding: 10px 16px; }
+  .stat b { font-size: 18px; color: #6D28D9; display: block; }
+  .footer { margin-top: 28px; color: #999; font-size: 10px; }
+  @media print { body { margin: 12mm; } }
+</style></head><body>
+<h1>Raport rehabilitacji</h1>
+<div class="sub">RehabFlow · wygenerowano ${formatDate(t)}</div>
+<h2>Pacjent</h2>
+<table>
+  <tr><th style="width:30%">Imię i nazwisko</th><td>${esc(p.name || '—')}</td></tr>
+  <tr><th>Diagnoza</th><td>${esc(p.diagnosis || '—')}</td></tr>
+  <tr><th>Fizjoterapeuta</th><td>${esc(p.therapist || '—')}</td></tr>
+  <tr><th>Data urazu</th><td>${p.injuryDate ? formatDate(p.injuryDate) : '—'}</td></tr>
+  <tr><th>Program</th><td>${formatDate(start)} – ${formatDate(programEnd())} (${totalWeeks()} tyg.)</td></tr>
+</table>
+<h2>Podsumowanie</h2>
+<div class="grid">
+  <div class="stat"><b>${st.doneDays}/${st.elapsed}</b>pełne dni</div>
+  <div class="stat"><b>${streak}</b>obecny streak</div>
+  <div class="stat"><b>${D.bestStreak || 0}</b>najdłuższy streak</div>
+  <div class="stat"><b>${st.avgPain !== null ? st.avgPain + '/10' : '—'}</b>średni ból</div>
+</div>
+<h2>Program ćwiczeń</h2>
+<table><tr><th>Ćwiczenie</th><th style="width:15%">Serie×powt.</th><th style="width:20%">Typ</th></tr>${exRows || '<tr><td colspan="3">Brak ćwiczeń</td></tr>'}</table>
+${measRows ? `<h2>Pomiary</h2><table><tr><th>Data</th><th>Rodzaj</th><th>Wartość</th></tr>${measRows}</table>` : ''}
+<h2>Dziennik dzienny</h2>
+<table><tr><th style="width:18%">Data</th><th style="width:12%">Ćwiczenia</th><th style="width:8%">Ból</th><th style="width:10%">Trudność</th><th>Notatka</th></tr>${daysRows || '<tr><td colspan="5">Brak danych</td></tr>'}</table>
+${(p.therapistNotes || '').trim() ? `<h2>Notatki fizjoterapeuty</h2><p>${esc(p.therapistNotes)}</p>` : ''}
+<div class="footer">Wygenerowano przez RehabFlow — dane przechowywane lokalnie na urządzeniu pacjenta. Aby zapisać jako PDF: Drukuj → „Zapisz jako PDF".</div>
+<script>window.onload = function(){ setTimeout(function(){ window.print(); }, 250); };<\/script>
+</body></html>`;
+
+  const w = window.open('', '_blank');
+  if (!w) { showToast('Zezwól na wyskakujące okna, aby wygenerować raport'); return; }
+  w.document.write(html);
+  w.document.close();
+}
+
+/* ══ BADGES PAGE ════════════════════════════════════════════ */
 function renderBadges() {
   checkBadges(); saveData();
   const xp = D.xp, level = Math.floor(xp / 200) + 1, pct = Math.min(100, (xp % 200) / 200 * 100);
@@ -1191,10 +1839,13 @@ function renderSettings() {
   document.getElementById('s-injury').value = p.injuryDate || '';
   document.getElementById('s-therapist-notes').value = p.therapistNotes || '';
   document.getElementById('s-start').value = D.startDate || today();
+  document.getElementById('s-weeks').value = totalWeeks();
   document.getElementById('s-goal').value = D.weeklyGoal || 5;
+  document.getElementById('s-rest').value = D.restSec || 30;
   document.getElementById('s-hour1').value = D.notifHour1 || '09:00';
   document.getElementById('s-hour2').value = D.notifHour2 || '20:00';
   document.getElementById('notif-toggle').checked = D.notifEnabled || false;
+  document.getElementById('font-toggle').checked = (D.fontScale === 'large');
   document.getElementById('install-btn').style.display = deferredPrompt ? 'inline-flex' : 'none';
   updateNotifStatus();
 }
@@ -1212,8 +1863,10 @@ function saveProfile() {
 
 function saveSettings() {
   D.startDate = document.getElementById('s-start').value || today();
+  D.programWeeks = parseInt(document.getElementById('s-weeks').value, 10) || 4;
   D.weeklyGoal = parseInt(document.getElementById('s-goal').value, 10) || 5;
-  saveData(); showToast('Ustawienia zapisane ✓');
+  D.restSec = parseInt(document.getElementById('s-rest').value, 10) || 30;
+  checkBadges(); saveData(); showToast('Ustawienia zapisane ✓');
 }
 
 function saveNotifSettings() {
@@ -1230,7 +1883,45 @@ function resetData() {
   }
 }
 
-/* ══ EXERCISE MODAL ═════════════════════════════════════════ */
+/* ══ EXERCISE MODAL + LIBRARY ═══════════════════════════════ */
+let libGroup = 'kolano';
+
+function switchExTab(tab) {
+  document.getElementById('tab-form').classList.toggle('active', tab === 'form');
+  document.getElementById('tab-lib').classList.toggle('active', tab === 'lib');
+  document.getElementById('ex-form-panel').style.display = tab === 'form' ? 'block' : 'none';
+  document.getElementById('ex-lib-panel').style.display = tab === 'lib' ? 'block' : 'none';
+  if (tab === 'lib') renderLibrary();
+}
+
+function renderLibrary() {
+  const chips = document.getElementById('lib-chips');
+  chips.innerHTML = LIB_GROUPS.map(g =>
+    `<button class="lib-chip${g.id === libGroup ? ' active' : ''}" onclick="libGroup='${g.id}';renderLibrary()">${g.name}</button>`).join('');
+  const q = (document.getElementById('lib-search').value || '').toLowerCase().trim();
+  const items = EX_DB.filter(e => q ? e.n.toLowerCase().includes(q) : e.g === libGroup);
+  document.getElementById('lib-list').innerHTML = items.length
+    ? items.map(e => `
+      <div class="lib-item" onclick="pickFromLibrary('${e.id}')">
+        <div class="lib-name">${TYPE_EMOJI[e.t] || '💫'} ${esc(e.n)}</div>
+        <div class="lib-meta">${e.s} serie × ${e.r} powt. · ${e.t}</div>
+        <div class="lib-desc">${esc(e.d)}</div>
+      </div>`).join('')
+    : '<div class="text-sm text-muted" style="padding:12px">Nic nie znaleziono.</div>';
+}
+
+function pickFromLibrary(id) {
+  const e = EX_DB.find(x => x.id === id);
+  if (!e) return;
+  document.getElementById('ex-name').value = e.n;
+  document.getElementById('ex-reps').value = e.r;
+  document.getElementById('ex-sets').value = e.s;
+  document.getElementById('ex-type').value = e.t;
+  document.getElementById('ex-desc').value = e.d;
+  switchExTab('form');
+  showToast('Wybrano z biblioteki — możesz dostosować');
+}
+
 function openAddExercise() {
   editingExId = null;
   document.getElementById('ex-modal-title').textContent = 'Dodaj ćwiczenie';
@@ -1238,7 +1929,11 @@ function openAddExercise() {
   document.getElementById('ex-reps').value = 10;
   document.getElementById('ex-sets').value = 3;
   document.getElementById('ex-type').value = 'Rozciąganie';
+  document.getElementById('ex-desc').value = '';
   document.getElementById('ex-delete-btn').style.display = 'none';
+  document.getElementById('ex-tabs').style.display = 'flex';
+  document.getElementById('lib-search').value = '';
+  switchExTab('lib');
   openModal('ex-modal');
 }
 
@@ -1251,7 +1946,10 @@ function openEditExercise(id) {
   document.getElementById('ex-reps').value = ex.reps;
   document.getElementById('ex-sets').value = ex.sets;
   document.getElementById('ex-type').value = ex.type;
+  document.getElementById('ex-desc').value = ex.desc || '';
   document.getElementById('ex-delete-btn').style.display = 'inline-flex';
+  document.getElementById('ex-tabs').style.display = 'none';
+  switchExTab('form');
   openModal('ex-modal');
 }
 
@@ -1261,11 +1959,12 @@ function saveExercise() {
   const reps = parseInt(document.getElementById('ex-reps').value, 10) || 10;
   const sets = parseInt(document.getElementById('ex-sets').value, 10) || 3;
   const type = document.getElementById('ex-type').value;
+  const desc = document.getElementById('ex-desc').value.trim();
   if (editingExId !== null) {
     const ex = D.exercises.find(e => e.id === editingExId);
-    if (ex) Object.assign(ex, { name, reps, sets, type });
+    if (ex) Object.assign(ex, { name, reps, sets, type, desc });
   } else {
-    D.exercises.push({ id: D.nextId++, name, reps, sets, type });
+    D.exercises.push({ id: D.nextId++, name, reps, sets, type, desc });
   }
   checkBadges(); saveData(); closeModal('ex-modal'); renderHome();
 }
@@ -1282,6 +1981,114 @@ function deleteExercise() {
   }
   checkBadges(); saveData(); closeModal('ex-modal'); renderHome();
   showToast('Ćwiczenie usunięte');
+}
+
+/* ══ ONBOARDING ═════════════════════════════════════════════ */
+let obStep = 0;
+let obProgram = 'kolano';
+
+function startOnboarding() {
+  obStep = 0;
+  document.getElementById('onboard').classList.add('open');
+  renderOnboard();
+}
+
+function obDots() {
+  return `<div class="ob-dots">${[0,1,2].map(i => `<div class="ob-dot${i === obStep ? ' active' : ''}"></div>`).join('')}</div>`;
+}
+
+function renderOnboard() {
+  const card = document.getElementById('ob-card');
+  if (obStep === 0) {
+    card.innerHTML = `${obDots()}
+      <div class="ob-logo"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h3l2.5-6 4 12 3-8 1.5 2H22"/></svg></div>
+      <div class="ob-title">Witaj w RehabFlow! 👋</div>
+      <div class="ob-sub">Twój osobisty dziennik rehabilitacji.<br>Skonfigurujmy go w 3 krokach.</div>
+      <div class="ob-body">
+        <label class="form-label">Jak masz na imię?</label>
+        <input class="form-input" id="ob-name" placeholder="Twoje imię" value="${esc((D.profile || {}).name || '')}">
+      </div>
+      <div class="ob-nav"><button class="btn btn-primary" onclick="obNext()">Dalej →</button></div>`;
+  } else if (obStep === 1) {
+    card.innerHTML = `${obDots()}
+      <div class="ob-title">Wybierz program 🎯</div>
+      <div class="ob-sub">Gotowy zestaw ćwiczeń dopasowany do urazu — zawsze możesz go później zmienić.</div>
+      <div class="ob-body">
+        ${PROGRAMS.map(p => `
+          <div class="ob-prog${p.id === obProgram ? ' sel' : ''}" onclick="obProgram='${p.id}';renderOnboard()">
+            <div class="ob-prog-icon">${p.icon}</div>
+            <div><div class="ob-prog-name">${p.name}</div><div class="ob-prog-desc">${p.desc}${p.ex.length ? ` · ${p.ex.length} ćwiczeń` : ''}</div></div>
+          </div>`).join('')}
+        <label class="form-label" style="margin-top:14px">Długość programu</label>
+        <select class="form-input" id="ob-weeks">
+          <option value="2">2 tygodnie</option>
+          <option value="4" selected>4 tygodnie</option>
+          <option value="6">6 tygodni</option>
+          <option value="8">8 tygodni</option>
+        </select>
+      </div>
+      <div class="ob-nav">
+        <button class="btn ob-back" onclick="obPrev()">← Wstecz</button>
+        <button class="btn btn-primary" onclick="obNext()">Dalej →</button>
+      </div>`;
+  } else {
+    card.innerHTML = `${obDots()}
+      <div class="ob-title">Przypomnienia ⏰</div>
+      <div class="ob-sub">O której godzinie chcesz ćwiczyć? Przypomnimy Ci, gdy aplikacja będzie otwarta.</div>
+      <div class="ob-body">
+        <div class="ob-time-row"><span>🌅 Rano</span><input type="time" id="ob-hour1" value="${D.notifHour1 || '09:00'}"></div>
+        <div class="ob-time-row"><span>🌙 Wieczorem</span><input type="time" id="ob-hour2" value="${D.notifHour2 || '20:00'}"></div>
+      </div>
+      <div class="ob-nav">
+        <button class="btn ob-back" onclick="obPrev()">← Wstecz</button>
+        <button class="btn btn-primary" onclick="finishOnboarding()">Zaczynamy! 🚀</button>
+      </div>`;
+  }
+}
+
+let obName = '', obWeeks = 4;
+
+function obNext() {
+  if (obStep === 0) {
+    obName = (document.getElementById('ob-name').value || '').trim();
+  } else if (obStep === 1) {
+    obWeeks = parseInt(document.getElementById('ob-weeks').value, 10) || 4;
+  }
+  obStep = Math.min(2, obStep + 1);
+  renderOnboard();
+  // przywróć wybraną długość po ponownym renderze kroku 1→2→1
+  const sel = document.getElementById('ob-weeks');
+  if (sel) sel.value = obWeeks;
+}
+
+function obPrev() {
+  if (obStep === 1) obWeeks = parseInt((document.getElementById('ob-weeks') || {}).value, 10) || obWeeks;
+  obStep = Math.max(0, obStep - 1);
+  renderOnboard();
+  const nameEl = document.getElementById('ob-name');
+  if (nameEl) nameEl.value = obName;
+  const sel = document.getElementById('ob-weeks');
+  if (sel) sel.value = obWeeks;
+}
+
+function finishOnboarding() {
+  D.profile.name = obName;
+  D.programWeeks = obWeeks;
+  D.notifHour1 = document.getElementById('ob-hour1').value || '09:00';
+  D.notifHour2 = document.getElementById('ob-hour2').value || '20:00';
+  const prog = PROGRAMS.find(p => p.id === obProgram);
+  if (prog && prog.ex.length && !D.exercises.length) {
+    prog.ex.forEach(eid => {
+      const e = EX_DB.find(x => x.id === eid);
+      if (e) D.exercises.push({ id: D.nextId++, name: e.n, reps: e.r, sets: e.s, type: e.t, desc: e.d });
+    });
+  }
+  D.startDate = today();
+  D.onboarded = true;
+  checkBadges(); saveData();
+  document.getElementById('onboard').classList.remove('open');
+  renderHome();
+  showToast(obName ? `Powodzenia, ${obName}! 💪` : 'Powodzenia! 💪');
 }
 
 /* ══ MODALS / TOAST ═════════════════════════════════════════ */
@@ -1409,6 +2216,18 @@ function getMissedDays() {
   return missed;
 }
 
+/* baner po powrocie do aplikacji, gdy są zaległe dni */
+function checkMissedBanner() {
+  const missed = getMissedDays();
+  if (missed >= 1 && D.exercises.length && !isProgramOver()) {
+    const el = document.getElementById('missed-banner');
+    document.getElementById('missed-banner-txt').textContent =
+      missed === 1 ? '⏰ Wczorajszy dzień nie został ukończony. Możesz go uzupełnić w kalendarzu!'
+        : `⏰ Ostatnie ${missed} dni nie zostały ukończone. Uzupełnij je w kalendarzu lub wróć do ćwiczeń dziś!`;
+    el.classList.add('show');
+  }
+}
+
 function openNotifSheet() {
   const total = D.exercises.length, done = doneCount(today()), streak = computeStreak();
   const msg = total > 0 && done >= total
@@ -1436,15 +2255,44 @@ function importJSON(input) {
   r.onload = e => {
     try {
       const d = JSON.parse(e.target.result);
+      if (d && d.rehabflowProgram === true && Array.isArray(d.exercises)) { importProgram(d); return; }
       if (!d || typeof d !== 'object' || !('exercises' in d)) throw new Error('bad');
       D = d;
       const def = defaultData();
       Object.keys(def).forEach(k => { if (!(k in D)) D[k] = def[k]; });
+      if (!D.onboarded && (D.exercises.length || Object.keys(D.days).length)) D.onboarded = true;
       saveData(); location.reload();
     } catch { showToast('Błąd: nieprawidłowy plik JSON'); }
   };
   r.readAsText(file);
   input.value = '';
+}
+
+/* plik programu od fizjoterapeuty (z fizjo.html) — podmienia tylko listę ćwiczeń */
+function importProgram(prog) {
+  const list = prog.exercises.filter(e => e && e.name);
+  if (!list.length) { showToast('Plik programu jest pusty'); return; }
+  const from = prog.author ? ` od: ${prog.author}` : '';
+  if (!confirm(`Załadować program „${prog.name || 'bez nazwy'}"${from} (${list.length} ćwiczeń)?\n\nZastąpi obecną listę ćwiczeń — historia, XP i odznaki zostają.`)) return;
+  D.exercises = [];
+  list.forEach(e => {
+    D.exercises.push({
+      id: D.nextId++,
+      name: String(e.name).slice(0, 80),
+      reps: parseInt(e.reps, 10) || 10,
+      sets: parseInt(e.sets, 10) || 3,
+      type: TYPE_EMOJI[e.type] ? e.type : 'Inne',
+      desc: String(e.desc || '').slice(0, 400),
+    });
+  });
+  if (prog.notes && String(prog.notes).trim()) {
+    D.profile.therapistNotes = String(prog.notes).slice(0, 1000);
+  }
+  if (prog.author && !D.profile.therapist) D.profile.therapist = String(prog.author).slice(0, 60);
+  D.onboarded = true;
+  checkBadges(); saveData(); renderHome();
+  if (currentPage !== 'home') switchPage('home', document.querySelector('[data-page=home]'));
+  showToast(`Program „${prog.name || 'fizjoterapeuty'}" załadowany ✓`);
 }
 
 /* ══ PWA INSTALL ════════════════════════════════════════════ */
@@ -1487,17 +2335,20 @@ function initSplash() {
     const s = document.getElementById('splash');
     s.classList.add('hiding');
     setTimeout(() => s.remove(), 600);
+    if (!D.onboarded) startOnboarding();
   }, 2000);
 }
 
 applyTheme();
+applyFont();
 renderHome();
 initSplash();
 scheduleNotifications();
+checkMissedBanner();
 
 // odśwież widok po powrocie do aplikacji (np. zmiana dnia)
 document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) renderPage(currentPage);
+  if (!document.hidden) { renderPage(currentPage); checkMissedBanner(); }
 });
 </script>
 </body>

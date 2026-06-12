@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="pl" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0A0D20">
+<meta name="description" content="RehabFlow — panel fizjoterapeuty: podgląd postępu pacjenta i kreator programu ćwiczeń">
+<title>RehabFlow — Panel fizjoterapeuty</title>
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0A0D20; --bg2: #0E1230; --surface: #151A3A; --surface2: #1C224A;
+  --border: #272E5C; --text: #F2F1FB; --text2: #A9A7CC; --text3: #6F6D96;
+  --violet: #C084FC; --pink: #F472B6;
+  --grad: linear-gradient(135deg, #6366F1 0%, #A855F7 50%, #EC4899 100%);
+  --grad-soft: linear-gradient(135deg, rgba(99,102,241,.18), rgba(168,85,247,.18), rgba(236,72,153,.18));
+  --success: #34D399; --success-bg: rgba(52,211,153,.12);
+  --warn: #FBBF24; --warn-bg: rgba(251,191,36,.12);
+  --danger: #FB7185; --danger-bg: rgba(251,113,133,.12);
+  --r-md: 14px; --r-lg: 20px;
+  --shadow: 0 4px 24px rgba(0,0,0,.35);
+}
+body { background: var(--bg); color: var(--text); font-family: 'Outfit', system-ui, sans-serif; min-height: 100vh; font-variant-numeric: tabular-nums; }
+.aurora { position: fixed; border-radius: 50%; filter: blur(100px); pointer-events: none; z-index: 0; opacity: .25; }
+.aurora-1 { width: 420px; height: 420px; top: -140px; left: -120px; background: #6366F1; }
+.aurora-2 { width: 380px; height: 380px; bottom: -100px; right: -120px; background: #EC4899; }
+
+header { position: sticky; top: 0; z-index: 50; background: color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); padding: 14px 22px; display: flex; align-items: center; gap: 14px; }
+.logo { width: 40px; height: 40px; border-radius: 12px; background: var(--grad); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 16px rgba(168,85,247,.4); }
+.logo svg { width: 22px; height: 22px; }
+header h1 { font-size: 17px; font-weight: 800; }
+header .sub { font-size: 12px; color: var(--text2); }
+header a { margin-left: auto; color: var(--violet); font-size: 13px; font-weight: 600; text-decoration: none; }
+
+main { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 22px 18px 60px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+@media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+.col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 18px; box-shadow: var(--shadow); }
+h2 { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 12px; }
+h3 { font-size: 12px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: .07em; margin: 16px 0 8px; }
+.muted { color: var(--text2); font-size: 13px; line-height: 1.6; }
+.xs { font-size: 11.5px; color: var(--text3); }
+
+.drop { border: 2px dashed var(--border); border-radius: var(--r-lg); padding: 30px 18px; text-align: center; cursor: pointer; transition: all .2s; }
+.drop:hover, .drop.over { border-color: var(--violet); background: var(--grad-soft); }
+.drop .ic { font-size: 38px; }
+.drop .t1 { font-weight: 700; margin-top: 8px; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 12px 18px; border-radius: var(--r-md); border: none; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; transition: transform .12s, opacity .15s; }
+.btn:active { transform: scale(.97); }
+.btn-primary { background: var(--grad); color: #fff; box-shadow: 0 4px 16px rgba(168,85,247,.35); }
+.btn-secondary { background: var(--surface2); color: var(--text); border: 1.5px solid var(--border); }
+.btn-full { width: 100%; }
+
+.form-input, textarea { width: 100%; border: 1.5px solid var(--border); border-radius: var(--r-md); padding: 11px 13px; font-family: inherit; font-size: 14px; color: var(--text); background: var(--surface2); outline: none; transition: border-color .2s; }
+.form-input:focus, textarea:focus { border-color: var(--violet); }
+textarea { resize: vertical; }
+label { font-size: 11px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: .05em; display: block; margin: 12px 0 5px; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+@media (max-width: 480px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+.stat-chip { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 11px 8px; text-align: center; }
+.stat-val { font-size: 19px; font-weight: 800; background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.stat-lbl { font-size: 9.5px; color: var(--text3); margin-top: 2px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+
+table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+th, td { padding: 7px 8px; text-align: left; border-bottom: 1px solid var(--border); }
+th { color: var(--text3); font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; }
+.t-scroll { max-height: 320px; overflow-y: auto; }
+
+.att-grid { display: grid; grid-template-columns: repeat(14, 1fr); gap: 4px; }
+.att-cell { aspect-ratio: 1; border-radius: 6px; background: var(--surface2); border: 1px solid transparent; }
+.att-cell.full { background: var(--success-bg); border-color: var(--success); }
+.att-cell.partial { background: var(--warn-bg); border-color: var(--warn); }
+.att-cell.missed { background: var(--danger-bg); border-color: var(--danger); }
+.att-cell.future { opacity: .25; }
+
+.chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; }
+.chip { flex-shrink: 0; padding: 7px 13px; border-radius: 20px; border: 1.5px solid var(--border); background: var(--surface2); color: var(--text2); font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
+.chip.active { background: var(--grad); border-color: transparent; color: #fff; }
+.lib-list { max-height: 330px; overflow-y: auto; display: flex; flex-direction: column; gap: 7px; margin-top: 8px; }
+.lib-item { display: flex; align-items: center; gap: 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 10px 12px; }
+.lib-info { flex: 1; min-width: 0; }
+.lib-name { font-size: 13.5px; font-weight: 700; }
+.lib-meta { font-size: 11px; color: var(--text3); margin-top: 1px; }
+.lib-add { flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; border: none; background: var(--grad); color: #fff; font-size: 17px; font-weight: 800; cursor: pointer; line-height: 1; }
+
+.prog-item { display: flex; align-items: center; gap: 9px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 9px 11px; margin-bottom: 7px; }
+.prog-name { flex: 1; min-width: 0; font-size: 13.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.prog-item input { width: 52px; text-align: center; border: 1.5px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); font-family: inherit; font-size: 13px; padding: 6px 2px; outline: none; }
+.prog-item input:focus { border-color: var(--violet); }
+.prog-x { background: none; border: none; color: var(--text3); font-size: 15px; cursor: pointer; padding: 2px 6px; }
+.x-lbl { font-size: 10px; color: var(--text3); }
+
+.toast { position: fixed; top: 18px; left: 50%; transform: translateX(-50%) translateY(-90px); background: var(--surface2); color: var(--text); border: 1px solid var(--border); padding: 11px 22px; border-radius: 26px; font-size: 14px; font-weight: 600; z-index: 2000; transition: transform .35s cubic-bezier(.34,1.56,.64,1); box-shadow: 0 4px 28px rgba(168,85,247,.35); }
+.toast.show { transform: translateX(-50%) translateY(0); }
+canvas { width: 100%; }
+.note-q { border-left: 3px solid var(--violet); padding: 6px 10px; margin-top: 8px; background: var(--surface2); border-radius: 0 10px 10px 0; font-size: 12.5px; }
+</style>
+</head>
+<body>
+<div class="aurora aurora-1"></div>
+<div class="aurora aurora-2"></div>
+
+<header>
+  <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h3l2.5-6 4 12 3-8 1.5 2H22"/></svg></div>
+  <div>
+    <h1>RehabFlow — Panel fizjoterapeuty</h1>
+    <div class="sub">Podgląd postępu pacjenta i kreator programu ćwiczeń · dane nie opuszczają tej przeglądarki</div>
+  </div>
+  <a href="./index.html">← Aplikacja pacjenta</a>
+</header>
+
+<main>
+  <!-- ════ KOLUMNA: PODGLĄD PACJENTA ════ -->
+  <div class="col">
+    <div class="card">
+      <h2>1 · Postęp pacjenta</h2>
+      <p class="muted">Poproś pacjenta o plik kopii zapasowej (w aplikacji: <strong>Postęp → Eksportuj dane (JSON)</strong>) i wczytaj go tutaj. Analiza odbywa się w całości na Twoim urządzeniu.</p>
+      <div class="drop" id="drop" onclick="document.getElementById('file-in').click()" style="margin-top:12px">
+        <div class="ic">📂</div>
+        <div class="t1">Upuść plik JSON pacjenta lub kliknij</div>
+        <div class="xs" style="margin-top:4px">rehabflow_backup_*.json</div>
+      </div>
+      <input type="file" id="file-in" accept=".json" style="display:none" onchange="loadPatientFile(this.files[0]);this.value=''">
+    </div>
+    <div id="patient-area"></div>
+  </div>
+
+  <!-- ════ KOLUMNA: KREATOR PROGRAMU ════ -->
+  <div class="col">
+    <div class="card">
+      <h2>2 · Kreator programu ćwiczeń</h2>
+      <p class="muted">Ułóż zestaw ćwiczeń i pobierz plik programu. Pacjent wczyta go w aplikacji przez <strong>Postęp → Importuj dane</strong> — zastąpi tylko listę ćwiczeń, historia zostaje.</p>
+
+      <label>Nazwa programu</label>
+      <input class="form-input" id="p-name" placeholder="np. Kolano — etap 2 (wzmacnianie)">
+      <div class="row2">
+        <div><label>Fizjoterapeuta</label><input class="form-input" id="p-author" placeholder="Dr Nowak"></div>
+        <div><label>Wskazówki dla pacjenta</label><input class="form-input" id="p-notes" placeholder="np. Ćwicz po rozgrzewce"></div>
+      </div>
+
+      <h3>Wybrane ćwiczenia (<span id="p-count">0</span>)</h3>
+      <div id="prog-list"><p class="xs">Dodawaj ćwiczenia z biblioteki poniżej lub wpisz własne.</p></div>
+      <button class="btn btn-primary btn-full" style="margin-top:12px" onclick="downloadProgram()">⬇️ Pobierz plik programu</button>
+
+      <h3>Biblioteka ćwiczeń</h3>
+      <input class="form-input" id="lib-q" placeholder="🔍 Szukaj..." oninput="renderLib()" style="margin-bottom:8px">
+      <div class="chips" id="lib-chips"></div>
+      <div class="lib-list" id="lib-list"></div>
+
+      <h3>Własne ćwiczenie</h3>
+      <input class="form-input" id="c-name" placeholder="Nazwa ćwiczenia">
+      <div class="row2" style="margin-top:8px">
+        <input class="form-input" id="c-reps" type="number" min="1" value="10" title="Powtórzenia">
+        <input class="form-input" id="c-sets" type="number" min="1" value="3" title="Serie">
+      </div>
+      <div class="row2" style="margin-top:8px">
+        <select class="form-input" id="c-type">
+          <option>Siłowe</option><option selected>Rozciąganie</option><option>Równowaga</option>
+          <option>Aerobowe</option><option>Oddechowe</option><option>Mobilność</option><option>Inne</option>
+        </select>
+        <button class="btn btn-secondary" onclick="addCustom()">+ Dodaj własne</button>
+      </div>
+      <textarea id="c-desc" rows="2" placeholder="Opis wykonania (opcjonalnie)" style="margin-top:8px"></textarea>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="core.js"></script>
+<script src="exdb.js"></script>
+<script>
+'use strict';
+
+const DAYS_PL = ['Nd','Pn','Wt','Śr','Cz','Pt','Sb'];
+const MONTHS_PL = ['stycznia','lutego','marca','kwietnia','maja','czerwca','lipca','sierpnia','września','października','listopada','grudnia'];
+const MEAS_LABELS = { rom: 'Zakres ruchu', obwod: 'Obwód', waga: 'Waga', inne: 'Inne' };
+const MEAS_UNITS  = { rom: '°', obwod: 'cm', waga: 'kg', inne: '' };
+
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtShort(k) { const d = RFCore.dateFromKey(k); return `${d.getDate()}.${String(d.getMonth()+1).padStart(2,'0')}`; }
+function fmtLong(k) { const d = RFCore.dateFromKey(k); return `${d.getDate()} ${MONTHS_PL[d.getMonth()]} ${d.getFullYear()}`; }
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+/* ════ PODGLĄD PACJENTA ════ */
+const drop = document.getElementById('drop');
+['dragover','dragenter'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => { const f = e.dataTransfer.files[0]; if (f) loadPatientFile(f); });
+
+function loadPatientFile(file) {
+  if (!file) return;
+  const r = new FileReader();
+  r.onload = e => {
+    try {
+      const d = JSON.parse(e.target.result);
+      if (!d || typeof d !== 'object' || !Array.isArray(d.exercises) || !d.days) throw new Error('bad');
+      renderPatient(d);
+      showToast('Dane pacjenta wczytane ✓');
+    } catch { showToast('To nie jest plik kopii zapasowej RehabFlow'); }
+  };
+  r.readAsText(file);
+}
+
+function renderPatient(d) {
+  const area = document.getElementById('patient-area');
+  const ids = d.exercises.map(e => e.id);
+  const todayK = RFCore.keyFromDate(new Date());
+  const weeks = d.programWeeks || 4;
+  const start = d.startDate || todayK;
+  const st = RFCore.cycleStats(d.days, ids, start, weeks, todayK);
+  const streak = RFCore.computeStreak(d.days, ids, todayK);
+  const p = d.profile || {};
+
+  /* siatka frekwencji */
+  let att = '';
+  for (let i = 0; i < weeks * 7; i++) {
+    const k = RFCore.addDays(start, i);
+    const done = RFCore.doneCount(d.days, ids, k);
+    let cls = 'att-cell';
+    if (k > todayK) cls += ' future';
+    else if (ids.length && done >= ids.length) cls += ' full';
+    else if (done > 0) cls += ' partial';
+    else cls += ' missed';
+    att += `<div class="${cls}" title="${fmtShort(k)}: ${done}/${ids.length}"></div>`;
+  }
+
+  /* dziennik */
+  let rows = '';
+  const noted = [];
+  for (let i = 0; i < weeks * 7; i++) {
+    const k = RFCore.addDays(start, i);
+    if (k > todayK) break;
+    const dd = d.days[k] || {};
+    const done = RFCore.doneCount(d.days, ids, k);
+    rows += `<tr><td>${fmtShort(k)} ${DAYS_PL[RFCore.dateFromKey(k).getDay()]}</td>
+      <td style="text-align:center">${done}/${ids.length}</td>
+      <td style="text-align:center">${dd.pain || '–'}</td>
+      <td style="text-align:center">${dd.difficulty || '–'}</td></tr>`;
+    if (dd.note && dd.note.trim()) noted.push({ k, note: dd.note });
+  }
+
+  const meas = (d.measurements || []).slice().sort((a, b) => a.date < b.date ? -1 : 1);
+  const measRows = meas.map(m => `<tr><td>${fmtShort(m.date)}</td><td>${MEAS_LABELS[m.type] || m.type}</td><td>${m.value}${MEAS_UNITS[m.type] || ''}</td></tr>`).join('');
+
+  area.innerHTML = `
+    <div class="card">
+      <h2>👤 ${esc(p.name || 'Pacjent (bez imienia)')}</h2>
+      <div class="muted">
+        ${p.diagnosis ? `Diagnoza: <strong>${esc(p.diagnosis)}</strong><br>` : ''}
+        ${p.injuryDate ? `Uraz: ${fmtLong(p.injuryDate)} · ` : ''}Program: ${fmtLong(start)} (${weeks} tyg.)
+      </div>
+      <div class="stat-grid" style="margin-top:14px">
+        <div class="stat-chip"><div class="stat-val">${st.doneDays}/${st.elapsed}</div><div class="stat-lbl">Pełne dni</div></div>
+        <div class="stat-chip"><div class="stat-val">${streak}</div><div class="stat-lbl">Streak</div></div>
+        <div class="stat-chip"><div class="stat-val">${d.bestStreak || 0}</div><div class="stat-lbl">Rekord</div></div>
+        <div class="stat-chip"><div class="stat-val">${st.avgPain !== null ? st.avgPain : '–'}</div><div class="stat-lbl">Śr. ból</div></div>
+      </div>
+      <h3>Frekwencja (${weeks * 7} dni)</h3>
+      <div class="att-grid">${att}</div>
+      <h3>Poziom bólu</h3>
+      <canvas id="pt-pain" height="80"></canvas>
+      <h3>Aktualny program pacjenta (${d.exercises.length})</h3>
+      <div class="t-scroll"><table>
+        <tr><th>Ćwiczenie</th><th>Dawka</th><th>Typ</th></tr>
+        ${d.exercises.map(e => `<tr><td>${esc(e.name)}</td><td>${e.sets}×${e.reps}</td><td>${esc(e.type)}</td></tr>`).join('') || '<tr><td colspan="3">brak</td></tr>'}
+      </table></div>
+      ${measRows ? `<h3>Pomiary</h3><div class="t-scroll"><table><tr><th>Data</th><th>Rodzaj</th><th>Wartość</th></tr>${measRows}</table></div>` : ''}
+      <h3>Dziennik</h3>
+      <div class="t-scroll"><table>
+        <tr><th>Dzień</th><th>Ćwicz.</th><th>Ból</th><th>Trudn.</th></tr>${rows || '<tr><td colspan="4">brak danych</td></tr>'}
+      </table></div>
+      ${noted.length ? `<h3>Notatki pacjenta</h3>${noted.slice(-10).map(n => `<div class="note-q"><strong class="xs">${fmtShort(n.k)}</strong> ${esc(n.note)}</div>`).join('')}` : ''}
+      <p class="xs" style="margin-top:14px">⚕️ Dane wczytane lokalnie — nic nie zostało nigdzie wysłane.</p>
+    </div>`;
+
+  drawPain(d, ids, start, weeks, todayK);
+}
+
+function drawPain(d, ids, start, weeks, todayK) {
+  const canvas = document.getElementById('pt-pain');
+  if (!canvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = canvas.offsetWidth * dpr;
+  canvas.height = 80 * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  const W = canvas.offsetWidth, H = 80, n = weeks * 7;
+  const pts = [];
+  for (let i = 0; i < n; i++) {
+    const k = RFCore.addDays(start, i);
+    if (k > todayK) break;
+    const pain = (d.days[k] || {}).pain || 0;
+    if (pain > 0) pts.push({ x: 14 + i * ((W - 28) / (n - 1)), y: H - 10 - pain / 10 * (H - 20), v: pain });
+  }
+  if (pts.length < 2) {
+    ctx.fillStyle = '#6F6D96'; ctx.font = '12px Outfit, sans-serif';
+    ctx.fillText('Za mało danych o bólu', 14, H / 2);
+    return;
+  }
+  const grad = ctx.createLinearGradient(0, 0, W, 0);
+  grad.addColorStop(0, '#818CF8'); grad.addColorStop(.5, '#C084FC'); grad.addColorStop(1, '#F472B6');
+  ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
+  pts.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
+  ctx.strokeStyle = grad; ctx.lineWidth = 2.5; ctx.lineJoin = 'round'; ctx.stroke();
+  pts.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2); ctx.fillStyle = '#F472B6'; ctx.fill(); });
+}
+
+/* ════ KREATOR PROGRAMU ════ */
+let prog = [];
+let libGroup = 'kolano';
+
+function renderLib() {
+  document.getElementById('lib-chips').innerHTML = LIB_GROUPS.map(g =>
+    `<button class="chip${g.id === libGroup ? ' active' : ''}" onclick="libGroup='${g.id}';renderLib()">${g.name}</button>`).join('');
+  const q = (document.getElementById('lib-q').value || '').toLowerCase().trim();
+  const items = EX_DB.filter(e => q ? e.n.toLowerCase().includes(q) : e.g === libGroup);
+  document.getElementById('lib-list').innerHTML = items.length ? items.map(e => `
+    <div class="lib-item">
+      <div class="lib-info">
+        <div class="lib-name">${TYPE_EMOJI[e.t] || '💫'} ${esc(e.n)}</div>
+        <div class="lib-meta">${e.s}×${e.r} · ${e.t}</div>
+      </div>
+      <button class="lib-add" onclick="addFromLib('${e.id}')" title="Dodaj do programu">+</button>
+    </div>`).join('') : '<p class="xs" style="padding:8px">Nic nie znaleziono.</p>';
+}
+
+function addFromLib(id) {
+  const e = EX_DB.find(x => x.id === id);
+  if (!e) return;
+  prog.push({ name: e.n, reps: e.r, sets: e.s, type: e.t, desc: e.d });
+  renderProg();
+  showToast(`Dodano: ${e.n}`);
+}
+
+function addCustom() {
+  const name = document.getElementById('c-name').value.trim();
+  if (!name) { showToast('Podaj nazwę ćwiczenia'); return; }
+  prog.push({
+    name,
+    reps: parseInt(document.getElementById('c-reps').value, 10) || 10,
+    sets: parseInt(document.getElementById('c-sets').value, 10) || 3,
+    type: document.getElementById('c-type').value,
+    desc: document.getElementById('c-desc').value.trim(),
+  });
+  document.getElementById('c-name').value = '';
+  document.getElementById('c-desc').value = '';
+  renderProg();
+}
+
+function progEdit(i, field, val) {
+  prog[i][field] = parseInt(val, 10) || 1;
+}
+
+function progRemove(i) {
+  prog.splice(i, 1);
+  renderProg();
+}
+
+function renderProg() {
+  document.getElementById('p-count').textContent = prog.length;
+  const el = document.getElementById('prog-list');
+  el.innerHTML = prog.length ? prog.map((e, i) => `
+    <div class="prog-item">
+      <div class="prog-name" title="${esc(e.name)}">${TYPE_EMOJI[e.type] || '💫'} ${esc(e.name)}</div>
+      <div style="text-align:center"><input type="number" min="1" value="${e.sets}" onchange="progEdit(${i},'sets',this.value)"><div class="x-lbl">serie</div></div>
+      <div style="text-align:center"><input type="number" min="1" value="${e.reps}" onchange="progEdit(${i},'reps',this.value)"><div class="x-lbl">powt.</div></div>
+      <button class="prog-x" onclick="progRemove(${i})" title="Usuń">✕</button>
+    </div>`).join('') : '<p class="xs">Dodawaj ćwiczenia z biblioteki poniżej lub wpisz własne.</p>';
+}
+
+function downloadProgram() {
+  if (!prog.length) { showToast('Dodaj najpierw ćwiczenia do programu'); return; }
+  const name = document.getElementById('p-name').value.trim() || 'Program rehabilitacji';
+  const data = {
+    rehabflowProgram: true,
+    version: 1,
+    name,
+    author: document.getElementById('p-author').value.trim(),
+    notes: document.getElementById('p-notes').value.trim(),
+    createdAt: RFCore.keyFromDate(new Date()),
+    exercises: prog,
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `rehabflow_program_${name.toLowerCase().replace(/[^a-z0-9ąćęłńóśźż]+/gi, '_').slice(0, 40)}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast('Plik programu pobrany — wyślij go pacjentowi 📤');
+}
+
+renderLib();
+renderProg();
+</script>
+</body>
+</html>

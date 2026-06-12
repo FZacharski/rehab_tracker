@@ -12,8 +12,13 @@ font Outfit, animowane tło „aurora", glassmorphism.
 
 ## Architektura
 
-- **Celowo brak bundlera i frameworka** — cała aplikacja to jeden plik `index.html`
-  (style + markup + vanilla JS), do tego `manifest.json`, `sw.js`, ikony PNG.
+- **Celowo brak bundlera i frameworka** — aplikacja to `index.html`
+  (style + markup + vanilla JS) + `core.js` (czysta logika bez DOM: daty, streak,
+  XP, statystyki — używana też przez testy), do tego `manifest.json`, `sw.js`, ikony PNG.
+- Testy: `node --test tests/core.test.js` (bez zależności). CI: GitHub Actions
+  (`.github/workflows/ci.yml`) uruchamia testy na push/PR.
+- Nową logikę liczenia (daty/streak/XP/statystyki) dodawać do `core.js` jako czyste
+  funkcje + test, nie do `index.html`.
 - Dane wyłącznie w `localStorage` (klucz `rehabflow_v3`, migracja ze starego `rehab_pwa_v2`).
   Brak backendu.
 - **Wszystkie ścieżki muszą być relatywne** (`./...`) — aplikacja jest hostowana
@@ -55,15 +60,34 @@ font Outfit, animowane tło „aurora", glassmorphism.
 
 ## Roadmapa uzgodniona z właścicielem (poziom komercyjny)
 
-Priorytet 1 (do zrobienia w obecnej architekturze, bez backendu):
-1. Biblioteka gotowych ćwiczeń + szablony programów (kolano, bark, kręgosłup, kostka)
-2. Tryb „Rozpocznij trening" — sesja krok po kroku, licznik serii, timer przerw z wibracją
-3. Onboarding przy pierwszym uruchomieniu (imię, wybór programu, godziny przypomnień)
-4. Edycja przeszłych dni z poziomu kalendarza (uzupełnianie zapomnianych odhaczeń)
+✅ ZROBIONE w v3.1 (czerwiec 2026):
+- Biblioteka 47 gotowych ćwiczeń + szablony programów (kolano, bark, kręgosłup, kostka)
+- Tryb „Rozpocznij trening" — sesja krok po kroku, licznik serii, timer przerw
+  z dźwiękiem i wibracją
+- Onboarding przy pierwszym uruchomieniu (imię, wybór programu, długość, przypomnienia)
+- Edycja przeszłych dni (kalendarz i pasek dni → arkusz edycji)
+- Raport dla fizjoterapeuty (okno wydruku → „Zapisz jako PDF"; celowo bez jsPDF,
+  bo standardowe fonty jsPDF nie mają polskich znaków)
+- Programy 2-8 tygodni, archiwum cykli, ekran ukończenia programu, nowy cykl
+- Pomiary postępu (zakres ruchu/obwód/waga) z wykresem trendu
+- Testy jednostkowe + CI, polityka prywatności (`prywatnosc.html`),
+  najlepszy streak, podsumowanie tygodnia, duża czcionka, baner zaległych dni
 
-Priorytet 2: raport PDF dla fizjoterapeuty (jsPDF), programy dłuższe niż 28 dni,
-archiwum cykli, pomiary postępu z trendami.
+✅ ZROBIONE w v3.2 — „wariant 0" współpracy z fizjoterapeutą (bez backendu):
+- `fizjo.html` — panel fizjoterapeuty: wczytuje JSON pacjenta (drag&drop, 100%
+  lokalnie), pokazuje frekwencję/ból/pomiary/notatki; kreator programu ćwiczeń
+  z biblioteki → eksport pliku programu
+- Plik programu: `{rehabflowProgram: true, name, author, notes, exercises[]}` —
+  pacjent wczytuje przez Postęp → Importuj; podmienia TYLKO listę ćwiczeń
+  (funkcja `importProgram` w index.html), historia/XP/odznaki zostają
+- Biblioteka ćwiczeń wydzielona do `exdb.js` (wspólna dla index.html i fizjo.html)
 
-Priorytet 3 (duże decyzje, wymagają zgody właściciela): Capacitor zamiast TWA
-(natywne przypomnienia AlarmManager), backup w chmurze (Supabase/Firebase),
-rozbicie na moduły + Vite + testy + CI, polityka prywatności pod Google Play.
+POZOSTAŁO (duże decyzje, wymagają zgody właściciela):
+- „Wariant 1" współpracy z fizjo: konta + synchronizacja live przez Supabase
+  (właściciel musi założyć projekt i podać URL + klucz anon; uwaga RODO — dane
+  zdrowotne, hosting UE)
+- Capacitor zamiast TWA (natywne przypomnienia AlarmManager — obecne działają
+  tylko przy otwartej aplikacji)
+- Backup w chmurze (Supabase/Firebase — wymaga założenia konta przez właściciela)
+- Wersja angielska (i18n — duży refaktor wszystkich tekstów UI)
+- Publikacja w Google Play (konto 25 USD + test zamknięty 12 testerów/14 dni)
