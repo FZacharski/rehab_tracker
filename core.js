@@ -75,7 +75,17 @@
     };
   }
 
+  /* polska odmiana: plural(2,'seria','serie','serii') -> 'serie' */
+  function plural(n, one, few, many) {
+    n = Math.abs(n);
+    if (n === 1) return one;
+    const d10 = n % 10, d100 = n % 100;
+    if (d10 >= 2 && d10 <= 4 && (d100 < 12 || d100 > 14)) return few;
+    return many;
+  }
+
   return {
+    plural: plural,
     keyFromDate: keyFromDate,
     dateFromKey: dateFromKey,
     addDays: addDays,

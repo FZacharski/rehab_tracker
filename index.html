@@ -482,7 +482,13 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
         <!-- missed-day banner -->
         <div class="install-banner" id="missed-banner" style="border-color:var(--warn)">
           <div class="ib-txt" id="missed-banner-txt"></div>
-          <button class="btn btn-secondary" style="padding:9px 14px;font-size:12px" onclick="this.parentElement.classList.remove('show')">OK</button>
+          <button class="btn btn-secondary" style="padding:9px 14px;font-size:12px" onclick="dismissMissedBanner()">OK</button>
+        </div>
+
+        <!-- update banner -->
+        <div class="install-banner" id="update-banner" style="border-color:var(--success)">
+          <div class="ib-txt">🔄 Nowa wersja aplikacji jest gotowa.</div>
+          <button class="btn btn-primary" style="padding:9px 14px;font-size:12px" onclick="location.reload()">Odśwież</button>
         </div>
 
         <!-- program complete -->
@@ -494,7 +500,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
             <div class="hero-flame">🔥</div>
             <div>
               <div class="hero-count" id="streak-count">0</div>
-              <div class="hero-label">dni z rzędu</div>
+              <div class="hero-label" id="streak-label">dni z rzędu</div>
               <div class="hero-msg" id="streak-msg">Zacznij dzisiaj!</div>
             </div>
             <div class="hero-xp">
@@ -910,6 +916,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
 'use strict';
 
 /* ══ CONSTANTS (biblioteka ćwiczeń: exdb.js) ════════════════ */
+const P = RFCore.plural; // polska odmiana liczebników
 const DAYS_PL   = ['Nd','Pn','Wt','Śr','Cz','Pt','Sb'];
 const DAYS_FULL = ['niedziela','poniedziałek','wtorek','środa','czwartek','piątek','sobota'];
 const MONTHS_PL = ['stycznia','lutego','marca','kwietnia','maja','czerwca','lipca','sierpnia','września','października','listopada','grudnia'];
@@ -1118,6 +1125,7 @@ function renderHero() {
   const streak = computeStreak();
   checkBadges();
   document.getElementById('streak-count').textContent = streak;
+  document.getElementById('streak-label').textContent = P(streak, 'dzień z rzędu', 'dni z rzędu', 'dni z rzędu');
   document.getElementById('xp-top').textContent = D.xp;
   document.getElementById('stat-streak').textContent = streak + '🔥';
   document.getElementById('stat-xp').textContent = D.xp;
@@ -1145,7 +1153,11 @@ function renderRing() {
 
 function renderDayStrip() {
   const strip = document.getElementById('day-strip');
-  const t = today(), ws = weekStart(weekOf(t));
+  const t = today();
+  // po zakończeniu programu pokazuj bieżący tydzień kalendarzowy (pon-nd)
+  const ws = isProgramOver()
+    ? addDays(t, -((dateFromKey(t).getDay() + 6) % 7))
+    : weekStart(weekOf(t));
   strip.innerHTML = '';
   for (let i = 0; i < 7; i++) {
     const k = addDays(ws, i);
@@ -1211,7 +1223,7 @@ function renderExList() {
       <div class="ex-check"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-10"/></svg></div>
       <div class="ex-info">
         <div class="ex-name">${esc(ex.name)}</div>
-        <div class="ex-meta">${ex.sets} serie × ${ex.reps} powt. · ${esc(ex.type)}</div>
+        <div class="ex-meta">${ex.sets} ${P(ex.sets,'seria','serie','serii')} × ${ex.reps} powt. · ${esc(ex.type)}</div>
       </div>
       <span class="ex-xp">+${exXP(ex)} XP</span>
       <button class="ex-edit" onclick="event.stopPropagation();openEditExercise(${ex.id})" aria-label="Edytuj">✏️</button>
@@ -1266,7 +1278,9 @@ function savePainDiff() {
 }
 
 function loadNote() {
-  document.getElementById('note-area').value = (D.days[today()] || {}).note || '';
+  const el = document.getElementById('note-area');
+  if (document.activeElement === el) return; // nie nadpisuj tekstu w trakcie pisania
+  el.value = (D.days[today()] || {}).note || '';
 }
 
 function saveNote() {
@@ -1341,7 +1355,7 @@ function trRender() {
     body.innerHTML = `
       <div class="tr-emoji">${TYPE_EMOJI[ex.type] || '💫'}</div>
       <div class="tr-name">${esc(ex.name)}</div>
-      <div class="tr-sets">Seria ${TR.set} z ${ex.sets} · ${ex.reps} powtórzeń</div>
+      <div class="tr-sets">Seria ${TR.set} z ${ex.sets} · ${ex.reps} ${P(ex.reps,'powtórzenie','powtórzenia','powtórzeń')}</div>
       <div class="tr-set-dots">${dots}</div>
       <div class="tr-desc">${esc(ex.desc || 'Wykonuj ruch powoli i kontrolowanie. Przerwij, jeśli poczujesz ostry ból.')}</div>`;
     bottom.innerHTML = `
@@ -1358,26 +1372,31 @@ function trDoneSet() {
   TR.set++;
   TR.resting = true;
   TR.restTotal = TR.restLeft = D.restSec || 30;
+  // odliczanie wg zegara, nie interwału — przeglądarka dławi interwały w tle
+  TR.restEnd = Date.now() + TR.restTotal * 1000;
   trRender();
   clearInterval(TR.timer);
   TR.timer = setInterval(() => {
-    TR.restLeft--;
-    const secEl = document.getElementById('tr-rest-sec');
-    const circEl = document.getElementById('tr-rest-circle');
-    if (secEl) secEl.textContent = Math.max(0, TR.restLeft);
-    if (circEl) {
-      const circ = 2 * Math.PI * 66;
-      circEl.setAttribute('stroke-dashoffset', circ * (1 - TR.restLeft / TR.restTotal));
+    const left = Math.max(0, Math.ceil((TR.restEnd - Date.now()) / 1000));
+    if (left !== TR.restLeft) {
+      TR.restLeft = left;
+      const secEl = document.getElementById('tr-rest-sec');
+      const circEl = document.getElementById('tr-rest-circle');
+      if (secEl) secEl.textContent = left;
+      if (circEl) {
+        const circ = 2 * Math.PI * 66;
+        circEl.setAttribute('stroke-dashoffset', circ * (1 - left / TR.restTotal));
+      }
+      if (left <= 3 && left > 0) beep(660, .1);
     }
-    if (TR.restLeft <= 3 && TR.restLeft > 0) beep(660, .1);
-    if (TR.restLeft <= 0) {
+    if (left <= 0) {
       clearInterval(TR.timer);
       beep(990, .25);
       if (navigator.vibrate) navigator.vibrate([80, 60, 80]);
       TR.resting = false;
       trRender();
     }
-  }, 1000);
+  }, 200);
 }
 
 function trSkipRest() {
@@ -1904,7 +1923,7 @@ function renderLibrary() {
     ? items.map(e => `
       <div class="lib-item" onclick="pickFromLibrary('${e.id}')">
         <div class="lib-name">${TYPE_EMOJI[e.t] || '💫'} ${esc(e.n)}</div>
-        <div class="lib-meta">${e.s} serie × ${e.r} powt. · ${e.t}</div>
+        <div class="lib-meta">${e.s} ${P(e.s,'seria','serie','serii')} × ${e.r} powt. · ${e.t}</div>
         <div class="lib-desc">${esc(e.d)}</div>
       </div>`).join('')
     : '<div class="text-sm text-muted" style="padding:12px">Nic nie znaleziono.</div>';
@@ -2110,7 +2129,7 @@ function showToast(msg) {
 function showCelebrate(newBadges) {
   const streak = computeStreak();
   document.getElementById('cel-icon').textContent = streak >= 7 ? '👑' : streak >= 3 ? '🔥' : '🎉';
-  document.getElementById('cel-title').textContent = streak > 0 ? `${streak} dni z rzędu!` : 'Dzień zaliczony!';
+  document.getElementById('cel-title').textContent = streak > 0 ? `${streak} ${P(streak,'dzień','dni','dni')} z rzędu!` : 'Dzień zaliczony!';
   let sub = 'Wszystkie ćwiczenia ukończone!';
   if (newBadges && newBadges.length) {
     const names = newBadges.map(bid => BADGES.find(b => b.id === bid)).filter(Boolean);
@@ -2200,10 +2219,12 @@ function fireNotif() {
   if (total > 0 && done >= total) return;
   const streak = computeStreak();
   const missed = getMissedDays();
+  const left = total - done;
+  const leftTxt = `${left} ${P(left, 'ćwiczenie', 'ćwiczenia', 'ćwiczeń')}`;
   let title = '🏃 Czas na rehabilitację!';
-  let body = `Masz ${total - done} ćwiczeń do zrobienia.`;
+  let body = `Masz ${leftTxt} do zrobienia.`;
   if (missed >= 2) { title = '⚠️ Nie zapomnij o rehabilitacji!'; body = `Pominięto ${missed} dni. Wróć na właściwy tor!`; }
-  else if (streak > 0) { title = `🔥 Chroń swój streak! (${streak} dni)`; body = `Jeszcze ${total - done} ćwiczeń dzisiaj.`; }
+  else if (streak > 0) { title = `🔥 Chroń swój streak! (${streak} ${P(streak,'dzień','dni','dni')})`; body = `Jeszcze ${leftTxt} dzisiaj.`; }
   try { new Notification(title, { body, icon: 'icon-192.png', badge: 'icon-192.png' }); } catch (e) {}
 }
 
@@ -2216,8 +2237,9 @@ function getMissedDays() {
   return missed;
 }
 
-/* baner po powrocie do aplikacji, gdy są zaległe dni */
+/* baner po powrocie do aplikacji, gdy są zaległe dni (zamknięcie pamiętane przez dzień) */
 function checkMissedBanner() {
+  if (localStorage.getItem('rf_missed_ok') === today()) return;
   const missed = getMissedDays();
   if (missed >= 1 && D.exercises.length && !isProgramOver()) {
     const el = document.getElementById('missed-banner');
@@ -2228,11 +2250,17 @@ function checkMissedBanner() {
   }
 }
 
+function dismissMissedBanner() {
+  localStorage.setItem('rf_missed_ok', today());
+  document.getElementById('missed-banner').classList.remove('show');
+}
+
 function openNotifSheet() {
   const total = D.exercises.length, done = doneCount(today()), streak = computeStreak();
+  const left = total - done;
   const msg = total > 0 && done >= total
-    ? `✅ Świetna robota! Wszystkie ${total} ćwiczenia ukończone dzisiaj!<br>Twój streak: <strong>${streak} dni 🔥</strong>`
-    : `Zostało Ci jeszcze <strong>${total - done} ćwiczeń</strong> na dziś.<br>Streak: <strong>${streak} dni 🔥</strong><br><br>${streak > 0 ? 'Nie przerywaj passy — dasz radę!' : 'Zacznij budować streak już dziś!'}`;
+    ? `✅ Świetna robota! Wszystkie ćwiczenia (${total}) ukończone dzisiaj!<br>Twój streak: <strong>${streak} ${P(streak,'dzień','dni','dni')} 🔥</strong>`
+    : `Zostało Ci jeszcze <strong>${left} ${P(left,'ćwiczenie','ćwiczenia','ćwiczeń')}</strong> na dziś.<br>Streak: <strong>${streak} ${P(streak,'dzień','dni','dni')} 🔥</strong><br><br>${streak > 0 ? 'Nie przerywaj passy — dasz radę!' : 'Zacznij budować streak już dziś!'}`;
   document.getElementById('notif-sheet-body').innerHTML = msg;
   openModal('notif-sheet');
 }
@@ -2273,7 +2301,7 @@ function importProgram(prog) {
   const list = prog.exercises.filter(e => e && e.name);
   if (!list.length) { showToast('Plik programu jest pusty'); return; }
   const from = prog.author ? ` od: ${prog.author}` : '';
-  if (!confirm(`Załadować program „${prog.name || 'bez nazwy'}"${from} (${list.length} ćwiczeń)?\n\nZastąpi obecną listę ćwiczeń — historia, XP i odznaki zostają.`)) return;
+  if (!confirm(`Załadować program „${prog.name || 'bez nazwy'}"${from} (${list.length} ${P(list.length,'ćwiczenie','ćwiczenia','ćwiczeń')})?\n\nZastąpi obecną listę ćwiczeń — historia, XP i odznaki zostają.`)) return;
   D.exercises = [];
   list.forEach(e => {
     D.exercises.push({
@@ -2323,7 +2351,18 @@ window.addEventListener('appinstalled', () => {
 
 /* ══ SERVICE WORKER ═════════════════════════════════════════ */
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
+  navigator.serviceWorker.register('sw.js').then(reg => {
+    // baner „nowa wersja gotowa" gdy w tle zainstaluje się aktualizacja
+    reg.addEventListener('updatefound', () => {
+      const nw = reg.installing;
+      if (!nw) return;
+      nw.addEventListener('statechange', () => {
+        if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+          document.getElementById('update-banner').classList.add('show');
+        }
+      });
+    });
+  }).catch(() => {});
 }
 
 /* ══ SPLASH & INIT ══════════════════════════════════════════ */

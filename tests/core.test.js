@@ -115,6 +115,23 @@ test('cycleStats podsumowuje cykl', () => {
   assert.strictEqual(st.avgPain, 3);
 });
 
+/* ── plural ── */
+test('plural odmienia polskie liczebniki', () => {
+  const p = (n) => RF.plural(n, 'seria', 'serie', 'serii');
+  assert.strictEqual(p(1), 'seria');
+  assert.strictEqual(p(2), 'serie');
+  assert.strictEqual(p(4), 'serie');
+  assert.strictEqual(p(5), 'serii');
+  assert.strictEqual(p(11), 'serii');
+  assert.strictEqual(p(12), 'serii');
+  assert.strictEqual(p(14), 'serii');
+  assert.strictEqual(p(22), 'serie');
+  assert.strictEqual(p(25), 'serii');
+  assert.strictEqual(p(112), 'serii');
+  assert.strictEqual(RF.plural(1, 'dzień', 'dni', 'dni'), 'dzień');
+  assert.strictEqual(RF.plural(7, 'dzień', 'dni', 'dni'), 'dni');
+});
+
 test('cycleStats: avgPain null bez danych o bólu', () => {
   const st = RF.cycleStats({}, [1], '2026-06-01', 2, '2026-06-05');
   assert.strictEqual(st.avgPain, null);
