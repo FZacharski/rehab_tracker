@@ -1586,6 +1586,21 @@ function renderRecentNotes() {
 /* ══ TRAINER ════════════════════════════════════════════════ */
 const TR = { queue: [], i: 0, set: 1, resting: false, restLeft: 0, restTotal: 0, timer: null, holding: false, holdEnd: 0 };
 
+/* ekran nie gaśnie w trakcie treningu (Wake Lock API) */
+let wakeLock = null;
+async function acquireWakeLock() {
+  try {
+    if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
+  } catch (e) { /* brak wsparcia / odmowa — trening działa normalnie */ }
+}
+function releaseWakeLock() {
+  if (wakeLock) { wakeLock.release().catch(() => {}); wakeLock = null; }
+}
+// system zwalnia blokadę przy zminimalizowaniu — odzyskaj po powrocie
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && document.getElementById('trainer').classList.contains('open')) acquireWakeLock();
+});
+
 function startTraining() {
   const t = today();
   const doneIds = new Set((D.days[t] || {}).completed || []);
@@ -1596,6 +1611,7 @@ function startTraining() {
   }
   TR.i = 0; TR.set = 1; TR.resting = false; TR.holding = false;
   document.getElementById('trainer').classList.add('open');
+  acquireWakeLock();
   trRender();
 }
 
@@ -1789,6 +1805,7 @@ function trClose() {
   clearInterval(TR.timer);
   TR.resting = false;
   TR.holding = false;
+  releaseWakeLock();
   document.getElementById('trainer').classList.remove('open');
   renderHome();
 }
