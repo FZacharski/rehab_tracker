@@ -1601,8 +1601,43 @@ document.addEventListener('visibilitychange', () => {
   if (!document.hidden && document.getElementById('trainer').classList.contains('open')) acquireWakeLock();
 });
 
+/* ── zapis stanu treningu: powrót po przerwaniu (telefon, połączenie…) ── */
+const TR_STATE_KEY = 'rf_trainer_state';
+
+function trSaveState() {
+  try {
+    localStorage.setItem(TR_STATE_KEY, JSON.stringify({ date: today(), queue: TR.queue, i: TR.i, set: TR.set }));
+  } catch (e) {}
+}
+
+function trClearState() { localStorage.removeItem(TR_STATE_KEY); }
+
+/* zwraca zapisany stan tylko, jeśli wciąż ma sens (dziś, ćwiczenie istnieje i nieukończone) */
+function trSavedState() {
+  try {
+    const s = JSON.parse(localStorage.getItem(TR_STATE_KEY));
+    if (!s || s.date !== today() || !Array.isArray(s.queue) || !s.queue.length) return null;
+    if (!Number.isInteger(s.i) || s.i < 0 || s.i >= s.queue.length) return null;
+    if (!Number.isInteger(s.set) || s.set < 1) return null;
+    const doneIds = new Set((D.days[today()] || {}).completed || []);
+    const exId = s.queue[s.i];
+    if (doneIds.has(exId) || !D.exercises.some(e => e.id === exId)) return null;
+    return s;
+  } catch (e) { return null; }
+}
+
 function startTraining() {
   const t = today();
+  const saved = trSavedState();
+  if (saved && confirm(`Masz przerwany trening: ćwiczenie ${saved.i + 1} z ${saved.queue.length}, seria ${saved.set}.\n\nKontynuować od tego miejsca?`)) {
+    TR.queue = saved.queue; TR.i = saved.i; TR.set = saved.set;
+    TR.resting = false; TR.holding = false;
+    document.getElementById('trainer').classList.add('open');
+    acquireWakeLock();
+    trRender();
+    return;
+  }
+  trClearState();
   const doneIds = new Set((D.days[t] || {}).completed || []);
   TR.queue = scheduledFor(t).filter(id => !doneIds.has(id));
   if (!TR.queue.length) {
@@ -1620,6 +1655,7 @@ function trCurrentEx() { return D.exercises.find(e => e.id === TR.queue[TR.i]); 
 function trRender() {
   const ex = trCurrentEx();
   if (!ex) { trClose(); return; }
+  trSaveState();
   const body = document.getElementById('tr-body');
   const bottom = document.getElementById('tr-bottom');
   document.getElementById('tr-count').textContent = `${TR.i + 1} / ${TR.queue.length}`;
@@ -1806,6 +1842,8 @@ function trClose() {
   TR.resting = false;
   TR.holding = false;
   releaseWakeLock();
+  // trening dokończony lub dzień pełny → stan niepotrzebny; ręczne zamknięcie go zachowuje
+  if (TR.i >= TR.queue.length || isFull(today())) trClearState();
   document.getElementById('trainer').classList.remove('open');
   renderHome();
 }
