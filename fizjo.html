@@ -122,13 +122,13 @@ canvas { width: 100%; }
   <div class="col">
     <div class="card">
       <h2>1 · Postęp pacjenta</h2>
-      <p class="muted">Poproś pacjenta o plik kopii zapasowej (w aplikacji: <strong>Postęp → Eksportuj dane (JSON)</strong>) i wczytaj go tutaj. Analiza odbywa się w całości na Twoim urządzeniu.</p>
+      <p class="muted">Poproś pacjenta o plik kopii zapasowej (w aplikacji: <strong>Postęp → Kopia zapasowa</strong> lub <strong>Eksportuj dane (JSON)</strong>) i wczytaj go tutaj. Analiza odbywa się w całości na Twoim urządzeniu.</p>
       <div class="drop" id="drop" onclick="document.getElementById('file-in').click()" style="margin-top:12px">
         <div class="ic">📂</div>
-        <div class="t1">Upuść plik JSON pacjenta lub kliknij</div>
-        <div class="xs" style="margin-top:4px">rehabflow_backup_*.json</div>
+        <div class="t1">Upuść plik pacjenta lub kliknij</div>
+        <div class="xs" style="margin-top:4px">rehabflow_kopia_*.html lub rehabflow_backup_*.json</div>
       </div>
-      <input type="file" id="file-in" accept=".json" style="display:none" onchange="loadPatientFile(this.files[0]);this.value=''">
+      <input type="file" id="file-in" accept=".json,.html,application/json,text/html" style="display:none" onchange="loadPatientFile(this.files[0]);this.value=''">
     </div>
     <div id="patient-area"></div>
   </div>
@@ -208,7 +208,14 @@ function loadPatientFile(file) {
   const r = new FileReader();
   r.onload = e => {
     try {
-      const d = JSON.parse(e.target.result);
+      let txt = e.target.result;
+      // kopia zapasowa HTML z aplikacji pacjenta — dane osadzone w skrypcie
+      if (/^\s*</.test(txt) && txt.includes('rehabflow-data')) {
+        const m = txt.match(/<script type="application\/json" id="rehabflow-data">([\s\S]*?)<\/script>/);
+        if (!m) throw new Error('bad');
+        txt = m[1];
+      }
+      const d = JSON.parse(txt);
       if (!d || typeof d !== 'object' || !Array.isArray(d.exercises) || !d.days) throw new Error('bad');
       renderPatient(d);
       showToast('Dane pacjenta wczytane ✓');
