@@ -82,6 +82,31 @@ font Outfit, animowane tło „aurora", glassmorphism.
   (funkcja `importProgram` w index.html), historia/XP/odznaki zostają
 - Biblioteka ćwiczeń wydzielona do `exdb.js` (wspólna dla index.html i fizjo.html)
 
+✅ ZROBIONE w v3.3 (lipiec 2026) — pakiet „komercyjny":
+- Kalendarz miesięczny z nawigacją ‹ › — edycja KAŻDEGO przeszłego dnia (także
+  sprzed startu programu / z poprzednich miesięcy) + heatmapa całej historii (styl GitHub)
+- Harmonogram tygodniowy: ćwiczenia przypisane do dni tygodnia (`ex.days`,
+  null = codziennie); streak/statystyki/odznaki pomijają dni odpoczynku (logika w core.js)
+- Ćwiczenia na czas (`ex.mode='time'`, `ex.seconds`) z odliczaniem w trenerze
+  (plank itp.); wpisy w exdb.js mogą mieć `m:'time', sec:N`
+- Misje tygodniowe: 3 losowe/tydzień (deterministyczne — RFCore.pickIndices po
+  poniedziałku tygodnia), ręczny odbiór XP, `missionsClaimed`+`missionXP`;
+  `dd.fullAt` = timestamp ukończenia dnia (dla misji „przed 12:00")
+- Karta osiągnięć: canvas 1080px → PNG → Web Share API (fallback: pobranie)
+- Zdjęcia postępu w IndexedDB (`rehabflow_photos`), skalowane do 1280px JPEG;
+  NIE wchodzą do backupu JSON/HTML
+- Kopia zapasowa HTML: stylowany plik czytelny na telefonie z osadzonym JSON
+  (`<script type="application/json" id="rehabflow-data">`); import przyjmuje .json i .html
+- Wykresy SVG (ból+trudność, pomiary) z siatką, osiami i tooltipem dotykowym;
+  nowe statystyki: najlepsze dni tygodnia, skuteczność per ćwiczenie
+- Motyw „auto" (prefers-color-scheme), prefers-reduced-motion, Esc zamyka modale,
+  autozapis notatki (debounce), sync między kartami (storage event), sanitizeData
+  przy load/imporcie, clamp wartości formularzy, podwójne potwierdzenie resetu,
+  undo usunięcia ćwiczenia, zmiana kolejności ćwiczeń, krótszy splash dla powracających
+
+UWAGA dla przyszłych sesji: doneCount/isFull/streak liczą wg ćwiczeń ZAPLANOWANYCH
+na dany dzień (harmonogram) — przekazuj do RFCore całe obiekty ćwiczeń, nie same id.
+
 POZOSTAŁO (duże decyzje, wymagają zgody właściciela):
 - „Wariant 1" współpracy z fizjo: konta + synchronizacja live przez Supabase
   (właściciel musi założyć projekt i podać URL + klucz anon; uwaga RODO — dane

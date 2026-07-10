@@ -137,3 +137,82 @@ test('cycleStats: avgPain null bez danych o bólu', () => {
   assert.strictEqual(st.avgPain, null);
   assert.strictEqual(st.totalDays, 14);
 });
+
+/* ── harmonogram tygodniowy ── */
+// 2026-06-08 = poniedziałek (1), 2026-06-09 = wtorek (2), ...
+const MON = { id: 1, days: [1] };          // tylko poniedziałki
+const DAILY = { id: 2 };                   // codziennie (brak days)
+
+test('idsForDay zwraca tylko ćwiczenia zaplanowane na dany dzień', () => {
+  assert.deepStrictEqual(RF.idsForDay([MON, DAILY], '2026-06-08'), [1, 2]); // pon
+  assert.deepStrictEqual(RF.idsForDay([MON, DAILY], '2026-06-09'), [2]);    // wt
+});
+
+test('isRestDay: dzień bez zaplanowanych ćwiczeń', () => {
+  assert.strictEqual(RF.isRestDay([MON], '2026-06-09'), true);  // wt, tylko pon w planie
+  assert.strictEqual(RF.isRestDay([MON], '2026-06-08'), false);
+  assert.strictEqual(RF.isRestDay([], '2026-06-08'), false);    // brak programu ≠ odpoczynek
+});
+
+test('isFull z harmonogramem: wystarczą ćwiczenia zaplanowane na ten dzień', () => {
+  const days = { '2026-06-09': fullDay([2]) }; // wtorek: tylko DAILY zaplanowane
+  assert.strictEqual(RF.isFull(days, [MON, DAILY], '2026-06-09'), true);
+  assert.strictEqual(RF.isFull(days, [MON, DAILY], '2026-06-08'), false); // pon wymaga obu
+});
+
+test('streak: dni odpoczynku nie przerywają passy i nie są liczone', () => {
+  // plan: pon+wt (id 1), dziś czwartek 2026-06-11; śr = odpoczynek
+  const ex = [{ id: 1, days: [1, 2] }];
+  const days = {
+    '2026-06-08': fullDay([1]), // pon
+    '2026-06-09': fullDay([1]), // wt
+  };
+  assert.strictEqual(RF.computeStreak(days, ex, '2026-06-11'), 2);
+});
+
+test('streak: pusty harmonogram wszystkich ćwiczeń daje 0 (bez zapętlenia)', () => {
+  assert.strictEqual(RF.computeStreak({}, [{ id: 1, days: [] }], '2026-06-11'), 0);
+});
+
+test('weekPct ignoruje dni odpoczynku w mianowniku', () => {
+  // plan: tylko pon+wt; tydzień od pon 2026-06-08, dziś czw 2026-06-11
+  const ex = [{ id: 1, days: [1, 2] }];
+  const days = { '2026-06-08': fullDay([1]) }; // pon zrobiony, wt nie
+  assert.strictEqual(RF.weekPct(days, ex, '2026-06-08', 0, '2026-06-11'), 50);
+});
+
+test('cycleStats z harmonogramem: totalDays liczy tylko dni treningowe', () => {
+  const ex = [{ id: 1, days: [1, 3, 5] }]; // pon/śr/pt
+  const st = RF.cycleStats({}, ex, '2026-06-08', 2, '2026-06-08');
+  assert.strictEqual(st.totalDays, 6); // 3 dni × 2 tygodnie
+});
+
+/* ── XP ćwiczeń ── */
+test('exerciseXP: powtórzenia i tryb czasowy', () => {
+  assert.strictEqual(RF.exerciseXP({ sets: 3, reps: 10 }), 16);            // 3*10/5+10
+  assert.strictEqual(RF.exerciseXP({ sets: 3, seconds: 30, mode: 'time' }), 19); // 3*30/10+10
+  assert.strictEqual(RF.exerciseXP({}), 10);
+});
+
+test('computeXP używa pełnej wartości ćwiczenia', () => {
+  const ex = [{ id: 1, sets: 3, reps: 10 }];
+  const days = { '2026-06-10': fullDay([1]) };
+  assert.strictEqual(RF.computeXP(days, ex), 16 + 25);
+});
+
+/* ── misje: deterministyczny wybór ── */
+test('pickIndices: ten sam seed daje ten sam wynik, indeksy unikalne', () => {
+  const a = RF.pickIndices('2026-07-06', 8, 3);
+  const b = RF.pickIndices('2026-07-06', 8, 3);
+  assert.deepStrictEqual(a, b);
+  assert.strictEqual(new Set(a).size, 3);
+  a.forEach(i => assert.ok(i >= 0 && i < 8));
+  const c = RF.pickIndices('2026-07-13', 8, 3);
+  assert.notDeepStrictEqual(a, c); // inny tydzień → (niemal na pewno) inne misje
+});
+
+test('mondayOf zwraca poniedziałek tygodnia', () => {
+  assert.strictEqual(RF.mondayOf('2026-06-11'), '2026-06-08'); // czwartek → pon
+  assert.strictEqual(RF.mondayOf('2026-06-08'), '2026-06-08'); // pon → pon
+  assert.strictEqual(RF.mondayOf('2026-06-14'), '2026-06-08'); // nd → pon
+});
