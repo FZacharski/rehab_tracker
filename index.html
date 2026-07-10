@@ -588,6 +588,15 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
           <button class="btn btn-primary" style="padding:9px 14px;font-size:12px" onclick="location.reload()">Odśwież</button>
         </div>
 
+        <!-- backup reminder -->
+        <div class="install-banner" id="backup-banner" style="border-color:var(--indigo)">
+          <div class="ib-txt" id="backup-banner-txt"></div>
+          <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
+            <button class="btn btn-primary" style="padding:8px 13px;font-size:12px" onclick="backupNow()">💾 Zrób kopię</button>
+            <button class="btn btn-secondary" style="padding:6px 13px;font-size:11px" onclick="snoozeBackupBanner()">Później</button>
+          </div>
+        </div>
+
         <!-- program complete -->
         <div id="complete-area"></div>
 
@@ -1153,6 +1162,7 @@ function defaultData() {
     measurements: [],
     missionXP: 0,
     missionsClaimed: {},
+    lastBackup: null,
     onboarded: false,
     profile: { name:'', diagnosis:'', therapist:'', injuryDate:'', therapistNotes:'' },
   };
@@ -1198,6 +1208,7 @@ function sanitizeData(d) {
   if (!Array.isArray(d.badges)) d.badges = [];
   if (typeof d.missionXP !== 'number' || !isFinite(d.missionXP)) d.missionXP = 0;
   if (!d.missionsClaimed || typeof d.missionsClaimed !== 'object') d.missionsClaimed = {};
+  if (d.lastBackup != null && !DATE_KEY_RE.test(String(d.lastBackup))) d.lastBackup = null;
   if (!d.profile || typeof d.profile !== 'object') d.profile = def.profile;
   if (!['dark','light','auto'].includes(d.theme)) d.theme = 'dark';
   return d;
@@ -3039,6 +3050,40 @@ function dismissMissedBanner() {
   document.getElementById('missed-banner').classList.remove('show');
 }
 
+/* ══ OCHRONA DANYCH: trwały magazyn + przypomnienie o kopii ═ */
+/* prosi przeglądarkę o ochronę danych przed automatycznym czyszczeniem */
+function requestPersistentStorage() {
+  if (!navigator.storage || !navigator.storage.persist) return;
+  navigator.storage.persisted().then(p => {
+    if (!p) navigator.storage.persist().catch(() => {});
+  }).catch(() => {});
+}
+
+/* baner co 14 dni od ostatniej kopii (odłożenie „Później" = 7 dni ciszy) */
+function checkBackupBanner() {
+  const el = document.getElementById('backup-banner');
+  const t = today();
+  if (!D.exercises.length || diffDays(earliestDataKey(), t) < 14) return;
+  const snooze = localStorage.getItem('rf_backup_snooze');
+  if (snooze && diffDays(snooze, t) < 7) return;
+  const since = D.lastBackup ? diffDays(D.lastBackup, t) : null;
+  if (since !== null && since < 14) return;
+  document.getElementById('backup-banner-txt').textContent = since === null
+    ? '💾 Masz już sporo historii, a nigdy nie zrobiono kopii zapasowej. Dane są tylko na tym urządzeniu!'
+    : `💾 Ostatnia kopia zapasowa: ${since} dni temu. Warto odświeżyć backup.`;
+  el.classList.add('show');
+}
+
+function backupNow() {
+  exportHTML();
+  document.getElementById('backup-banner').classList.remove('show');
+}
+
+function snoozeBackupBanner() {
+  localStorage.setItem('rf_backup_snooze', today());
+  document.getElementById('backup-banner').classList.remove('show');
+}
+
 function openNotifSheet() {
   const total = scheduledFor(today()).length, done = doneCount(today()), streak = computeStreak();
   const left = total - done;
@@ -3166,6 +3211,7 @@ async function deletePhotoCurrent() {
 
 /* ══ EXPORT / IMPORT ════════════════════════════════════════ */
 function exportJSON() {
+  D.lastBackup = today(); saveData();
   const blob = new Blob([JSON.stringify(D, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -3178,6 +3224,7 @@ function exportJSON() {
 /* kopia zapasowa jako HTML — otwiera się czytelnie na telefonie,
    a osadzone dane pozwalają ją zaimportować z powrotem */
 function exportHTML() {
+  D.lastBackup = today(); saveData();
   const p = D.profile || {};
   const t = today();
   const st = RFCore.cycleStats(D.days, D.exercises, D.startDate, totalWeeks(), t);
@@ -3414,10 +3461,12 @@ renderHome();
 initSplash();
 scheduleNotifications();
 checkMissedBanner();
+checkBackupBanner();
+requestPersistentStorage();
 
 // odśwież widok po powrocie do aplikacji (np. zmiana dnia)
 document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) { renderPage(currentPage); checkMissedBanner(); }
+  if (!document.hidden) { renderPage(currentPage); checkMissedBanner(); checkBackupBanner(); }
 });
 </script>
 </body>
