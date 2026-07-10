@@ -268,6 +268,10 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
 .tr-rest-ring { position: relative; width: 150px; height: 150px; }
 .tr-rest-num { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 42px; font-weight: 800; }
 .tr-rest-lbl { font-size: 11px; color: var(--text3); font-weight: 700; text-transform: uppercase; letter-spacing: .1em; }
+.tr-summary { display: flex; gap: 9px; margin-top: 6px; }
+.trs-chip { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); padding: 12px 14px; min-width: 68px; }
+.trs-chip b { display: block; font-size: 20px; font-weight: 800; background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.trs-chip span { font-size: 10px; color: var(--text3); font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
 
 /* ══ CALENDAR ════════════════════════════════════════════════ */
 .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
@@ -1584,7 +1588,8 @@ function renderRecentNotes() {
 }
 
 /* ══ TRAINER ════════════════════════════════════════════════ */
-const TR = { queue: [], i: 0, set: 1, resting: false, restLeft: 0, restTotal: 0, timer: null, holding: false, holdEnd: 0 };
+const TR = { queue: [], i: 0, set: 1, resting: false, restLeft: 0, restTotal: 0, timer: null, holding: false, holdEnd: 0,
+  startedAt: 0, sessionDone: 0, sessionXP: 0 };
 
 /* ekran nie gaśnie w trakcie treningu (Wake Lock API) */
 let wakeLock = null;
@@ -1606,7 +1611,10 @@ const TR_STATE_KEY = 'rf_trainer_state';
 
 function trSaveState() {
   try {
-    localStorage.setItem(TR_STATE_KEY, JSON.stringify({ date: today(), queue: TR.queue, i: TR.i, set: TR.set }));
+    localStorage.setItem(TR_STATE_KEY, JSON.stringify({
+      date: today(), queue: TR.queue, i: TR.i, set: TR.set,
+      startedAt: TR.startedAt, sessionDone: TR.sessionDone, sessionXP: TR.sessionXP,
+    }));
   } catch (e) {}
 }
 
@@ -1631,6 +1639,9 @@ function startTraining() {
   const saved = trSavedState();
   if (saved && confirm(`Masz przerwany trening: ćwiczenie ${saved.i + 1} z ${saved.queue.length}, seria ${saved.set}.\n\nKontynuować od tego miejsca?`)) {
     TR.queue = saved.queue; TR.i = saved.i; TR.set = saved.set;
+    TR.startedAt = saved.startedAt || Date.now();
+    TR.sessionDone = saved.sessionDone || 0;
+    TR.sessionXP = saved.sessionXP || 0;
     TR.resting = false; TR.holding = false;
     document.getElementById('trainer').classList.add('open');
     acquireWakeLock();
@@ -1645,6 +1656,7 @@ function startTraining() {
     return;
   }
   TR.i = 0; TR.set = 1; TR.resting = false; TR.holding = false;
+  TR.startedAt = Date.now(); TR.sessionDone = 0; TR.sessionXP = 0;
   document.getElementById('trainer').classList.add('open');
   acquireWakeLock();
   trRender();
@@ -1807,7 +1819,7 @@ function trSkipEx() {
   TR.holding = false;
   TR.set = 1;
   TR.i++;
-  if (TR.i >= TR.queue.length) { trClose(); renderHome(); return; }
+  if (TR.i >= TR.queue.length) { trShowSummary(); return; }
   trRender();
 }
 
@@ -1817,24 +1829,63 @@ function trFinishEx() {
   const dd = getDay(today());
   if (ex && !dd.completed.includes(ex.id)) {
     dd.completed.push(ex.id);
+    TR.sessionDone++;
+    TR.sessionXP += exXP(ex);
     xpFloat(null, `+${exXP(ex)} XP`);
   }
   checkBadges(); saveData();
   if (isFull(today())) {
     if (!dd.fullAt) dd.fullAt = new Date().toISOString(); // godzina ukończenia (misje)
-    trClose();
     const newBadges = checkBadges();
     saveData();
     burstConfetti();
     showCelebrate(newBadges);
+    TR.sessionXP += 25; // bonus za pełny dzień
+    trShowSummary();
     return;
   }
   TR.set = 1;
   TR.resting = false;
   TR.holding = false;
   TR.i++;
-  if (TR.i >= TR.queue.length) { trClose(); renderHome(); return; }
+  if (TR.i >= TR.queue.length) { trShowSummary(); return; }
   trRender();
+}
+
+/* ── podsumowanie sesji: domknięcie pętli motywacyjnej ── */
+const DAYS_ACC = ['w niedzielę','w poniedziałek','we wtorek','w środę','w czwartek','w piątek','w sobotę'];
+function nextTrainingDay() {
+  const t = today();
+  for (let i = 1; i <= 7; i++) {
+    const k = addDays(t, i);
+    if (k > programEnd()) return null;
+    if (scheduledFor(k).length) return i === 1 ? 'jutro' : DAYS_ACC[RFCore.weekdayOf(k)];
+  }
+  return null;
+}
+
+function trShowSummary() {
+  clearInterval(TR.timer);
+  TR.resting = false; TR.holding = false;
+  trClearState();
+  if (!TR.sessionDone) { trClose(); return; }
+  const mins = Math.round((Date.now() - (TR.startedAt || Date.now())) / 60000);
+  const streak = computeStreak();
+  const next = nextTrainingDay();
+  document.getElementById('tr-progress').style.width = '100%';
+  document.getElementById('tr-count').textContent = '✓';
+  document.getElementById('tr-body').innerHTML = `
+    <div class="tr-emoji">🎉</div>
+    <div class="tr-name">Trening ukończony!</div>
+    <div class="tr-summary">
+      <div class="trs-chip"><b>${TR.sessionDone}</b><span>${P(TR.sessionDone,'ćwiczenie','ćwiczenia','ćwiczeń')}</span></div>
+      <div class="trs-chip"><b>${mins < 1 ? '<1' : mins}</b><span>min</span></div>
+      <div class="trs-chip"><b>+${TR.sessionXP}</b><span>XP</span></div>
+      <div class="trs-chip"><b>${streak}🔥</b><span>streak</span></div>
+    </div>
+    <div class="tr-desc">${next ? `Następny trening: ${next}. Do zobaczenia!` : 'Program dobiega końca — świetna robota!'}</div>`;
+  document.getElementById('tr-bottom').innerHTML =
+    `<button class="btn btn-primary btn-full tr-action" onclick="trClose()">Zakończ</button>`;
 }
 
 function trClose() {
