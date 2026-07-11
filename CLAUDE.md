@@ -104,8 +104,23 @@ font Outfit, animowane tło „aurora", glassmorphism.
   przy load/imporcie, clamp wartości formularzy, podwójne potwierdzenie resetu,
   undo usunięcia ćwiczenia, zmiana kolejności ćwiczeń, krótszy splash dla powracających
 
+✅ ZROBIONE w v3.3.1–v3.3.3 (lipiec 2026) — pakiet „komfort i ochrona danych":
+- navigator.storage.persist() + baner przypomnienia o kopii co 14 dni (`D.lastBackup`)
+- fizjo.html czyta też kopię HTML pacjenta (rehabflow_kopia_*.html)
+- Wake Lock w trenerze (ekran nie gaśnie; ponowne przejęcie po visibilitychange)
+- Wznowienie przerwanego treningu (stan w localStorage `rf_trainer_state`, tego samego dnia)
+- Ekran podsumowania sesji (liczba ćwiczeń, czas, XP z bonusem, następny trening)
+- Dni usprawiedliwione (`dd.excused` — choroba nie przerywa passy; logika w core.js,
+  przełącznik w edycji dnia, osobny kolor w kalendarzu)
+- Pomiary: data wsteczna (walidacja max dziś) + edycja wpisów
+- Dziennik wszystkich notatek z wyszukiwarką (klik → edycja dnia)
+- Skróty PWA (?action=train/calendar) + ignoreSearch w cache SW (działają offline);
+  w TWA pojawią się dopiero po przebudowaniu APK
+- Onboarding: krok wyboru dni treningowych (harmonogram dla programu startowego)
+
 UWAGA dla przyszłych sesji: doneCount/isFull/streak liczą wg ćwiczeń ZAPLANOWANYCH
 na dany dzień (harmonogram) — przekazuj do RFCore całe obiekty ćwiczeń, nie same id.
+Dni z `excused: true` traktuj jak odpoczynek (poza mianownikami statystyk).
 
 POZOSTAŁO (duże decyzje, wymagają zgody właściciela):
 - „Wariant 1" współpracy z fizjo: konta + synchronizacja live przez Supabase
