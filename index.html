@@ -375,6 +375,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
 .meas-row:last-child { border-bottom: none; }
 .meas-val { font-weight: 800; background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 .meas-del { margin-left: auto; background: none; border: none; color: var(--text3); font-size: 14px; cursor: pointer; padding: 4px 8px; }
+.meas-row.editing { background: var(--grad-soft); border-radius: 8px; padding-left: 8px; padding-right: 4px; }
 
 /* ══ ZDJĘCIA POSTĘPU ═════════════════════════════════════════ */
 .photo-strip { display: flex; gap: 9px; overflow-x: auto; scrollbar-width: none; padding: 2px 0; }
@@ -759,7 +760,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
         <div class="card">
           <div class="section-hdr"><span class="section-title">Pomiary postępu</span></div>
           <div class="form-row" style="grid-template-columns:1.3fr 1fr">
-            <select class="form-input" id="meas-type" onchange="renderMeasures()">
+            <select class="form-input" id="meas-type" onchange="measCancelEdit();renderMeasures()">
               <option value="rom">Zakres ruchu (°)</option>
               <option value="obwod">Obwód (cm)</option>
               <option value="waga">Waga (kg)</option>
@@ -767,7 +768,10 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
             </select>
             <input class="form-input" id="meas-val" type="number" step="0.1" inputmode="decimal" placeholder="Wartość">
           </div>
-          <button class="btn btn-secondary btn-full mt-8" onclick="addMeasure()">+ Dodaj pomiar</button>
+          <div class="form-row mt-8" style="grid-template-columns:1fr 1fr">
+            <input class="form-input" id="meas-date" type="date">
+            <button class="btn btn-secondary" id="meas-add-btn" onclick="addMeasure()">+ Dodaj pomiar</button>
+          </div>
           <div class="chart-box" id="meas-chart" style="display:none;margin-top:12px"></div>
           <div id="meas-list" class="mt-8"></div>
         </div>
@@ -2413,16 +2417,45 @@ function renderExEffectiveness() {
 const MEAS_LABELS = { rom: 'Zakres ruchu', obwod: 'Obwód', waga: 'Waga', inne: 'Inne' };
 const MEAS_UNITS  = { rom: '°', obwod: 'cm', waga: 'kg', inne: '' };
 
+let editingMeasIdx = null; // indeks edytowanego pomiaru w D.measurements
+
+function measCancelEdit() {
+  editingMeasIdx = null;
+  const btn = document.getElementById('meas-add-btn');
+  if (btn) btn.textContent = '+ Dodaj pomiar';
+}
+
 function addMeasure() {
   const type = document.getElementById('meas-type').value;
   const val = parseFloat(document.getElementById('meas-val').value);
-  if (isNaN(val)) { showToast('Podaj wartość pomiaru'); return; }
-  D.measurements.push({ date: today(), type, value: val });
+  const date = document.getElementById('meas-date').value || today();
+  if (isNaN(val) || !isFinite(val)) { showToast('Podaj wartość pomiaru'); return; }
+  if (!DATE_KEY_RE.test(date) || date > today()) { showToast('Data pomiaru nie może być w przyszłości'); return; }
+  if (editingMeasIdx !== null && D.measurements[editingMeasIdx]) {
+    Object.assign(D.measurements[editingMeasIdx], { date, type, value: val });
+    showToast('Pomiar zaktualizowany ✓');
+  } else {
+    D.measurements.push({ date, type, value: val });
+    showToast('Pomiar zapisany ✓');
+  }
+  measCancelEdit();
   document.getElementById('meas-val').value = '';
-  saveData(); renderMeasures(); showToast('Pomiar zapisany ✓');
+  saveData(); renderMeasures();
+}
+
+function editMeasure(idx) {
+  const m = D.measurements[idx];
+  if (!m) return;
+  editingMeasIdx = idx;
+  document.getElementById('meas-type').value = m.type;
+  document.getElementById('meas-val').value = m.value;
+  document.getElementById('meas-date').value = m.date;
+  document.getElementById('meas-add-btn').textContent = '💾 Zapisz zmianę';
+  renderMeasures();
 }
 
 function delMeasure(idx) {
+  measCancelEdit();
   D.measurements.splice(idx, 1);
   saveData(); renderMeasures();
 }
@@ -2430,6 +2463,9 @@ function delMeasure(idx) {
 function renderMeasures() {
   const type = document.getElementById('meas-type').value;
   const list = document.getElementById('meas-list');
+  const dateEl = document.getElementById('meas-date');
+  dateEl.max = today();
+  if (!dateEl.value) dateEl.value = today();
   const entries = D.measurements
     .map((m, idx) => ({ ...m, idx }))
     .filter(m => m.type === type)
@@ -2440,10 +2476,11 @@ function renderMeasures() {
     return;
   }
   list.innerHTML = entries.slice().reverse().map(m => `
-    <div class="meas-row">
+    <div class="meas-row${m.idx === editingMeasIdx ? ' editing' : ''}">
       <span class="text-muted">${formatShort(m.date)}</span>
       <span class="meas-val">${m.value}${MEAS_UNITS[m.type]}</span>
-      <button class="meas-del" onclick="delMeasure(${m.idx})">✕</button>
+      <button class="meas-del" onclick="editMeasure(${m.idx})" aria-label="Edytuj">✏️</button>
+      <button class="meas-del" style="margin-left:0" onclick="delMeasure(${m.idx})" aria-label="Usuń">✕</button>
     </div>`).join('');
 }
 
