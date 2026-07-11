@@ -2997,7 +2997,7 @@ function startOnboarding() {
 }
 
 function obDots() {
-  return `<div class="ob-dots">${[0,1,2].map(i => `<div class="ob-dot${i === obStep ? ' active' : ''}"></div>`).join('')}</div>`;
+  return `<div class="ob-dots">${[0,1,2,3].map(i => `<div class="ob-dot${i === obStep ? ' active' : ''}"></div>`).join('')}</div>`;
 }
 
 function renderOnboard() {
@@ -3006,7 +3006,7 @@ function renderOnboard() {
     card.innerHTML = `${obDots()}
       <div class="ob-logo"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h3l2.5-6 4 12 3-8 1.5 2H22"/></svg></div>
       <div class="ob-title">Witaj w RehabFlow! 👋</div>
-      <div class="ob-sub">Twój osobisty dziennik rehabilitacji.<br>Skonfigurujmy go w 3 krokach.</div>
+      <div class="ob-sub">Twój osobisty dziennik rehabilitacji.<br>Skonfigurujmy go w 4 krokach.</div>
       <div class="ob-body">
         <label class="form-label">Jak masz na imię?</label>
         <input class="form-input" id="ob-name" placeholder="Twoje imię" value="${esc((D.profile || {}).name || '')}">
@@ -3034,6 +3034,20 @@ function renderOnboard() {
         <button class="btn ob-back" onclick="obPrev()">← Wstecz</button>
         <button class="btn btn-primary" onclick="obNext()">Dalej →</button>
       </div>`;
+  } else if (obStep === 2) {
+    card.innerHTML = `${obDots()}
+      <div class="ob-title">W które dni ćwiczysz? 📅</div>
+      <div class="ob-sub">Dni odpoczynku nie przerywają Twojej passy.<br>Możesz to później zmienić dla każdego ćwiczenia osobno.</div>
+      <div class="ob-body">
+        <div class="dow-row" id="ob-days">
+          ${[1,2,3,4,5,6,0].map(d => `<button type="button" class="dow-chip${obDaysSel.has(d) ? ' on' : ''}" onclick="obToggleDow(${d})">${DAYS_PL[d]}</button>`).join('')}
+        </div>
+        <div class="xs" style="color:rgba(255,255,255,.5);font-size:11.5px;margin-top:10px;text-align:center">${obDaysSel.size === 7 ? 'Codziennie — pełna mobilizacja! 💪' : obDaysSel.size === 0 ? 'Wybierz przynajmniej jeden dzień' : `${obDaysSel.size} ${P(obDaysSel.size,'dzień','dni','dni')} treningowe w tygodniu`}</div>
+      </div>
+      <div class="ob-nav">
+        <button class="btn ob-back" onclick="obPrev()">← Wstecz</button>
+        <button class="btn btn-primary" onclick="obNext()" ${obDaysSel.size === 0 ? 'disabled style="opacity:.5"' : ''}>Dalej →</button>
+      </div>`;
   } else {
     card.innerHTML = `${obDots()}
       <div class="ob-title">Przypomnienia ⏰</div>
@@ -3050,14 +3064,22 @@ function renderOnboard() {
 }
 
 let obName = '', obWeeks = 4;
+let obDaysSel = new Set([0,1,2,3,4,5,6]); // domyślnie codziennie
+
+function obToggleDow(d) {
+  if (obDaysSel.has(d)) obDaysSel.delete(d); else obDaysSel.add(d);
+  renderOnboard();
+}
 
 function obNext() {
   if (obStep === 0) {
     obName = (document.getElementById('ob-name').value || '').trim();
   } else if (obStep === 1) {
     obWeeks = parseInt(document.getElementById('ob-weeks').value, 10) || 4;
+  } else if (obStep === 2 && obDaysSel.size === 0) {
+    return; // przynajmniej jeden dzień treningowy
   }
-  obStep = Math.min(2, obStep + 1);
+  obStep = Math.min(3, obStep + 1);
   renderOnboard();
   // przywróć wybraną długość po ponownym renderze kroku 1→2→1
   const sel = document.getElementById('ob-weeks');
@@ -3080,11 +3102,13 @@ function finishOnboarding() {
   D.notifHour1 = document.getElementById('ob-hour1').value || '09:00';
   D.notifHour2 = document.getElementById('ob-hour2').value || '20:00';
   const prog = PROGRAMS.find(p => p.id === obProgram);
+  // harmonogram z onboardingu: wszystkie dni = codziennie (null)
+  const obDays = (obDaysSel.size === 0 || obDaysSel.size === 7) ? null : [...obDaysSel].sort();
   if (prog && prog.ex.length && !D.exercises.length) {
     prog.ex.forEach(eid => {
       const e = EX_DB.find(x => x.id === eid);
       if (e) D.exercises.push({ id: D.nextId++, name: e.n, reps: e.r, sets: e.s, type: e.t, desc: e.d,
-        mode: e.m === 'time' ? 'time' : 'reps', seconds: e.sec || 30, days: null });
+        mode: e.m === 'time' ? 'time' : 'reps', seconds: e.sec || 30, days: obDays ? obDays.slice() : null });
     });
   }
   D.startDate = today();
