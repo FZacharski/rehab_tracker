@@ -902,7 +902,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
             <input type="time" id="s-hour2" value="20:00" class="form-input" style="width:108px">
           </div>
           <button class="btn btn-secondary btn-full mt-8" onclick="saveNotifSettings()">Zapisz godziny</button>
-          <div class="text-xs text-muted mt-8" style="line-height:1.5">ℹ️ Przypomnienia działają, gdy aplikacja jest otwarta lub uruchomiona w tle przeglądarki. Po ponownym otwarciu aplikacja przypomni też o zaległych dniach.</div>
+          <div class="text-xs text-muted mt-8" style="line-height:1.5" id="notif-hint">ℹ️ Przypomnienia działają, gdy aplikacja jest otwarta lub uruchomiona w tle przeglądarki. Po ponownym otwarciu aplikacja przypomni też o zaległych dniach.</div>
         </div>
 
         <div class="card">
@@ -2773,6 +2773,8 @@ function renderSettings() {
   ['dark','light','auto'].forEach(m =>
     document.getElementById('theme-' + m).classList.toggle('active', D.theme === m));
   document.getElementById('s-start').max = today(); // start programu nie może być w przyszłości
+  if (isNativeApp()) document.getElementById('notif-hint').textContent =
+    'ℹ️ Wersja aplikacji: przypomnienia natywne — zadzwonią o ustawionej godzinie nawet przy zamkniętej aplikacji.';
   updateNotifStatus();
 }
 
@@ -3197,8 +3199,44 @@ function burstConfetti() {
 }
 
 /* ══ NOTIFICATIONS ══════════════════════════════════════════ */
+/* powłoka natywna (Capacitor): AlarmManager budzi telefon nawet przy
+   zamkniętej aplikacji — web używa setTimeout jako fallbacku */
+function isNativeApp() {
+  return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+}
+
+async function nativeSyncReminders() {
+  if (!isNativeApp()) return false;
+  try {
+    const LN = window.Capacitor.Plugins.LocalNotifications;
+    if (!LN) return false;
+    await LN.cancel({ notifications: [{ id: 1 }, { id: 2 }] }).catch(() => {});
+    if (!D.notifEnabled) return true;
+    const perm = await LN.requestPermissions();
+    if (perm.display !== 'granted') {
+      D.notifEnabled = false; saveData(); updateNotifStatus();
+      return true;
+    }
+    const mk = (id, hStr) => {
+      const [h, m] = (hStr || '09:00').split(':').map(Number);
+      return {
+        id,
+        title: '🏃 Czas na rehabilitację!',
+        body: 'Twoje ćwiczenia czekają — utrzymaj passę!',
+        schedule: { on: { hour: h, minute: m }, allowWhileIdle: true },
+      };
+    };
+    await LN.schedule({ notifications: [mk(1, D.notifHour1), mk(2, D.notifHour2)] });
+    return true;
+  } catch (e) { return false; }
+}
+
 function updateNotifStatus() {
   const el = document.getElementById('notif-status');
+  if (isNativeApp()) {
+    el.textContent = D.notifEnabled ? 'Aktywne ✓ (natywne — działają też przy zamkniętej aplikacji)' : 'Wyłączone';
+    return;
+  }
   if (!('Notification' in window)) { el.textContent = 'Nieobsługiwane w tej przeglądarce'; return; }
   if (Notification.permission === 'granted') el.textContent = D.notifEnabled ? 'Aktywne ✓' : 'Wyłączone';
   else if (Notification.permission === 'denied') el.textContent = 'Zablokowane — zmień w ustawieniach systemu';
@@ -3207,6 +3245,15 @@ function updateNotifStatus() {
 
 function toggleNotif(checkbox) {
   if (checkbox.checked) {
+    if (isNativeApp()) {
+      D.notifEnabled = true; saveData();
+      nativeSyncReminders().then(() => {
+        updateNotifStatus();
+        showToast(D.notifEnabled ? 'Powiadomienia włączone! 🔔' : 'Uprawnienie odrzucone');
+        if (!D.notifEnabled) checkbox.checked = false;
+      });
+      return;
+    }
     if (!('Notification' in window)) { showToast('Przeglądarka nie obsługuje powiadomień'); checkbox.checked = false; return; }
     Notification.requestPermission().then(perm => {
       if (perm === 'granted') { D.notifEnabled = true; saveData(); scheduleNotifications(); showToast('Powiadomienia włączone! 🔔'); }
@@ -3215,10 +3262,12 @@ function toggleNotif(checkbox) {
     });
   } else {
     D.notifEnabled = false; saveData(); updateNotifStatus();
+    if (isNativeApp()) nativeSyncReminders();
   }
 }
 
 function scheduleNotifications() {
+  if (isNativeApp()) { nativeSyncReminders(); return; } // natywna powłoka przejmuje przypomnienia
   if (!D.notifEnabled || !('Notification' in window) || Notification.permission !== 'granted') return;
   const now = new Date();
   [D.notifHour1 || '09:00', D.notifHour2 || '20:00'].forEach(hStr => {
