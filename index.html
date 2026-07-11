@@ -1084,6 +1084,16 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
   </div>
 </div>
 
+<!-- ══ DZIENNIK NOTATEK ══ -->
+<div class="modal-overlay" id="notes-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📝 Dziennik notatek</div>
+    <input class="form-input" id="notes-search" placeholder="🔍 Szukaj w notatkach..." oninput="renderNotesJournal()" style="margin-bottom:10px">
+    <div id="notes-journal" style="max-height:56dvh;overflow-y:auto"></div>
+  </div>
+</div>
+
 <!-- ══ NOTIF SHEET ══ -->
 <div class="modal-overlay" id="notif-sheet">
   <div class="modal-sheet">
@@ -1583,20 +1593,52 @@ function saveNote() {
 
 function renderRecentNotes() {
   const box = document.getElementById('recent-notes');
+  const totalNotes = Object.keys(D.days).filter(k => (D.days[k].note || '').trim()).length;
   const entries = [];
   for (let i = 1; i <= 7; i++) {
     const k = addDays(today(), -i);
     const dd = D.days[k];
     if (dd && dd.note && dd.note.trim()) entries.push({ k, note: dd.note, d: dateFromKey(k) });
   }
-  if (!entries.length) { box.innerHTML = ''; return; }
+  if (!totalNotes) { box.innerHTML = ''; return; }
   box.innerHTML = `
-    <div class="section-hdr" style="margin-top:16px"><span class="section-title">Ostatnie notatki</span></div>
-    <div class="gap-12">${entries.map(e => `
+    <div class="section-hdr" style="margin-top:16px">
+      <span class="section-title">Ostatnie notatki</span>
+      <button class="section-action" onclick="openNotesJournal()">Wszystkie (${totalNotes}) ▸</button>
+    </div>
+    ${entries.length ? `<div class="gap-12">${entries.map(e => `
       <div class="card" style="border-left:3px solid var(--violet)">
         <div class="text-xs text-muted">${DAYS_PL[e.d.getDay()]}, ${e.d.getDate()} ${MONTHS_PL[e.d.getMonth()]}</div>
         <div class="text-sm mt-4" style="line-height:1.5">${esc(e.note)}</div>
-      </div>`).join('')}</div>`;
+      </div>`).join('')}</div>` : '<div class="text-xs text-muted">Brak notatek z ostatnich 7 dni — starsze znajdziesz w dzienniku.</div>'}`;
+}
+
+/* ── dziennik wszystkich notatek z wyszukiwarką ── */
+function openNotesJournal() {
+  document.getElementById('notes-search').value = '';
+  renderNotesJournal();
+  openModal('notes-modal');
+}
+
+function renderNotesJournal() {
+  const q = (document.getElementById('notes-search').value || '').toLowerCase().trim();
+  const entries = Object.keys(D.days)
+    .filter(k => (D.days[k].note || '').trim())
+    .filter(k => !q || D.days[k].note.toLowerCase().includes(q))
+    .sort().reverse();
+  const box = document.getElementById('notes-journal');
+  if (!entries.length) {
+    box.innerHTML = `<div class="empty-state" style="padding:26px 16px"><div class="empty-icon">📝</div><div class="empty-sub">${q ? 'Brak notatek pasujących do wyszukiwania.' : 'Nie masz jeszcze żadnych notatek.'}</div></div>`;
+    return;
+  }
+  box.innerHTML = `<div class="gap-12">${entries.map(k => {
+    const dd = D.days[k], d = dateFromKey(k);
+    const meta = [dd.pain ? `😣 ${dd.pain}/10` : '', dd.difficulty ? `💪 ${dd.difficulty}/10` : ''].filter(Boolean).join(' · ');
+    return `<div class="card" style="border-left:3px solid var(--violet);cursor:pointer" onclick="closeModal('notes-modal');openDayEdit('${k}')">
+      <div class="text-xs text-muted">${DAYS_PL[d.getDay()]}, ${d.getDate()} ${MONTHS_PL[d.getMonth()]} ${d.getFullYear()}${meta ? ' · ' + meta : ''}</div>
+      <div class="text-sm mt-4" style="line-height:1.5">${esc(dd.note)}</div>
+    </div>`;
+  }).join('')}</div>`;
 }
 
 /* ══ TRAINER ════════════════════════════════════════════════ */
