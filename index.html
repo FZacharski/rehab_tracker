@@ -3623,7 +3623,17 @@ function initSplash() {
     s.classList.add('hiding');
     setTimeout(() => s.remove(), 600);
     if (!D.onboarded) startOnboarding();
+    else handleLaunchAction();
   }, fast ? 1000 : 2000);
+}
+
+/* skróty PWA z manifestu: ?action=train / ?action=calendar */
+function handleLaunchAction() {
+  const action = new URLSearchParams(location.search).get('action');
+  if (!action) return;
+  history.replaceState(null, '', location.pathname); // nie powtarzaj po odświeżeniu
+  if (action === 'train') startTraining();
+  else if (action === 'calendar') switchPage('calendar', document.querySelector('[data-page=calendar]'));
 }
 
 /* ── autozapis notatki dnia (bez utraty tekstu przy wyjściu) ── */

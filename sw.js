@@ -26,9 +26,11 @@ self.addEventListener('activate', e => {
 // stale-while-revalidate: szybki start z cache, ciche odświeżenie w tle
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
+  // ignoreSearch: skróty PWA (?action=...) muszą trafiać w cache index.html offline
+  const sameOrigin = e.request.url.startsWith(self.location.origin);
   e.respondWith(
     caches.open(CACHE).then(cache =>
-      cache.match(e.request).then(cached => {
+      cache.match(e.request, { ignoreSearch: sameOrigin }).then(cached => {
         const fetched = fetch(e.request).then(resp => {
           if (resp && resp.ok && (e.request.url.startsWith(self.location.origin) || resp.type === 'cors')) {
             cache.put(e.request, resp.clone());

@@ -18,6 +18,20 @@
   "categories": ["health", "fitness", "medical"],
   "shortcuts": [
     {
+      "name": "Rozpocznij trening",
+      "short_name": "Trening",
+      "description": "Od razu uruchom dzisiejszą sesję ćwiczeń",
+      "url": "./index.html?action=train",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Kalendarz",
+      "short_name": "Kalendarz",
+      "description": "Zobacz historię i uzupełnij dni",
+      "url": "./index.html?action=calendar",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
       "name": "Dzisiejsze ćwiczenia",
       "short_name": "Dzisiaj",
       "description": "Otwórz dzisiejszą listę ćwiczeń",
