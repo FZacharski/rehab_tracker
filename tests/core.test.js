@@ -211,6 +211,44 @@ test('pickIndices: ten sam seed daje ten sam wynik, indeksy unikalne', () => {
   assert.notDeepStrictEqual(a, c); // inny tydzień → (niemal na pewno) inne misje
 });
 
+/* ── dni usprawiedliwione ── */
+test('streak: dzień usprawiedliwiony nie przerywa passy', () => {
+  const days = {
+    '2026-06-08': fullDay([1]),
+    '2026-06-09': { completed: [], pain: 0, difficulty: 0, note: '', excused: true }, // choroba
+    '2026-06-10': fullDay([1]),
+  };
+  assert.strictEqual(RF.computeStreak(days, [1], '2026-06-11'), 2);
+});
+
+test('streak: pełny dzień mimo usprawiedliwienia liczy się normalnie', () => {
+  const days = {
+    '2026-06-09': { completed: [1], pain: 0, difficulty: 0, note: '', excused: true },
+    '2026-06-10': fullDay([1]),
+  };
+  assert.strictEqual(RF.computeStreak(days, [1], '2026-06-11'), 2);
+});
+
+test('weekPct: usprawiedliwiony niewykonany dzień poza mianownikiem', () => {
+  const days = {
+    '2026-06-08': fullDay([1]),
+    '2026-06-09': { completed: [], pain: 0, difficulty: 0, note: '', excused: true },
+  };
+  // pon zrobiony, wt usprawiedliwiony, śr-czw (do "dziś" 2026-06-11) niezrobione → 1/3
+  assert.strictEqual(RF.weekPct(days, [1], '2026-06-08', 0, '2026-06-11'), 33);
+});
+
+test('cycleStats: usprawiedliwione dni poza elapsed i totalDays', () => {
+  const days = {
+    '2026-06-01': fullDay([1]),
+    '2026-06-02': { completed: [], pain: 0, difficulty: 0, note: '', excused: true },
+  };
+  const st = RF.cycleStats(days, [1], '2026-06-01', 1, '2026-06-03');
+  assert.strictEqual(st.doneDays, 1);
+  assert.strictEqual(st.elapsed, 2);   // 1, 3 (2 usprawiedliwiony)
+  assert.strictEqual(st.totalDays, 6); // 7 - 1 usprawiedliwiony
+});
+
 test('mondayOf zwraca poniedziałek tygodnia', () => {
   assert.strictEqual(RF.mondayOf('2026-06-11'), '2026-06-08'); // czwartek → pon
   assert.strictEqual(RF.mondayOf('2026-06-08'), '2026-06-08'); // pon → pon

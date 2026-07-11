@@ -36,6 +36,12 @@
     return ex.length > 0 && idsForDay(ex, k).length === 0;
   }
 
+  /* dzień usprawiedliwiony (choroba, zalecona przerwa) — nie przerywa passy,
+     nie liczy się do mianowników; pełne wykonanie mimo usprawiedliwienia liczy się normalnie */
+  function isExcused(days, k) {
+    return ((days[k] || {}).excused) === true;
+  }
+
   /* liczy ukończenia ćwiczeń zaplanowanych na dany dzień (i nadal istniejących) */
   function doneCount(days, exercises, k) {
     const ids = new Set(idsForDay(exercises, k));
@@ -75,9 +81,9 @@
     let streak = 0, d = todayK, guard = 0;
     if (!isFull(days, ex, d)) d = addDays(d, -1);
     while (guard++ < 3700) {
-      if (isRestDay(ex, d)) { d = addDays(d, -1); continue; }
-      if (!isFull(days, ex, d)) break;
-      streak++; d = addDays(d, -1);
+      if (isFull(days, ex, d)) { streak++; d = addDays(d, -1); continue; }
+      if (isRestDay(ex, d) || isExcused(days, d)) { d = addDays(d, -1); continue; }
+      break;
     }
     return streak;
   }
@@ -113,8 +119,9 @@
       const d = addDays(ws, i);
       if (d > todayK) continue;
       if (isRestDay(ex, d)) continue;
+      if (isFull(days, ex, d)) { possible++; done++; continue; }
+      if (isExcused(days, d)) continue; // usprawiedliwiony i niewykonany — poza mianownikiem
       possible++;
-      if (isFull(days, ex, d)) done++;
     }
     return possible ? Math.round(done / possible * 100) : 0;
   }
@@ -127,11 +134,13 @@
     for (let i = 0; i < span; i++) {
       const k = addDays(startDate, i);
       const rest = isRestDay(ex, k);
-      if (!rest) totalDays++;
+      const full = !rest && isFull(days, ex, k);
+      const skipped = !rest && !full && isExcused(days, k); // usprawiedliwiony bez treningu
+      if (!rest && !skipped) totalDays++;
       if (k > todayK) continue;
-      if (!rest) {
+      if (!rest && !skipped) {
         elapsed++;
-        if (isFull(days, ex, k)) doneDays++;
+        if (full) doneDays++;
       }
       const p = (days[k] || {}).pain || 0;
       if (p > 0) { painSum += p; painN++; }
@@ -195,6 +204,7 @@
     weekdayOf: weekdayOf,
     idsForDay: idsForDay,
     isRestDay: isRestDay,
+    isExcused: isExcused,
     doneCount: doneCount,
     doneCountAny: doneCountAny,
     isFull: isFull,

@@ -289,6 +289,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
 .cal-cell.partial { background: var(--warn-bg); border-color: var(--warn); color: var(--warn); }
 .cal-cell.missed { background: var(--danger-bg); color: var(--danger); }
 .cal-cell.rest { background: transparent; border-style: dashed; border-color: var(--border); color: var(--text3); }
+.cal-cell.excused { background: rgba(129,140,248,.1); border-style: dashed; border-color: var(--indigo); color: var(--indigo); opacity: .8; }
 .cal-cell.future { opacity: .35; }
 .cal-cell.outside { opacity: .55; }
 .cal-dot { width: 4px; height: 4px; border-radius: 50%; background: currentColor; margin-top: 2px; opacity: .6; }
@@ -700,6 +701,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
             <span><i style="background:var(--warn-bg);border:1.5px solid var(--warn)"></i>Częściowy</span>
             <span><i style="background:var(--danger-bg);border:1.5px solid var(--danger)"></i>Pominięty</span>
             <span><i style="border:1.5px dashed var(--border)"></i>Odpoczynek</span>
+            <span><i style="background:rgba(129,140,248,.15);border:1.5px dashed var(--indigo)"></i>Usprawiedliwiony</span>
           </div>
         </div>
         <div class="card mt-12" id="cal-detail" style="display:none">
@@ -1065,6 +1067,10 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
       <input type="range" min="0" max="10" value="0" id="dm-diff" oninput="document.getElementById('dm-diff-val').textContent=this.value">
       <span class="slider-val" id="dm-diff-val">0</span>
     </div>
+    <div class="toggle-row" style="border-bottom:none;padding:2px 0 12px">
+      <div><div class="toggle-label">🤒 Dzień usprawiedliwiony</div><div class="toggle-sub">Choroba lub zalecona przerwa — nie przerywa passy</div></div>
+      <label class="switch"><input type="checkbox" id="dm-excused"><span class="switch-track"></span></label>
+    </div>
     <div class="section-title" style="margin-bottom:10px">Notatka</div>
     <textarea id="dm-note" rows="2" maxlength="600" placeholder="Notatka z tego dnia..."></textarea>
     <div style="display:flex;gap:10px;margin-top:16px">
@@ -1203,6 +1209,7 @@ function sanitizeData(d) {
     dd.pain = Math.min(10, Math.max(0, parseInt(dd.pain, 10) || 0));
     dd.difficulty = Math.min(10, Math.max(0, parseInt(dd.difficulty, 10) || 0));
     if (typeof dd.note !== 'string') dd.note = '';
+    if (dd.excused !== true) delete dd.excused;
   });
   if (!DATE_KEY_RE.test(String(d.startDate))) d.startDate = today();
   if (![2,4,6,8].includes(d.programWeeks)) d.programWeeks = 4;
@@ -1246,6 +1253,7 @@ function diffDays(a, b) { return RFCore.diffDays(a, b); }
 function exIds() { return D.exercises.map(e => e.id); }
 function scheduledFor(k) { return RFCore.idsForDay(D.exercises, k); }
 function isRestDay(k) { return RFCore.isRestDay(D.exercises, k); }
+function isExcused(k) { return RFCore.isExcused(D.days, k); }
 function doneCount(k) { return RFCore.doneCount(D.days, D.exercises, k); }
 function isFull(k) { return RFCore.isFull(D.days, D.exercises, k); }
 function computeStreak() { return RFCore.computeStreak(D.days, D.exercises, today()); }
@@ -1301,7 +1309,7 @@ function checkBadges() {
     for (let i = 0; i < 7; i++) {
       const d = addDays(weekStart(w), i);
       if (d > t) { allDone = false; break; }
-      if (isRestDay(d)) continue; // dni odpoczynku nie blokują odznaki tygodnia
+      if (isRestDay(d) || (isExcused(d) && !isFull(d))) continue; // odpoczynek/usprawiedliwienie nie blokuje odznaki
       trainDays++;
       if (!isFull(d)) { allDone = false; break; }
     }
@@ -1436,7 +1444,7 @@ function renderDayStrip() {
     let cls = 'day-pill';
     if (isToday) cls += ' today';
     if (!(k > t) && isFull(k)) cls += ' done';
-    else if (isPast && D.exercises.length > 0 && !isRestDay(k)) cls += ' missed';
+    else if (isPast && D.exercises.length > 0 && !isRestDay(k) && !isExcused(k)) cls += ' missed';
     const dn = dateFromKey(k);
     strip.innerHTML += `<div class="${cls}" onclick="openDayEdit('${k}')">
       <div class="day-name">${DAYS_PL[dn.getDay()]}</div>
@@ -2041,6 +2049,7 @@ function renderCalendar() {
     if (isFut) cls += ' future';
     else if (scheduled > 0 && done >= scheduled) cls += ' full';
     else if (anyDone > 0) cls += ' partial';
+    else if (isExcused(k)) cls += ' excused';
     else if (isRestDay(k)) cls += ' rest';
     else if (isPast && inProgram && D.exercises.length > 0) cls += ' missed';
     if (!inProgram && !isToday) cls += ' outside';
@@ -2099,7 +2108,8 @@ function showCalDetail(k) {
   document.getElementById('cal-detail-date').textContent = formatDate(k);
   document.getElementById('cal-detail-edit').style.display = (k <= today()) ? 'inline' : 'none';
   let body;
-  if (isRestDay(k) && anyDone === 0) body = '😌 Dzień odpoczynku — nic nie zaplanowano';
+  if (isExcused(k) && anyDone === 0) body = '🤒 Dzień usprawiedliwiony — nie przerywa passy';
+  else if (isRestDay(k) && anyDone === 0) body = '😌 Dzień odpoczynku — nic nie zaplanowano';
   else if (scheduled > 0) body = `${doneCount(k)}/${scheduled} ćwiczeń ukończono${anyDone > doneCount(k) ? ` (+${anyDone - doneCount(k)} poza planem)` : ''}`;
   else body = `${anyDone} ćwiczeń wykonano`;
   if (dd.pain) body += ` · Ból: ${dd.pain}/10`;
@@ -2131,6 +2141,7 @@ function openDayEdit(k) {
   document.getElementById('dm-pain-val').textContent = dd.pain || 0;
   document.getElementById('dm-diff').value = dd.difficulty || 0;
   document.getElementById('dm-diff-val').textContent = dd.difficulty || 0;
+  document.getElementById('dm-excused').checked = dd.excused === true;
   document.getElementById('dm-note').value = dd.note || '';
   openModal('day-modal');
 }
@@ -2147,6 +2158,7 @@ function saveDayEdit() {
   dd.completed = checked;
   dd.pain = parseInt(document.getElementById('dm-pain').value, 10);
   dd.difficulty = parseInt(document.getElementById('dm-diff').value, 10);
+  if (document.getElementById('dm-excused').checked) dd.excused = true; else delete dd.excused;
   dd.note = document.getElementById('dm-note').value;
   if (editDayKey === today() && isFull(editDayKey) && !dd.fullAt) dd.fullAt = new Date().toISOString();
   const newBadges = checkBadges();
@@ -2189,8 +2201,9 @@ function renderWeekSummary() {
     const k = addDays(ws, i);
     if (k > t) break;
     if (isRestDay(k)) continue; // dni odpoczynku poza mianownikiem
+    if (isFull(k)) { elapsed++; done++; continue; }
+    if (isExcused(k)) continue; // usprawiedliwiony bez treningu — poza mianownikiem
     elapsed++;
-    if (isFull(k)) done++;
   }
   const painNow = avgPainInRange(ws, 7);
   const painPrev = w > 0 ? avgPainInRange(weekStart(w - 1), 7) : null;
@@ -2238,7 +2251,7 @@ function renderChartBars() {
     bar.style.background = isFut ? 'var(--border)' :
       pct === 100 ? 'linear-gradient(180deg,#34D399,#10B981)' :
       pct > 0 ? 'var(--grad)' :
-      k < t ? 'var(--danger)' : 'var(--border)';
+      (k < t && !isExcused(k) && !isRestDay(k)) ? 'var(--danger)' : 'var(--border)';
     el.appendChild(bar);
     if (!isFut) setTimeout(() => bar.style.height = (pct / 100 * 78 + 4) + 'px', i * 14);
   }
@@ -2346,6 +2359,7 @@ function renderWeekdayChart() {
   const full = [0,0,0,0,0,0,0], poss = [0,0,0,0,0,0,0];
   for (let k = from; k <= t; k = addDays(k, 1)) {
     if (isRestDay(k)) continue;
+    if (isExcused(k) && !isFull(k)) continue;
     const wd = RFCore.weekdayOf(k);
     poss[wd]++;
     if (isFull(k)) full[wd]++;
@@ -2377,8 +2391,10 @@ function renderExEffectiveness() {
       const k = addDays(D.startDate, i);
       if (k > t) break;
       if (!RFCore.idsForDay([ex], k).length) continue; // poza harmonogramem
+      const wasDone = ((D.days[k] || {}).completed || []).includes(ex.id);
+      if (isExcused(k) && !wasDone) continue; // usprawiedliwiony — nie obniża skuteczności
       poss++;
-      if (((D.days[k] || {}).completed || []).includes(ex.id)) done++;
+      if (wasDone) done++;
     }
     return { ex, done, poss, pct: poss ? Math.round(done / poss * 100) : 0 };
   }).filter(r => r.poss > 0);
@@ -2489,7 +2505,7 @@ function openReport() {
     const sch = scheduledFor(k).length;
     daysRows += `<tr>
       <td>${formatShort(k)} (${DAYS_PL[dateFromKey(k).getDay()]})</td>
-      <td style="text-align:center">${sch ? `${done}/${sch}` : 'odpocz.'}</td>
+      <td style="text-align:center">${isExcused(k) && !done ? 'uspr.' : sch ? `${done}/${sch}` : 'odpocz.'}</td>
       <td style="text-align:center">${dd.pain || '–'}</td>
       <td style="text-align:center">${dd.difficulty || '–'}</td>
       <td>${esc(dd.note || '')}</td>
@@ -3132,7 +3148,7 @@ function getMissedDays() {
   let missed = 0;
   for (let i = 1; i <= 3; i++) {
     const k = addDays(today(), -i);
-    if (isRestDay(k)) continue; // dzień odpoczynku nie jest zaległością
+    if (isRestDay(k) || isExcused(k)) continue; // odpoczynek/usprawiedliwienie to nie zaległość
     if (!isFull(k)) missed++; else break;
   }
   return missed;
