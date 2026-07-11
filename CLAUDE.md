@@ -122,12 +122,29 @@ UWAGA dla przyszłych sesji: doneCount/isFull/streak liczą wg ćwiczeń ZAPLANO
 na dany dzień (harmonogram) — przekazuj do RFCore całe obiekty ćwiczeń, nie same id.
 Dni z `excused: true` traktuj jak odpoczynek (poza mianownikami statystyk).
 
+✅ ZROBIONE w v3.4 (lipiec 2026) — duże kierunki:
+- **Capacitor zamiast TWA**: projekt w `capacitor-build/` (gitignored, jak twa-build).
+  Tryb remote-URL (server.url = Pages) — model „push = update" zachowany; przypomnienia
+  przez @capacitor/local-notifications (AlarmManager, działają przy zamkniętej aplikacji,
+  wracają po restarcie telefonu). Most w index.html: `isNativeApp()` + `nativeSyncReminders()`.
+  Build: `cd capacitor-build/android && JAVA_HOME=~/.bubblewrap/jdk17
+  ANDROID_HOME=~/.bubblewrap/android_sdk ./gradlew assembleRelease` — podpis tym samym
+  keystore co TWA (key.properties wskazuje twa-build/android.keystore), versionCode 3.
+  Gotowy APK: `capacitor-build/RehabFlow-v3.4.0-signed.apk` (cert SHA-256 zgodny z TWA).
+  Ikony przeniesione z twa-build; splash = jednolity granat. Uwaga: skróty long-press
+  z manifestu webowego nie działają w Capacitor (wymagałyby shortcuts.xml — TODO).
+- **Supabase „wariant 1"** (konta + sync + live dla fizjo): moduł `sync.js` — czysty REST
+  (GoTrue OTP 6-cyfrowym kodem e-mail — bez redirectów, działa w APK; PostgREST upsert
+  z Prefer: resolution=merge-duplicates). Karta w Ustawieniach (URL+klucz anon → e-mail →
+  kod), auto-push po każdej zmianie (debounce 4 s), pull przy starcie/powrocie z LWW po
+  updated_at, kod udostępnienia (8 znaków) → RPC get_patient_by_code w fizjo.html.
+  Setup właściciela: `SUPABASE.md` (SQL: tabela patient_state + RLS + RPC; region UE, RODO).
+  Funkcja jest w pełni opcjonalna — bez konfiguracji aplikacja działa jak dotąd.
+
 POZOSTAŁO (duże decyzje, wymagają zgody właściciela):
-- „Wariant 1" współpracy z fizjo: konta + synchronizacja live przez Supabase
-  (właściciel musi założyć projekt i podać URL + klucz anon; uwaga RODO — dane
-  zdrowotne, hosting UE)
-- Capacitor zamiast TWA (natywne przypomnienia AlarmManager — obecne działają
-  tylko przy otwartej aplikacji)
+- Właściciel musi założyć projekt Supabase wg SUPABASE.md, żeby sync ożył
+  (kod jest gotowy i zweryfikowany na mocku REST)
+- Publikacja APK v3.4.0 jako GitHub Release (plik czeka lokalnie w capacitor-build/)
 - Backup w chmurze (Supabase/Firebase — wymaga założenia konta przez właściciela)
 - Wersja angielska (i18n — duży refaktor wszystkich tekstów UI)
 - Publikacja w Google Play (konto 25 USD + test zamknięty 12 testerów/14 dni)

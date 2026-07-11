@@ -2,4 +2,5 @@
 .iconbuild/
 node_modules/
 twa-build/
+capacitor-build/
 *.log

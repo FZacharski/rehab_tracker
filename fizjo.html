@@ -130,6 +130,20 @@ canvas { width: 100%; }
       </div>
       <input type="file" id="file-in" accept=".json,.html,application/json,text/html" style="display:none" onchange="loadPatientFile(this.files[0]);this.value=''">
     </div>
+
+    <div class="card" style="margin-top:14px">
+      <h2>1b · Podgląd live <span class="xs">(Supabase — opcjonalnie)</span></h2>
+      <p class="muted">Jeśli pacjent włączył synchronizację, wpisz dane projektu i jego 8-znakowy kod udostępnienia (pacjent znajdzie go w Ustawienia → Synchronizacja). Konfiguracja: <a href="SUPABASE.md" target="_blank" style="color:var(--violet)">SUPABASE.md</a>.</p>
+      <div style="display:grid;gap:8px;margin-top:10px">
+        <input class="form-input" id="live-url" placeholder="https://xxxx.supabase.co">
+        <input class="form-input" id="live-key" placeholder="Klucz anon (eyJ...)">
+        <div style="display:grid;grid-template-columns:1fr auto;gap:8px">
+          <input class="form-input" id="live-code" placeholder="Kod pacjenta (np. K7KPQ2ZM)" maxlength="8" style="text-transform:uppercase;letter-spacing:.08em">
+          <button class="btn btn-primary" onclick="loadLivePatient()">Pobierz</button>
+        </div>
+      </div>
+    </div>
+
     <div id="patient-area"></div>
   </div>
 
@@ -177,6 +191,7 @@ canvas { width: 100%; }
 
 <script src="core.js"></script>
 <script src="exdb.js"></script>
+<script src="sync.js"></script>
 <script>
 'use strict';
 
@@ -202,6 +217,29 @@ const drop = document.getElementById('drop');
 ['dragover','dragenter'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
 ['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
 drop.addEventListener('drop', e => { const f = e.dataTransfer.files[0]; if (f) loadPatientFile(f); });
+
+/* ── podgląd live przez Supabase (kod udostępnienia pacjenta) ── */
+const LIVE_KEY = 'fizjo_supabase';
+(function initLive() {
+  try {
+    const s = JSON.parse(localStorage.getItem(LIVE_KEY)) || {};
+    if (s.url) document.getElementById('live-url').value = s.url;
+    if (s.key) document.getElementById('live-key').value = s.key;
+  } catch (e) {}
+})();
+
+async function loadLivePatient() {
+  const url = document.getElementById('live-url').value.trim();
+  const key = document.getElementById('live-key').value.trim();
+  const code = document.getElementById('live-code').value.trim();
+  if (!url || !key || !code) { showToast('Wypełnij adres projektu, klucz i kod pacjenta'); return; }
+  try {
+    const data = await RFSync.fetchByShareCode(url, key, code);
+    localStorage.setItem(LIVE_KEY, JSON.stringify({ url, key }));
+    renderPatient(data);
+    showToast('Dane pacjenta pobrane na żywo ✓');
+  } catch (e) { showToast('Błąd: ' + e.message); }
+}
 
 function loadPatientFile(file) {
   if (!file) return;

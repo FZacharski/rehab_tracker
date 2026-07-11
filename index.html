@@ -922,6 +922,11 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
         </div>
 
         <div class="card">
+          <div class="section-title" style="margin-bottom:10px">Synchronizacja <span style="text-transform:none;letter-spacing:0;color:var(--text3)">· beta</span></div>
+          <div id="sync-card"></div>
+        </div>
+
+        <div class="card">
           <div class="section-title" style="margin-bottom:14px">Aplikacja</div>
           <button class="btn btn-secondary btn-full" id="install-btn" style="display:none" onclick="promptInstall()">📲 Zainstaluj na telefonie</button>
           <div class="text-xs text-muted mt-8" style="text-align:center">
@@ -1127,6 +1132,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
 
 <script src="core.js"></script>
 <script src="exdb.js"></script>
+<script src="sync.js"></script>
 <script>
 'use strict';
 
@@ -1252,7 +1258,10 @@ function loadData() {
   return defaultData();
 }
 
-function saveData() { localStorage.setItem(STORE_KEY, JSON.stringify(D)); }
+function saveData() {
+  localStorage.setItem(STORE_KEY, JSON.stringify(D));
+  if (window.RFSync) RFSync.schedulePush(() => D); // auto-sync (no-op, gdy wyłączony)
+}
 
 let D = loadData();
 let editingExId = null;
@@ -2775,6 +2784,7 @@ function renderSettings() {
   document.getElementById('s-start').max = today(); // start programu nie może być w przyszłości
   if (isNativeApp()) document.getElementById('notif-hint').textContent =
     'ℹ️ Wersja aplikacji: przypomnienia natywne — zadzwonią o ustawionej godzinie nawet przy zamkniętej aplikacji.';
+  renderSyncCard();
   updateNotifStatus();
 }
 
@@ -2814,6 +2824,131 @@ function resetData() {
   localStorage.removeItem(LEGACY_KEY);
   localStorage.removeItem('rf_missed_ok');
   D = defaultData(); saveData(); location.reload();
+}
+
+/* ══ SYNCHRONIZACJA (Supabase — opcjonalna) ═════════════════ */
+let syncCodeSent = false;
+
+function renderSyncCard() {
+  const el = document.getElementById('sync-card');
+  if (!window.RFSync) { el.innerHTML = ''; return; }
+  if (!RFSync.configured()) {
+    el.innerHTML = `
+      <div class="text-xs text-muted" style="line-height:1.55;margin-bottom:10px">Konto + synchronizacja między urządzeniami i podgląd live dla fizjoterapeuty. Wymaga własnego projektu Supabase — instrukcja w pliku <a href="SUPABASE.md" style="color:var(--violet)" target="_blank">SUPABASE.md</a>.</div>
+      <div class="form-field"><label class="form-label">Adres projektu (URL)</label>
+        <input class="form-input" id="sync-url" placeholder="https://xxxx.supabase.co" autocomplete="off"></div>
+      <div class="form-field"><label class="form-label">Klucz anon (public)</label>
+        <input class="form-input" id="sync-key" placeholder="eyJ..." autocomplete="off"></div>
+      <button class="btn btn-secondary btn-full" onclick="syncSaveConfig()">Zapisz konfigurację</button>`;
+    return;
+  }
+  if (!RFSync.loggedIn()) {
+    el.innerHTML = `
+      <div class="form-field"><label class="form-label">E-mail</label>
+        <input class="form-input" id="sync-email" type="email" placeholder="twoj@email.pl" value="${esc(RFSync.email())}" autocomplete="email"></div>
+      ${syncCodeSent ? `
+        <div class="form-field"><label class="form-label">Kod z e-maila (6 cyfr)</label>
+          <input class="form-input" id="sync-code" inputmode="numeric" maxlength="6" placeholder="123456" autocomplete="one-time-code"></div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-primary" style="flex:1" onclick="syncVerifyCode()">Zaloguj</button>
+          <button class="btn btn-secondary" style="flex:1" onclick="syncSendCode()">Wyślij ponownie</button>
+        </div>` : `
+        <button class="btn btn-primary btn-full" onclick="syncSendCode()">📧 Wyślij kod logowania</button>`}
+      <button class="btn btn-secondary btn-full mt-8" onclick="syncReset()">Zmień konfigurację projektu</button>`;
+    return;
+  }
+  const last = RFSync.lastSyncAt();
+  el.innerHTML = `
+    <div class="text-sm" style="line-height:1.7">
+      Zalogowano: <strong>${esc(RFSync.email())}</strong><br>
+      <span class="text-muted text-xs">Ostatnia synchronizacja: ${last ? new Date(last).toLocaleString('pl-PL') : 'jeszcze nie'}</span><br>
+      Kod dla fizjoterapeuty: <strong class="grad-text" style="letter-spacing:.1em">${esc(RFSync.shareCode() || '—')}</strong>
+      ${RFSync.shareCode() ? `<button class="section-action" onclick="syncCopyCode()" style="margin-left:6px">Kopiuj</button>` : ''}
+    </div>
+    <div style="display:flex;gap:10px;margin-top:12px">
+      <button class="btn btn-primary" style="flex:1" onclick="syncNow()">🔄 Synchronizuj</button>
+      <button class="btn btn-secondary" style="flex:1" onclick="syncLogout()">Wyloguj</button>
+    </div>`;
+}
+
+function syncSaveConfig() {
+  try {
+    const url = document.getElementById('sync-url').value;
+    const key = document.getElementById('sync-key').value;
+    if (!url.trim() || !key.trim()) { showToast('Podaj URL i klucz anon'); return; }
+    RFSync.setConfig(url, key);
+    renderSyncCard(); showToast('Konfiguracja zapisana ✓');
+  } catch (e) { showToast(e.message); }
+}
+
+function syncReset() {
+  if (!confirm('Usunąć konfigurację synchronizacji z tego urządzenia? (dane w chmurze zostają)')) return;
+  RFSync.logout(); RFSync.setConfig('', '');
+  syncCodeSent = false;
+  renderSyncCard();
+}
+
+async function syncSendCode() {
+  try {
+    await RFSync.requestCode(document.getElementById('sync-email').value);
+    syncCodeSent = true;
+    renderSyncCard(); showToast('Kod wysłany — sprawdź e-mail 📧');
+  } catch (e) { showToast('Błąd: ' + e.message); }
+}
+
+async function syncVerifyCode() {
+  try {
+    await RFSync.verifyCode(document.getElementById('sync-code').value);
+    syncCodeSent = false;
+    const row = await RFSync.pull().catch(() => null);
+    if (row && row.data && Object.keys(row.data.days || {}).length) {
+      const when = row.updated_at ? new Date(row.updated_at).toLocaleString('pl-PL') : '?';
+      if (confirm(`Na tym koncie są już dane (ostatnia zmiana: ${when}).\n\nOK — pobierz dane z chmury na to urządzenie.\nAnuluj — wyślij dane z tego urządzenia do chmury.`)) {
+        adoptRemote(row);
+      } else {
+        await RFSync.push(D);
+      }
+    } else {
+      await RFSync.push(D);
+    }
+    renderSettings(); showToast('Zalogowano i zsynchronizowano ✓');
+  } catch (e) { showToast('Błąd: ' + e.message); }
+}
+
+async function syncNow() {
+  try {
+    const row = await RFSync.pull();
+    if (row && RFSync.remoteIsNewer(row)) { adoptRemote(row); showToast('Pobrano nowsze dane z chmury ☁️'); }
+    else { await RFSync.push(D); showToast('Wysłano do chmury ✓'); }
+    renderSyncCard();
+  } catch (e) { showToast('Błąd synchronizacji: ' + e.message); }
+}
+
+function syncLogout() {
+  if (!confirm('Wylogować z synchronizacji na tym urządzeniu? Lokalne dane zostają.')) return;
+  RFSync.logout(); renderSyncCard();
+}
+
+function syncCopyCode() {
+  navigator.clipboard && navigator.clipboard.writeText(RFSync.shareCode()).then(
+    () => showToast('Kod skopiowany ✓'), () => showToast(RFSync.shareCode()));
+}
+
+/* nadpisz lokalny stan danymi z chmury (bez ponownego push) */
+function adoptRemote(row) {
+  D = sanitizeData(row.data || {});
+  localStorage.setItem(STORE_KEY, JSON.stringify(D));
+  RFSync.markSynced(row.updated_at);
+  applyTheme(); applyFont(); renderPage(currentPage);
+}
+
+/* przy starcie i powrocie do aplikacji: pobierz nowszy stan z chmury */
+async function syncStartupPull() {
+  if (!window.RFSync || !RFSync.configured() || !RFSync.loggedIn() || !navigator.onLine) return;
+  try {
+    const row = await RFSync.pull();
+    if (row && RFSync.remoteIsNewer(row)) { adoptRemote(row); showToast('Pobrano nowsze dane z chmury ☁️'); }
+  } catch (e) {}
 }
 
 /* ══ EXERCISE MODAL + LIBRARY ═══════════════════════════════ */
