@@ -141,10 +141,21 @@ Dni z `excused: true` traktuj jak odpoczynek (poza mianownikami statystyk).
   Setup właściciela: `SUPABASE.md` (SQL: tabela patient_state + RLS + RPC; region UE, RODO).
   Funkcja jest w pełni opcjonalna — bez konfiguracji aplikacja działa jak dotąd.
 
+- **i18n PL/EN (v3.5)**: `i18n.js` w stylu gettext — kluczem jest polski tekst,
+  brak tłumaczenia = fallback PL (polska wersja zawsze nienaruszona). Teksty dynamiczne:
+  `tt('...')` / `tf('... {0} ...', x)`; statyczny markup: atrybut `data-i18n` /
+  `data-i18n-ph` (oryginał PL zapamiętywany w dataset przy pierwszym przejściu).
+  `P()` odmienia liczebniki wg języka (EN_PLURALS po polskiej formie pojedynczej).
+  Tablice dat (DAYS_PL itd.) to `let` podmieniane w `applyLang()`. Biblioteka ćwiczeń:
+  `EX_EN` w exdb.js + helpery `exName(e)`/`exDesc(e)` — NOWE ćwiczenia w exdb.js
+  wymagają wpisu w EX_EN. Przełącznik: Ustawienia → Język (auto/pl/en, `D.lang`).
+  KONWENCJA: każdy nowy tekst UI od razu przez tt()/tf() + wpis w EN w i18n.js.
+
 POZOSTAŁO (duże decyzje, wymagają zgody właściciela):
 - Właściciel musi założyć projekt Supabase wg SUPABASE.md, żeby sync ożył
   (kod jest gotowy i zweryfikowany na mocku REST)
-- Publikacja APK v3.4.0 jako GitHub Release (plik czeka lokalnie w capacitor-build/)
-- Backup w chmurze (Supabase/Firebase — wymaga założenia konta przez właściciela)
-- Wersja angielska (i18n — duży refaktor wszystkich tekstów UI)
+- Publikacja APK v3.4.0 jako GitHub Release (plik czeka lokalnie w capacitor-build/
+  RehabFlow-v3.4.0-signed.apk; podpisany właściwym kluczem, versionCode 3) — wymaga
+  wcześniejszego przetestowania na prawdziwym telefonie
+- fizjo.html po angielsku (panel fizjoterapeuty celowo pominięty w i18n — do decyzji)
 - Publikacja w Google Play (konto 25 USD + test zamknięty 12 testerów/14 dni)
