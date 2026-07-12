@@ -578,8 +578,8 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
 
         <!-- install banner -->
         <div class="install-banner" id="install-banner">
-          <div class="ib-txt">📲 Zainstaluj RehabFlow na ekranie głównym — działa jak normalna aplikacja!</div>
-          <button class="btn btn-primary" style="padding:9px 14px;font-size:12px" onclick="promptInstall()">Zainstaluj</button>
+          <div class="ib-txt" data-i18n>📲 Zainstaluj RehabFlow na ekranie głównym — działa jak normalna aplikacja!</div>
+          <button class="btn btn-primary" style="padding:9px 14px;font-size:12px" onclick="promptInstall()" data-i18n>Zainstaluj</button>
         </div>
 
         <!-- missed-day banner -->
@@ -590,16 +590,16 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
 
         <!-- update banner -->
         <div class="install-banner" id="update-banner" style="border-color:var(--success)">
-          <div class="ib-txt">🔄 Nowa wersja aplikacji jest gotowa.</div>
-          <button class="btn btn-primary" style="padding:9px 14px;font-size:12px" onclick="location.reload()">Odśwież</button>
+          <div class="ib-txt" data-i18n>🔄 Nowa wersja aplikacji jest gotowa.</div>
+          <button class="btn btn-primary" style="padding:9px 14px;font-size:12px" onclick="location.reload()" data-i18n>Odśwież</button>
         </div>
 
         <!-- backup reminder -->
         <div class="install-banner" id="backup-banner" style="border-color:var(--indigo)">
           <div class="ib-txt" id="backup-banner-txt"></div>
           <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
-            <button class="btn btn-primary" style="padding:8px 13px;font-size:12px" onclick="backupNow()">💾 Zrób kopię</button>
-            <button class="btn btn-secondary" style="padding:6px 13px;font-size:11px" onclick="snoozeBackupBanner()">Później</button>
+            <button class="btn btn-primary" style="padding:8px 13px;font-size:12px" onclick="backupNow()" data-i18n>💾 Zrób kopię</button>
+            <button class="btn btn-secondary" style="padding:6px 13px;font-size:11px" onclick="snoozeBackupBanner()" data-i18n>Później</button>
           </div>
         </div>
 
@@ -637,10 +637,10 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
               </div>
             </div>
             <div class="stat-grid">
-              <div class="stat-chip"><div class="stat-val" id="stat-streak">0🔥</div><div class="stat-lbl">Streak</div></div>
+              <div class="stat-chip"><div class="stat-val" id="stat-streak">0🔥</div><div class="stat-lbl" data-i18n>Streak</div></div>
               <div class="stat-chip"><div class="stat-val" id="stat-xp">0</div><div class="stat-lbl">XP</div></div>
-              <div class="stat-chip"><div class="stat-val" id="stat-badges">0</div><div class="stat-lbl">Odznaki</div></div>
-              <div class="stat-chip"><div class="stat-val" id="stat-week">0%</div><div class="stat-lbl">Tydzień</div></div>
+              <div class="stat-chip"><div class="stat-val" id="stat-badges">0</div><div class="stat-lbl" data-i18n>Odznaki</div></div>
+              <div class="stat-chip"><div class="stat-val" id="stat-week">0%</div><div class="stat-lbl" data-i18n>Tydzień</div></div>
             </div>
           </div>
         </div>
@@ -654,41 +654,41 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
         <div id="missions-area"></div>
 
         <!-- training button -->
-        <button class="train-btn" id="train-btn" onclick="startTraining()" style="display:none">▶ &nbsp;Rozpocznij trening</button>
+        <button class="train-btn" id="train-btn" onclick="startTraining()" style="display:none" data-i18n>▶ &nbsp;Rozpocznij trening</button>
 
         <!-- exercises -->
         <div class="section-hdr">
-          <span class="section-title">Ćwiczenia</span>
-          <button class="section-action" onclick="openAddExercise()">+ Dodaj</button>
+          <span class="section-title" data-i18n>Ćwiczenia</span>
+          <button class="section-action" onclick="openAddExercise()" data-i18n>+ Dodaj</button>
         </div>
         <div id="ex-list" class="gap-12"></div>
 
         <!-- pain / difficulty -->
-        <div class="section-hdr mt-8"><span class="section-title">Samopoczucie</span></div>
+        <div class="section-hdr mt-8"><span class="section-title" data-i18n>Samopoczucie</span></div>
         <div class="card">
           <div class="slider-wrap" style="margin-bottom:14px">
-            <label>😣 Ból</label>
+            <label data-i18n>😣 Ból</label>
             <input type="range" min="0" max="10" value="0" id="pain-slider" oninput="document.getElementById('pain-val').textContent=this.value;savePainDiff()">
             <span class="slider-val" id="pain-val">0</span>
           </div>
           <div class="slider-wrap">
-            <label>💪 Trudność</label>
+            <label data-i18n>💪 Trudność</label>
             <input type="range" min="0" max="10" value="0" id="diff-slider" oninput="document.getElementById('diff-val').textContent=this.value;savePainDiff()">
             <span class="slider-val" id="diff-val">0</span>
           </div>
         </div>
 
         <!-- note -->
-        <div class="section-hdr mt-8"><span class="section-title">Notatka dnia</span></div>
-        <textarea id="note-area" rows="3" maxlength="600" placeholder="Jak się czujesz? Co sprawiło trudność?"></textarea>
-        <button class="btn btn-primary btn-full" onclick="saveNote()">Zapisz notatkę</button>
+        <div class="section-hdr mt-8"><span class="section-title" data-i18n>Notatka dnia</span></div>
+        <textarea id="note-area" rows="3" maxlength="600" data-i18n-ph placeholder="Jak się czujesz? Co sprawiło trudność?"></textarea>
+        <button class="btn btn-primary btn-full" onclick="saveNote()" data-i18n>Zapisz notatkę</button>
         <div id="recent-notes"></div>
       </div>
     </div>
 
     <!-- ══ PAGE: KALENDARZ ══ -->
     <div class="page" id="page-calendar">
-      <div class="topbar"><div><div class="topbar-title">Kalendarz</div><div class="topbar-sub" id="cal-sub">Program</div></div></div>
+      <div class="topbar"><div><div class="topbar-title" data-i18n>Kalendarz</div><div class="topbar-sub" id="cal-sub">Program</div></div></div>
       <div class="p-page">
         <div class="card">
           <div class="cal-nav">
@@ -698,22 +698,22 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
           </div>
           <div class="cal-grid" id="cal-grid"></div>
           <div class="legend">
-            <span><i style="background:var(--success-bg);border:1.5px solid var(--success)"></i>Ukończony</span>
-            <span><i style="background:var(--warn-bg);border:1.5px solid var(--warn)"></i>Częściowy</span>
-            <span><i style="background:var(--danger-bg);border:1.5px solid var(--danger)"></i>Pominięty</span>
-            <span><i style="border:1.5px dashed var(--border)"></i>Odpoczynek</span>
-            <span><i style="background:rgba(129,140,248,.15);border:1.5px dashed var(--indigo)"></i>Usprawiedliwiony</span>
+            <span><i style="background:var(--success-bg);border:1.5px solid var(--success)"></i><span data-i18n>Ukończony</span></span>
+            <span><i style="background:var(--warn-bg);border:1.5px solid var(--warn)"></i><span data-i18n>Częściowy</span></span>
+            <span><i style="background:var(--danger-bg);border:1.5px solid var(--danger)"></i><span data-i18n>Pominięty</span></span>
+            <span><i style="border:1.5px dashed var(--border)"></i><span data-i18n>Odpoczynek</span></span>
+            <span><i style="background:rgba(129,140,248,.15);border:1.5px dashed var(--indigo)"></i><span data-i18n>Usprawiedliwiony</span></span>
           </div>
         </div>
         <div class="card mt-12" id="cal-detail" style="display:none">
           <div style="display:flex;align-items:center;justify-content:space-between">
             <div class="fw-700" id="cal-detail-date"></div>
-            <button class="section-action" id="cal-detail-edit" onclick="openDayEdit(selectedCalDay)">✏️ Edytuj</button>
+            <button class="section-action" id="cal-detail-edit" onclick="openDayEdit(selectedCalDay)" data-i18n>✏️ Edytuj</button>
           </div>
           <div class="text-sm text-muted mt-4" id="cal-detail-body"></div>
         </div>
         <div class="card mt-12" id="heatmap-card" style="display:none">
-          <div class="section-hdr"><span class="section-title">Cała historia</span><span class="text-xs text-muted" id="hm-range"></span></div>
+          <div class="section-hdr"><span class="section-title" data-i18n>Cała historia</span><span class="text-xs text-muted" id="hm-range"></span></div>
           <div class="hm-scroll" id="hm-scroll">
             <div class="hm-months" id="hm-months"></div>
             <div class="hm-grid" id="hm-grid"></div>
@@ -724,53 +724,53 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
 
     <!-- ══ PAGE: POSTĘP ══ -->
     <div class="page" id="page-progress">
-      <div class="topbar"><div><div class="topbar-title">Postęp</div><div class="topbar-sub">Twoje statystyki</div></div></div>
+      <div class="topbar"><div><div class="topbar-title" data-i18n>Postęp</div><div class="topbar-sub" data-i18n>Twoje statystyki</div></div></div>
       <div class="p-page gap-12">
         <!-- week summary -->
         <div class="card" id="week-summary"></div>
 
         <div class="week-grid" id="week-cards"></div>
         <div class="card">
-          <div class="section-hdr"><span class="section-title">Ukończenie dzienne</span></div>
+          <div class="section-hdr"><span class="section-title" data-i18n>Ukończenie dzienne</span></div>
           <div class="chart-wrap" id="chart-bars"></div>
           <div class="chart-labels" id="chart-labels"></div>
         </div>
         <div class="card">
           <div class="section-hdr">
-            <span class="section-title">Samopoczucie</span>
+            <span class="section-title" data-i18n>Samopoczucie</span>
             <span class="chart-legend">
-              <span><i style="background:#F472B6"></i>Ból</span>
-              <span><i style="background:#818CF8"></i>Trudność</span>
+              <span><i style="background:#F472B6"></i><span data-i18n>Ból</span></span>
+              <span><i style="background:#818CF8"></i><span data-i18n>Trudność</span></span>
             </span>
           </div>
           <div class="chart-box" id="wellbeing-chart"></div>
         </div>
 
         <div class="card">
-          <div class="section-hdr"><span class="section-title">Najlepsze dni tygodnia</span></div>
+          <div class="section-hdr"><span class="section-title" data-i18n>Najlepsze dni tygodnia</span></div>
           <div id="weekday-chart"></div>
         </div>
 
         <div class="card" id="ex-eff-card">
-          <div class="section-hdr"><span class="section-title">Skuteczność ćwiczeń</span></div>
+          <div class="section-hdr"><span class="section-title" data-i18n>Skuteczność ćwiczeń</span></div>
           <div id="ex-eff-list"></div>
         </div>
 
         <!-- measurements -->
         <div class="card">
-          <div class="section-hdr"><span class="section-title">Pomiary postępu</span></div>
+          <div class="section-hdr"><span class="section-title" data-i18n>Pomiary postępu</span></div>
           <div class="form-row" style="grid-template-columns:1.3fr 1fr">
             <select class="form-input" id="meas-type" onchange="measCancelEdit();renderMeasures()">
-              <option value="rom">Zakres ruchu (°)</option>
-              <option value="obwod">Obwód (cm)</option>
-              <option value="waga">Waga (kg)</option>
-              <option value="inne">Inne</option>
+              <option value="rom" data-i18n>Zakres ruchu (°)</option>
+              <option value="obwod" data-i18n>Obwód (cm)</option>
+              <option value="waga" data-i18n>Waga (kg)</option>
+              <option value="inne" data-i18n>Inne</option>
             </select>
-            <input class="form-input" id="meas-val" type="number" step="0.1" inputmode="decimal" placeholder="Wartość">
+            <input class="form-input" id="meas-val" type="number" step="0.1" inputmode="decimal" data-i18n-ph placeholder="Wartość">
           </div>
           <div class="form-row mt-8" style="grid-template-columns:1fr 1fr">
             <input class="form-input" id="meas-date" type="date">
-            <button class="btn btn-secondary" id="meas-add-btn" onclick="addMeasure()">+ Dodaj pomiar</button>
+            <button class="btn btn-secondary" id="meas-add-btn" onclick="addMeasure()" data-i18n>+ Dodaj pomiar</button>
           </div>
           <div class="chart-box" id="meas-chart" style="display:none;margin-top:12px"></div>
           <div id="meas-list" class="mt-8"></div>
@@ -779,32 +779,32 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
         <!-- zdjęcia postępu -->
         <div class="card">
           <div class="section-hdr">
-            <span class="section-title">Zdjęcia postępu</span>
-            <button class="section-action" onclick="document.getElementById('photo-input').click()">+ Dodaj</button>
+            <span class="section-title" data-i18n>Zdjęcia postępu</span>
+            <button class="section-action" onclick="document.getElementById('photo-input').click()" data-i18n>+ Dodaj</button>
           </div>
           <div class="photo-strip" id="photo-strip"><div class="text-xs text-muted">Dokumentuj postęp zdjęciami (np. zakres ruchu, obrzęk). Zdjęcia zostają tylko na tym urządzeniu.</div></div>
           <input type="file" id="photo-input" accept="image/*" style="display:none" onchange="addPhoto(this)">
         </div>
 
         <div class="card">
-          <div class="section-hdr"><span class="section-title">Podsumowanie</span></div>
+          <div class="section-hdr"><span class="section-title" data-i18n>Podsumowanie</span></div>
           <div class="stat-grid" style="grid-template-columns:repeat(3,1fr)" id="summary-stats"></div>
         </div>
 
         <!-- archive -->
         <div id="archive-area"></div>
 
-        <button class="btn btn-primary btn-full" onclick="openReport()">📄 Raport dla fizjoterapeuty</button>
-        <button class="btn btn-primary btn-full" onclick="exportHTML()">💾 Kopia zapasowa (czytelna na telefonie)</button>
-        <button class="btn btn-secondary btn-full" onclick="exportJSON()">📤 Eksportuj dane (JSON)</button>
-        <button class="btn btn-secondary btn-full" onclick="document.getElementById('import-file').click()">📥 Importuj dane</button>
+        <button class="btn btn-primary btn-full" onclick="openReport()" data-i18n>📄 Raport dla fizjoterapeuty</button>
+        <button class="btn btn-primary btn-full" onclick="exportHTML()" data-i18n>💾 Kopia zapasowa (czytelna na telefonie)</button>
+        <button class="btn btn-secondary btn-full" onclick="exportJSON()" data-i18n>📤 Eksportuj dane (JSON)</button>
+        <button class="btn btn-secondary btn-full" onclick="document.getElementById('import-file').click()" data-i18n>📥 Importuj dane</button>
         <input type="file" id="import-file" accept=".json,.html,application/json,text/html" style="display:none" onchange="importJSON(this)">
       </div>
     </div>
 
     <!-- ══ PAGE: ODZNAKI ══ -->
     <div class="page" id="page-badges">
-      <div class="topbar"><div><div class="topbar-title">Odznaki</div><div class="topbar-sub">Twoje osiągnięcia</div></div></div>
+      <div class="topbar"><div><div class="topbar-title" data-i18n>Odznaki</div><div class="topbar-sub" data-i18n>Twoje osiągnięcia</div></div></div>
       <div class="p-page gap-12">
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px">
@@ -813,70 +813,70 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
           </div>
           <div class="xp-bar-wrap"><div class="xp-bar-fill" id="xp-bar" style="width:0%"></div></div>
         </div>
-        <button class="btn btn-secondary btn-full" onclick="shareAchievements()">📤 Udostępnij kartę osiągnięć</button>
+        <button class="btn btn-secondary btn-full" onclick="shareAchievements()" data-i18n>📤 Udostępnij kartę osiągnięć</button>
         <div class="badge-grid" id="badge-grid"></div>
       </div>
     </div>
 
     <!-- ══ PAGE: USTAWIENIA ══ -->
     <div class="page" id="page-settings">
-      <div class="topbar"><div><div class="topbar-title">Ustawienia</div><div class="topbar-sub">Profil i program</div></div></div>
+      <div class="topbar"><div><div class="topbar-title" data-i18n>Ustawienia</div><div class="topbar-sub" data-i18n>Profil i program</div></div></div>
       <div class="p-page gap-12">
         <div class="card">
-          <div class="section-title" style="margin-bottom:14px">Profil pacjenta</div>
+          <div class="section-title" style="margin-bottom:14px" data-i18n>Profil pacjenta</div>
           <div class="form-field">
-            <label class="form-label">Imię i nazwisko</label>
+            <label class="form-label" data-i18n>Imię i nazwisko</label>
             <input class="form-input" id="s-name" placeholder="Jan Kowalski">
           </div>
           <div class="form-field">
-            <label class="form-label">Diagnoza</label>
-            <input class="form-input" id="s-diagnosis" placeholder="np. Uraz kolana">
+            <label class="form-label" data-i18n>Diagnoza</label>
+            <input class="form-input" id="s-diagnosis" data-i18n-ph placeholder="np. Uraz kolana">
           </div>
           <div class="form-row">
             <div class="form-field">
-              <label class="form-label">Fizjoterapeuta</label>
+              <label class="form-label" data-i18n>Fizjoterapeuta</label>
               <input class="form-input" id="s-therapist" placeholder="Dr Nowak">
             </div>
             <div class="form-field">
-              <label class="form-label">Data urazu</label>
+              <label class="form-label" data-i18n>Data urazu</label>
               <input class="form-input" id="s-injury" type="date">
             </div>
           </div>
           <div class="form-field">
-            <label class="form-label">Notatki fizjoterapeuty</label>
-            <textarea id="s-therapist-notes" rows="3" placeholder="Zalecenia, uwagi..."></textarea>
+            <label class="form-label" data-i18n>Notatki fizjoterapeuty</label>
+            <textarea id="s-therapist-notes" rows="3" data-i18n-ph placeholder="Zalecenia, uwagi..."></textarea>
           </div>
-          <button class="btn btn-primary btn-full" onclick="saveProfile()">Zapisz profil</button>
+          <button class="btn btn-primary btn-full" onclick="saveProfile()" data-i18n>Zapisz profil</button>
         </div>
 
         <div class="card">
-          <div class="section-title" style="margin-bottom:14px">Program rehabilitacji</div>
+          <div class="section-title" style="margin-bottom:14px" data-i18n>Program rehabilitacji</div>
           <div class="form-row">
             <div class="form-field">
-              <label class="form-label">Data startu</label>
+              <label class="form-label" data-i18n>Data startu</label>
               <input class="form-input" id="s-start" type="date">
             </div>
             <div class="form-field">
-              <label class="form-label">Długość programu</label>
+              <label class="form-label" data-i18n>Długość programu</label>
               <select class="form-input" id="s-weeks">
-                <option value="2">2 tygodnie</option>
-                <option value="4" selected>4 tygodnie</option>
-                <option value="6">6 tygodni</option>
-                <option value="8">8 tygodni</option>
+                <option value="2" data-i18n>2 tygodnie</option>
+                <option value="4" selected data-i18n>4 tygodnie</option>
+                <option value="6" data-i18n>6 tygodni</option>
+                <option value="8" data-i18n>8 tygodni</option>
               </select>
             </div>
           </div>
           <div class="form-row">
             <div class="form-field">
-              <label class="form-label">Cel tygodniowy</label>
+              <label class="form-label" data-i18n>Cel tygodniowy</label>
               <select class="form-input" id="s-goal">
-                <option value="3">3 dni</option><option value="4">4 dni</option>
-                <option value="5" selected>5 dni</option><option value="6">6 dni</option>
-                <option value="7">7 dni</option>
+                <option value="3" data-i18n>3 dni</option><option value="4" data-i18n>4 dni</option>
+                <option value="5" selected data-i18n>5 dni</option><option value="6" data-i18n>6 dni</option>
+                <option value="7" data-i18n>7 dni</option>
               </select>
             </div>
             <div class="form-field">
-              <label class="form-label">Przerwa między seriami</label>
+              <label class="form-label" data-i18n>Przerwa między seriami</label>
               <select class="form-input" id="s-rest">
                 <option value="15">15 s</option><option value="20">20 s</option>
                 <option value="30" selected>30 s</option><option value="45">45 s</option>
@@ -884,39 +884,47 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
               </select>
             </div>
           </div>
-          <button class="btn btn-primary btn-full" onclick="saveSettings()">Zapisz</button>
+          <button class="btn btn-primary btn-full" onclick="saveSettings()" data-i18n>Zapisz</button>
         </div>
 
         <div class="card">
-          <div class="section-title" style="margin-bottom:4px">Powiadomienia</div>
+          <div class="section-title" style="margin-bottom:4px" data-i18n>Powiadomienia</div>
           <div class="toggle-row">
-            <div><div class="toggle-label">Przypomnienia push</div><div class="toggle-sub" id="notif-status">Sprawdzanie...</div></div>
+            <div><div class="toggle-label" data-i18n>Przypomnienia push</div><div class="toggle-sub" id="notif-status">Sprawdzanie...</div></div>
             <label class="switch"><input type="checkbox" id="notif-toggle" onchange="toggleNotif(this)"><span class="switch-track"></span></label>
           </div>
           <div class="toggle-row">
-            <div><div class="toggle-label">Godzina poranna</div><div class="toggle-sub">Pierwsze przypomnienie</div></div>
+            <div><div class="toggle-label" data-i18n>Godzina poranna</div><div class="toggle-sub" data-i18n>Pierwsze przypomnienie</div></div>
             <input type="time" id="s-hour1" value="09:00" class="form-input" style="width:108px">
           </div>
           <div class="toggle-row">
-            <div><div class="toggle-label">Godzina wieczorna</div><div class="toggle-sub">Drugie przypomnienie</div></div>
+            <div><div class="toggle-label" data-i18n>Godzina wieczorna</div><div class="toggle-sub" data-i18n>Drugie przypomnienie</div></div>
             <input type="time" id="s-hour2" value="20:00" class="form-input" style="width:108px">
           </div>
-          <button class="btn btn-secondary btn-full mt-8" onclick="saveNotifSettings()">Zapisz godziny</button>
+          <button class="btn btn-secondary btn-full mt-8" onclick="saveNotifSettings()" data-i18n>Zapisz godziny</button>
           <div class="text-xs text-muted mt-8" style="line-height:1.5" id="notif-hint">ℹ️ Przypomnienia działają, gdy aplikacja jest otwarta lub uruchomiona w tle przeglądarki. Po ponownym otwarciu aplikacja przypomni też o zaległych dniach.</div>
         </div>
 
         <div class="card">
-          <div class="section-title" style="margin-bottom:4px">Wygląd</div>
+          <div class="section-title" style="margin-bottom:4px" data-i18n>Wygląd</div>
           <div class="toggle-row">
-            <div><div class="toggle-label">Motyw</div><div class="toggle-sub">Auto podąża za systemem</div></div>
+            <div><div class="toggle-label" data-i18n>Motyw</div><div class="toggle-sub" data-i18n>Auto podąża za systemem</div></div>
           </div>
           <div class="seg-row" style="margin-bottom:6px">
-            <button type="button" class="seg-btn" id="theme-dark" onclick="setTheme('dark')">🌙 Ciemny</button>
-            <button type="button" class="seg-btn" id="theme-light" onclick="setTheme('light')">☀️ Jasny</button>
+            <button type="button" class="seg-btn" id="theme-dark" onclick="setTheme('dark')" data-i18n>🌙 Ciemny</button>
+            <button type="button" class="seg-btn" id="theme-light" onclick="setTheme('light')" data-i18n>☀️ Jasny</button>
             <button type="button" class="seg-btn" id="theme-auto" onclick="setTheme('auto')">✨ Auto</button>
           </div>
           <div class="toggle-row">
-            <div><div class="toggle-label">Duża czcionka</div><div class="toggle-sub">Powiększa cały interfejs</div></div>
+            <div><div class="toggle-label" data-i18n>Język / Language</div></div>
+          </div>
+          <div class="seg-row" style="margin-bottom:6px">
+            <button type="button" class="seg-btn" id="lang-auto" onclick="setLangPref('auto')">✨ Auto</button>
+            <button type="button" class="seg-btn" id="lang-pl" onclick="setLangPref('pl')">🇵🇱 Polski</button>
+            <button type="button" class="seg-btn" id="lang-en" onclick="setLangPref('en')">🇬🇧 English</button>
+          </div>
+          <div class="toggle-row">
+            <div><div class="toggle-label" data-i18n>Duża czcionka</div><div class="toggle-sub" data-i18n>Powiększa cały interfejs</div></div>
             <label class="switch"><input type="checkbox" id="font-toggle" onchange="toggleFont(this)"><span class="switch-track"></span></label>
           </div>
         </div>
@@ -927,18 +935,18 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
         </div>
 
         <div class="card">
-          <div class="section-title" style="margin-bottom:14px">Aplikacja</div>
-          <button class="btn btn-secondary btn-full" id="install-btn" style="display:none" onclick="promptInstall()">📲 Zainstaluj na telefonie</button>
+          <div class="section-title" style="margin-bottom:14px" data-i18n>Aplikacja</div>
+          <button class="btn btn-secondary btn-full" id="install-btn" style="display:none" onclick="promptInstall()" data-i18n>📲 Zainstaluj na telefonie</button>
           <div class="text-xs text-muted mt-8" style="text-align:center">
             RehabFlow v3.3 · dane przechowywane lokalnie na urządzeniu<br>
-            <a href="prywatnosc.html" style="color:var(--violet)">Polityka prywatności</a> ·
-            <a href="fizjo.html" style="color:var(--violet)">Panel fizjoterapeuty</a>
+            <a href="prywatnosc.html" style="color:var(--violet)" data-i18n>Polityka prywatności</a> ·
+            <a href="fizjo.html" style="color:var(--violet)" data-i18n>Panel fizjoterapeuty</a>
           </div>
         </div>
 
         <div class="card" style="border-color:var(--danger)">
-          <div class="section-title" style="color:var(--danger);margin-bottom:12px">Strefa niebezpieczna</div>
-          <button class="btn btn-danger btn-full" onclick="resetData()">🗑 Resetuj wszystkie dane</button>
+          <div class="section-title" style="color:var(--danger);margin-bottom:12px" data-i18n>Strefa niebezpieczna</div>
+          <button class="btn btn-danger btn-full" onclick="resetData()" data-i18n>🗑 Resetuj wszystkie dane</button>
         </div>
       </div>
     </div>
@@ -949,23 +957,23 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
   <nav id="bottom-nav">
     <button class="nav-btn active" onclick="switchPage('home',this)" data-page="home">
       <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-6h6v6"/></svg>
-      <span>Dzisiaj</span>
+      <span data-i18n>Dzisiaj</span>
     </button>
     <button class="nav-btn" onclick="switchPage('calendar',this)" data-page="calendar">
       <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
-      <span>Kalendarz</span>
+      <span data-i18n>Kalendarz</span>
     </button>
     <button class="nav-btn" onclick="switchPage('progress',this)" data-page="progress">
       <svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-9M22 20H2"/></svg>
-      <span>Postęp</span>
+      <span data-i18n>Postęp</span>
     </button>
     <button class="nav-btn" onclick="switchPage('badges',this)" data-page="badges">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="6"/><path d="M8.5 14L7 22l5-3 5 3-1.5-8"/></svg>
-      <span>Odznaki</span>
+      <span data-i18n>Odznaki</span>
     </button>
     <button class="nav-btn" onclick="switchPage('settings',this)" data-page="settings">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 13.5a7.6 7.6 0 000-3l2-1.6-2-3.4-2.4 1a7.6 7.6 0 00-2.6-1.5L14 2.5h-4L9.6 5a7.6 7.6 0 00-2.6 1.5l-2.4-1-2 3.4 2 1.6a7.6 7.6 0 000 3l-2 1.6 2 3.4 2.4-1a7.6 7.6 0 002.6 1.5l.4 2.5h4l.4-2.5a7.6 7.6 0 002.6-1.5l2.4 1 2-3.4z"/></svg>
-      <span>Ustawienia</span>
+      <span data-i18n>Ustawienia</span>
     </button>
   </nav>
 </div>
@@ -987,71 +995,71 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
     <div class="modal-handle"></div>
     <div class="modal-title" id="ex-modal-title">Dodaj ćwiczenie</div>
     <div class="tab-row" id="ex-tabs">
-      <button class="tab-btn active" id="tab-form" onclick="switchExTab('form')">✏️ Formularz</button>
-      <button class="tab-btn" id="tab-lib" onclick="switchExTab('lib')">📚 Biblioteka</button>
+      <button class="tab-btn active" id="tab-form" onclick="switchExTab('form')" data-i18n>✏️ Formularz</button>
+      <button class="tab-btn" id="tab-lib" onclick="switchExTab('lib')" data-i18n>📚 Biblioteka</button>
     </div>
 
     <!-- form panel -->
     <div id="ex-form-panel">
       <div class="form-field">
-        <label class="form-label">Nazwa ćwiczenia</label>
-        <input class="form-input" id="ex-name" maxlength="80" placeholder="np. Skłony w bok">
+        <label class="form-label" data-i18n>Nazwa ćwiczenia</label>
+        <input class="form-input" id="ex-name" maxlength="80" data-i18n-ph placeholder="np. Skłony w bok">
       </div>
       <div class="form-field">
-        <label class="form-label">Tryb</label>
+        <label class="form-label" data-i18n>Tryb</label>
         <div class="seg-row">
-          <button type="button" class="seg-btn active" id="mode-reps" onclick="setExMode('reps')">🔢 Powtórzenia</button>
-          <button type="button" class="seg-btn" id="mode-time" onclick="setExMode('time')">⏱ Na czas</button>
+          <button type="button" class="seg-btn active" id="mode-reps" onclick="setExMode('reps')" data-i18n>🔢 Powtórzenia</button>
+          <button type="button" class="seg-btn" id="mode-time" onclick="setExMode('time')" data-i18n>⏱ Na czas</button>
         </div>
       </div>
       <div class="form-row">
         <div class="form-field" id="ex-reps-field">
-          <label class="form-label">Powtórzenia</label>
+          <label class="form-label" data-i18n>Powtórzenia</label>
           <input class="form-input" id="ex-reps" type="number" min="1" max="999" inputmode="numeric" value="10">
         </div>
         <div class="form-field" id="ex-secs-field" style="display:none">
-          <label class="form-label">Sekundy (na serię)</label>
+          <label class="form-label" data-i18n>Sekundy (na serię)</label>
           <input class="form-input" id="ex-secs" type="number" min="5" max="600" step="5" inputmode="numeric" value="30">
         </div>
         <div class="form-field">
-          <label class="form-label">Serie</label>
+          <label class="form-label" data-i18n>Serie</label>
           <input class="form-input" id="ex-sets" type="number" min="1" max="99" inputmode="numeric" value="3">
         </div>
       </div>
       <div class="form-field">
-        <label class="form-label">Dni tygodnia</label>
+        <label class="form-label" data-i18n>Dni tygodnia</label>
         <div class="dow-row" id="ex-days"></div>
-        <div class="text-xs text-muted mt-4">Zaznacz dni treningu — wszystkie lub żaden = codziennie</div>
+        <div class="text-xs text-muted mt-4" data-i18n>Zaznacz dni treningu — wszystkie lub żaden = codziennie</div>
       </div>
       <div class="form-field">
-        <label class="form-label">Typ</label>
+        <label class="form-label" data-i18n>Typ</label>
         <select class="form-input" id="ex-type">
-          <option>Siłowe</option><option selected>Rozciąganie</option>
-          <option>Równowaga</option><option>Aerobowe</option>
-          <option>Oddechowe</option><option>Mobilność</option><option>Inne</option>
+          <option value="Siłowe" data-i18n>Siłowe</option><option value="Rozciąganie" selected data-i18n>Rozciąganie</option>
+          <option value="Równowaga" data-i18n>Równowaga</option><option value="Aerobowe" data-i18n>Aerobowe</option>
+          <option value="Oddechowe" data-i18n>Oddechowe</option><option value="Mobilność" data-i18n>Mobilność</option><option value="Inne" data-i18n>Inne</option>
         </select>
       </div>
       <div class="form-field">
-        <label class="form-label">Opis wykonania (opcjonalnie)</label>
-        <textarea id="ex-desc" rows="2" maxlength="400" placeholder="Jak wykonać ćwiczenie..."></textarea>
+        <label class="form-label" data-i18n>Opis wykonania (opcjonalnie)</label>
+        <textarea id="ex-desc" rows="2" maxlength="400" data-i18n-ph placeholder="Jak wykonać ćwiczenie..."></textarea>
       </div>
       <div class="form-field" id="ex-order-field" style="display:none">
-        <label class="form-label">Kolejność na liście</label>
+        <label class="form-label" data-i18n>Kolejność na liście</label>
         <div style="display:flex;gap:10px">
-          <button class="btn btn-secondary" style="flex:1" onclick="moveExercise(-1)">↑ Wyżej</button>
-          <button class="btn btn-secondary" style="flex:1" onclick="moveExercise(1)">↓ Niżej</button>
+          <button class="btn btn-secondary" style="flex:1" onclick="moveExercise(-1)" data-i18n>↑ Wyżej</button>
+          <button class="btn btn-secondary" style="flex:1" onclick="moveExercise(1)" data-i18n>↓ Niżej</button>
         </div>
       </div>
       <div style="display:flex;gap:10px">
-        <button class="btn btn-primary" style="flex:1" onclick="saveExercise()">Zapisz</button>
-        <button class="btn btn-secondary" style="flex:1" onclick="closeModal('ex-modal')">Anuluj</button>
+        <button class="btn btn-primary" style="flex:1" onclick="saveExercise()" data-i18n>Zapisz</button>
+        <button class="btn btn-secondary" style="flex:1" onclick="closeModal('ex-modal')" data-i18n>Anuluj</button>
       </div>
-      <button class="btn btn-danger btn-full mt-12" id="ex-delete-btn" style="display:none" onclick="deleteExercise()">🗑 Usuń ćwiczenie</button>
+      <button class="btn btn-danger btn-full mt-12" id="ex-delete-btn" style="display:none" onclick="deleteExercise()" data-i18n>🗑 Usuń ćwiczenie</button>
     </div>
 
     <!-- library panel -->
     <div id="ex-lib-panel" style="display:none">
-      <input class="form-input" id="lib-search" placeholder="🔍 Szukaj ćwiczenia..." oninput="renderLibrary()" style="margin-bottom:10px">
+      <input class="form-input" id="lib-search" data-i18n-ph placeholder="🔍 Szukaj ćwiczenia..." oninput="renderLibrary()" style="margin-bottom:10px">
       <div class="lib-chips" id="lib-chips"></div>
       <div class="lib-list" id="lib-list"></div>
     </div>
@@ -1063,28 +1071,28 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
   <div class="modal-sheet">
     <div class="modal-handle"></div>
     <div class="modal-title" id="day-modal-title">Edytuj dzień</div>
-    <div class="section-title" style="margin-bottom:10px">Wykonane ćwiczenia</div>
+    <div class="section-title" style="margin-bottom:10px" data-i18n>Wykonane ćwiczenia</div>
     <div id="dm-list"></div>
-    <div class="section-title" style="margin:16px 0 10px">Samopoczucie</div>
+    <div class="section-title" style="margin:16px 0 10px" data-i18n>Samopoczucie</div>
     <div class="slider-wrap" style="margin-bottom:12px">
-      <label>😣 Ból</label>
+      <label data-i18n>😣 Ból</label>
       <input type="range" min="0" max="10" value="0" id="dm-pain" oninput="document.getElementById('dm-pain-val').textContent=this.value">
       <span class="slider-val" id="dm-pain-val">0</span>
     </div>
     <div class="slider-wrap" style="margin-bottom:16px">
-      <label>💪 Trudność</label>
+      <label data-i18n>💪 Trudność</label>
       <input type="range" min="0" max="10" value="0" id="dm-diff" oninput="document.getElementById('dm-diff-val').textContent=this.value">
       <span class="slider-val" id="dm-diff-val">0</span>
     </div>
     <div class="toggle-row" style="border-bottom:none;padding:2px 0 12px">
-      <div><div class="toggle-label">🤒 Dzień usprawiedliwiony</div><div class="toggle-sub">Choroba lub zalecona przerwa — nie przerywa passy</div></div>
+      <div><div class="toggle-label" data-i18n>🤒 Dzień usprawiedliwiony</div><div class="toggle-sub" data-i18n>Choroba lub zalecona przerwa — nie przerywa passy</div></div>
       <label class="switch"><input type="checkbox" id="dm-excused"><span class="switch-track"></span></label>
     </div>
-    <div class="section-title" style="margin-bottom:10px">Notatka</div>
-    <textarea id="dm-note" rows="2" maxlength="600" placeholder="Notatka z tego dnia..."></textarea>
+    <div class="section-title" style="margin-bottom:10px" data-i18n>Notatka</div>
+    <textarea id="dm-note" rows="2" maxlength="600" data-i18n-ph placeholder="Notatka z tego dnia..."></textarea>
     <div style="display:flex;gap:10px;margin-top:16px">
-      <button class="btn btn-primary" style="flex:1" onclick="saveDayEdit()">Zapisz</button>
-      <button class="btn btn-secondary" style="flex:1" onclick="closeModal('day-modal')">Anuluj</button>
+      <button class="btn btn-primary" style="flex:1" onclick="saveDayEdit()" data-i18n>Zapisz</button>
+      <button class="btn btn-secondary" style="flex:1" onclick="closeModal('day-modal')" data-i18n>Anuluj</button>
     </div>
   </div>
 </div>
@@ -1093,8 +1101,8 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
 <div class="modal-overlay" id="notes-modal">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
-    <div class="modal-title">📝 Dziennik notatek</div>
-    <input class="form-input" id="notes-search" placeholder="🔍 Szukaj w notatkach..." oninput="renderNotesJournal()" style="margin-bottom:10px">
+    <div class="modal-title" data-i18n>📝 Dziennik notatek</div>
+    <input class="form-input" id="notes-search" data-i18n-ph placeholder="🔍 Szukaj w notatkach..." oninput="renderNotesJournal()" style="margin-bottom:10px">
     <div id="notes-journal" style="max-height:56dvh;overflow-y:auto"></div>
   </div>
 </div>
@@ -1103,9 +1111,9 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
 <div class="modal-overlay" id="notif-sheet">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
-    <div class="modal-title">🔔 Przypomnienie</div>
+    <div class="modal-title" data-i18n>🔔 Przypomnienie</div>
     <div id="notif-sheet-body" style="font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:20px"></div>
-    <button class="btn btn-primary btn-full" onclick="closeModal('notif-sheet')">OK, ćwiczę!</button>
+    <button class="btn btn-primary btn-full" onclick="closeModal('notif-sheet')" data-i18n>OK, ćwiczę!</button>
   </div>
 </div>
 
@@ -1125,24 +1133,29 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
   <img id="pv-img" alt="Zdjęcie postępu">
   <div class="pv-date" id="pv-date"></div>
   <div class="pv-actions">
-    <button class="btn btn-danger" onclick="deletePhotoCurrent()">🗑 Usuń</button>
-    <button class="btn btn-secondary" onclick="closePhotoViewer()">Zamknij</button>
+    <button class="btn btn-danger" onclick="deletePhotoCurrent()" data-i18n>🗑 Usuń</button>
+    <button class="btn btn-secondary" onclick="closePhotoViewer()" data-i18n>Zamknij</button>
   </div>
 </div>
 
 <script src="core.js"></script>
+<script src="i18n.js"></script>
 <script src="exdb.js"></script>
 <script src="sync.js"></script>
 <script>
 'use strict';
 
 /* ══ CONSTANTS (biblioteka ćwiczeń: exdb.js) ════════════════ */
-const P = RFCore.plural; // polska odmiana liczebników
-const DAYS_PL   = ['Nd','Pn','Wt','Śr','Cz','Pt','Sb'];
-const DAYS_FULL = ['niedziela','poniedziałek','wtorek','środa','czwartek','piątek','sobota'];
-const MONTHS_PL = ['stycznia','lutego','marca','kwietnia','maja','czerwca','lipca','sierpnia','września','października','listopada','grudnia'];
-const MONTHS_NOM = ['Styczeń','Luty','Marzec','Kwiecień','Maj','Czerwiec','Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'];
-const MONTHS_SHORT = ['sty','lut','mar','kwi','maj','cze','lip','sie','wrz','paź','lis','gru'];
+/* i18n: tt('tekst') tłumaczy, tf('a {0} b', x) tłumaczy z parametrami,
+   P() odmienia liczebniki w bieżącym języku; tablice dat podmienia applyLang() */
+const tt = s => RFI18N.t(s);
+const tf = (...a) => RFI18N.tf(...a);
+const P = (n, one, few, many) => RFI18N.plural(n, one, few, many);
+let DAYS_PL = RFI18N.arr('DAYS_PL');
+let DAYS_FULL = RFI18N.arr('DAYS_FULL');
+let MONTHS_PL = RFI18N.arr('MONTHS_PL');
+let MONTHS_NOM = RFI18N.arr('MONTHS_NOM');
+let MONTHS_SHORT = RFI18N.arr('MONTHS_SHORT');
 
 const BADGES = [
   {id:'first_day',  name:'Pierwszy krok',     desc:'Ukończ pierwszy dzień',          icon:'🌱', xp:50},
@@ -1186,6 +1199,7 @@ function defaultData() {
     programWeeks: 4,
     restSec: 30,
     fontScale: 'normal',
+    lang: 'auto', // 'auto' | 'pl' | 'en'
     xp: 0, badges: [],
     bestStreak: 0,
     archive: [],
@@ -1242,6 +1256,7 @@ function sanitizeData(d) {
   if (d.lastBackup != null && !DATE_KEY_RE.test(String(d.lastBackup))) d.lastBackup = null;
   if (!d.profile || typeof d.profile !== 'object') d.profile = def.profile;
   if (!['dark','light','auto'].includes(d.theme)) d.theme = 'dark';
+  if (!['auto','pl','en'].includes(d.lang)) d.lang = 'auto';
   return d;
 }
 
@@ -1307,7 +1322,7 @@ function exXP(ex) { return RFCore.exerciseXP(ex); }
 /* opis dawki ćwiczenia: „3 serie × 10 powt." lub „3 serie × 30 s" */
 function exDose(ex) {
   const setsTxt = `${ex.sets} ${P(ex.sets,'seria','serie','serii')}`;
-  return ex.mode === 'time' ? `${setsTxt} × ${ex.seconds} s` : `${setsTxt} × ${ex.reps} powt.`;
+  return ex.mode === 'time' ? `${setsTxt} × ${ex.seconds} s` : `${setsTxt} × ${ex.reps} ${tt('powt.')}`;
 }
 
 /* ══ BADGES ═════════════════════════════════════════════════ */
@@ -1348,6 +1363,45 @@ function checkBadges() {
   const badgeXP = [...earned].reduce((s, bid) => s + (BADGES.find(b => b.id === bid)?.xp || 0), 0);
   D.xp = xp + badgeXP + (D.missionXP || 0);
   return newBadges;
+}
+
+/* ══ LANGUAGE ═══════════════════════════════════════════════ */
+function resolveLang() {
+  if (D.lang === 'pl' || D.lang === 'en') return D.lang;
+  return (navigator.language || 'pl').toLowerCase().startsWith('pl') ? 'pl' : 'en';
+}
+
+function setLangPref(mode) {
+  D.lang = mode;
+  saveData();
+  applyLang();
+  renderPage(currentPage);
+  if (currentPage === 'settings') renderSettings();
+}
+
+/* statyczny markup: element z data-i18n tłumaczy swój tekst,
+   data-i18n-ph — placeholder; oryginał PL zapamiętany przy pierwszym przejściu */
+function applyStaticI18n() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    if (el.dataset.pl === undefined) el.dataset.pl = el.innerHTML;
+    el.innerHTML = RFI18N.getLang() === 'pl' ? el.dataset.pl : tt(el.dataset.pl);
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    if (el.dataset.plPh === undefined) el.dataset.plPh = el.placeholder;
+    el.placeholder = RFI18N.getLang() === 'pl' ? el.dataset.plPh : tt(el.dataset.plPh);
+  });
+}
+
+function applyLang() {
+  RFI18N.setLang(resolveLang());
+  document.documentElement.lang = RFI18N.getLang();
+  DAYS_PL = RFI18N.arr('DAYS_PL');
+  DAYS_FULL = RFI18N.arr('DAYS_FULL');
+  DAYS_ACC = RFI18N.arr('DAYS_ACC');
+  MONTHS_PL = RFI18N.arr('MONTHS_PL');
+  MONTHS_NOM = RFI18N.arr('MONTHS_NOM');
+  MONTHS_SHORT = RFI18N.arr('MONTHS_SHORT');
+  applyStaticI18n();
 }
 
 /* ══ THEME & FONT ═══════════════════════════════════════════ */
@@ -1408,8 +1462,8 @@ function renderHome() {
   const t = today(), d = dateFromKey(t);
   document.getElementById('home-date').textContent = `${d.getDate()} ${MONTHS_PL[d.getMonth()]}, ${DAYS_FULL[d.getDay()]}`;
   document.getElementById('home-week').textContent = isProgramOver()
-    ? 'Program zakończony · RehabFlow'
-    : `Tydzień ${weekOf(t)+1} z ${totalWeeks()} · RehabFlow`;
+    ? tt('Program zakończony · RehabFlow')
+    : tf('Tydzień {0} z {1} · RehabFlow', weekOf(t)+1, totalWeeks());
   renderHero();
   renderRing();
   renderDayStrip();
@@ -1432,11 +1486,11 @@ function renderHero() {
   document.getElementById('stat-xp').textContent = D.xp;
   document.getElementById('stat-badges').textContent = D.badges.length;
   document.getElementById('stat-week').textContent = weekPct(weekOf(today())) + '%';
-  const msg = streak === 0 ? 'Zacznij dzisiaj!' :
-    streak < 3 ? 'Dobry start! Kontynuuj!' :
-    streak < 7 ? `Świetnie! ${7-streak} dni do odznaki ⚡` :
-    streak < 14 ? `Niesamowite! ${14-streak} dni do diamentu 💎` :
-    streak < 28 ? `Legenda! ${28-streak} dni do korony 👑` : 'Mistrz rehabilitacji! 👑';
+  const msg = streak === 0 ? tt('Zacznij dzisiaj!') :
+    streak < 3 ? tt('Dobry start! Kontynuuj!') :
+    streak < 7 ? tf('Świetnie! {0} dni do odznaki ⚡', 7-streak) :
+    streak < 14 ? tf('Niesamowite! {0} dni do diamentu 💎', 14-streak) :
+    streak < 28 ? tf('Legenda! {0} dni do korony 👑', 28-streak) : tt('Mistrz rehabilitacji! 👑');
   document.getElementById('streak-msg').textContent = msg;
 }
 
@@ -1450,7 +1504,7 @@ function renderRing() {
   fill.setAttribute('stroke-dasharray', circ);
   requestAnimationFrame(() => setTimeout(() => fill.setAttribute('stroke-dashoffset', circ * (1 - pct/100)), 60));
   document.getElementById('ring-pct').textContent = rest ? '😌' : pct + '%';
-  document.getElementById('ring-sub').textContent = rest ? 'odpoczynek' : `${done}/${total} ćwicz.`;
+  document.getElementById('ring-sub').textContent = rest ? tt('odpoczynek') : tf('{0}/{1} ćwicz.', done, total);
 }
 
 function renderDayStrip() {
@@ -1491,14 +1545,14 @@ function renderCompleteCard() {
   area.innerHTML = `
     <div class="complete-card">
       <div class="cc-icon">🎓</div>
-      <div class="cc-title">Program ukończony!</div>
-      <div class="cc-sub">Ukończone dni: <strong>${st.doneDays}/${st.totalDays}</strong>${st.avgPain !== null ? ` · średni ból: <strong>${st.avgPain}/10</strong>` : ''}<br>Świetna robota! Możesz rozpocząć kolejny cykl.</div>
-      <button class="btn" onclick="startNewCycle()">🔄 Rozpocznij nowy cykl</button>
+      <div class="cc-title">${tt('Program ukończony!')}</div>
+      <div class="cc-sub">${tt('Ukończone dni: ')}<strong>${st.doneDays}/${st.totalDays}</strong>${st.avgPain !== null ? `${tt(' · średni ból: ')}<strong>${st.avgPain}/10</strong>` : ''}<br>${tt('Świetna robota! Możesz rozpocząć kolejny cykl.')}</div>
+      <button class="btn" onclick="startNewCycle()">${tt('🔄 Rozpocznij nowy cykl')}</button>
     </div>`;
 }
 
 function startNewCycle() {
-  if (!confirm('Rozpocząć nowy cykl od dzisiaj? Obecny cykl trafi do archiwum (historia i odznaki zostają).')) return;
+  if (!confirm(tt('Rozpocząć nowy cykl od dzisiaj? Obecny cykl trafi do archiwum (historia i odznaki zostają).'))) return;
   const st = RFCore.cycleStats(D.days, D.exercises, D.startDate, totalWeeks(), today());
   D.archive.push({
     start: D.startDate,
@@ -1509,7 +1563,7 @@ function startNewCycle() {
   });
   D.startDate = today();
   checkBadges(); saveData(); renderHome();
-  showToast('Nowy cykl rozpoczęty! 💪');
+  showToast(tt('Nowy cykl rozpoczęty! 💪'));
 }
 
 function renderExList() {
@@ -1517,7 +1571,7 @@ function renderExList() {
   const doneIds = new Set((D.days[t] || {}).completed || []);
   const el = document.getElementById('ex-list');
   if (!D.exercises.length) {
-    el.innerHTML = `<div class="empty-state"><div class="empty-icon">💪</div><div class="empty-title">Brak ćwiczeń</div><div class="empty-sub">Dodaj ćwiczenie przyciskiem „+ Dodaj" — możesz wybrać z gotowej biblioteki</div></div>`;
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">💪</div><div class="empty-title">${tt('Brak ćwiczeń')}</div><div class="empty-sub">${tt('Dodaj ćwiczenie przyciskiem „+ Dodaj" — możesz wybrać z gotowej biblioteki')}</div></div>`;
     return;
   }
   const scheduledToday = new Set(scheduledFor(t));
@@ -1533,9 +1587,9 @@ function renderExList() {
       <div class="ex-check"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-10"/></svg></div>
       <div class="ex-info">
         <div class="ex-name">${esc(ex.name)}</div>
-        <div class="ex-meta">${exDose(ex)} · ${esc(ex.type)}${daysTxt}</div>
+        <div class="ex-meta">${exDose(ex)} · ${esc(tt(ex.type))}${daysTxt}</div>
       </div>
-      ${offToday && !done ? '<span class="ex-off-tag">dziś wolne</span>' : `<span class="ex-xp">+${exXP(ex)} XP</span>`}
+      ${offToday && !done ? `<span class="ex-off-tag">${tt('dziś wolne')}</span>` : `<span class="ex-xp">+${exXP(ex)} XP</span>`}
       <button class="ex-edit" onclick="event.stopPropagation();openEditExercise(${ex.id})" aria-label="Edytuj">✏️</button>
     </div>`;
   }).join('');
@@ -1597,7 +1651,7 @@ function loadNote() {
 function saveNote() {
   const dd = getDay(today());
   dd.note = document.getElementById('note-area').value;
-  saveData(); showToast('Notatka zapisana ✓'); renderRecentNotes();
+  saveData(); showToast(tt('Notatka zapisana ✓')); renderRecentNotes();
 }
 
 function renderRecentNotes() {
@@ -1612,14 +1666,14 @@ function renderRecentNotes() {
   if (!totalNotes) { box.innerHTML = ''; return; }
   box.innerHTML = `
     <div class="section-hdr" style="margin-top:16px">
-      <span class="section-title">Ostatnie notatki</span>
-      <button class="section-action" onclick="openNotesJournal()">Wszystkie (${totalNotes}) ▸</button>
+      <span class="section-title">${tt('Ostatnie notatki')}</span>
+      <button class="section-action" onclick="openNotesJournal()">${tf('Wszystkie ({0}) ▸', totalNotes)}</button>
     </div>
     ${entries.length ? `<div class="gap-12">${entries.map(e => `
       <div class="card" style="border-left:3px solid var(--violet)">
         <div class="text-xs text-muted">${DAYS_PL[e.d.getDay()]}, ${e.d.getDate()} ${MONTHS_PL[e.d.getMonth()]}</div>
         <div class="text-sm mt-4" style="line-height:1.5">${esc(e.note)}</div>
-      </div>`).join('')}</div>` : '<div class="text-xs text-muted">Brak notatek z ostatnich 7 dni — starsze znajdziesz w dzienniku.</div>'}`;
+      </div>`).join('')}</div>` : `<div class="text-xs text-muted">${tt('Brak notatek z ostatnich 7 dni — starsze znajdziesz w dzienniku.')}</div>`}`;
 }
 
 /* ── dziennik wszystkich notatek z wyszukiwarką ── */
@@ -1637,7 +1691,7 @@ function renderNotesJournal() {
     .sort().reverse();
   const box = document.getElementById('notes-journal');
   if (!entries.length) {
-    box.innerHTML = `<div class="empty-state" style="padding:26px 16px"><div class="empty-icon">📝</div><div class="empty-sub">${q ? 'Brak notatek pasujących do wyszukiwania.' : 'Nie masz jeszcze żadnych notatek.'}</div></div>`;
+    box.innerHTML = `<div class="empty-state" style="padding:26px 16px"><div class="empty-icon">📝</div><div class="empty-sub">${q ? tt('Brak notatek pasujących do wyszukiwania.') : tt('Nie masz jeszcze żadnych notatek.')}</div></div>`;
     return;
   }
   box.innerHTML = `<div class="gap-12">${entries.map(k => {
@@ -1700,7 +1754,7 @@ function trSavedState() {
 function startTraining() {
   const t = today();
   const saved = trSavedState();
-  if (saved && confirm(`Masz przerwany trening: ćwiczenie ${saved.i + 1} z ${saved.queue.length}, seria ${saved.set}.\n\nKontynuować od tego miejsca?`)) {
+  if (saved && confirm(tf('Masz przerwany trening: ćwiczenie {0} z {1}, seria {2}.\n\nKontynuować od tego miejsca?', saved.i + 1, saved.queue.length, saved.set))) {
     TR.queue = saved.queue; TR.i = saved.i; TR.set = saved.set;
     TR.startedAt = saved.startedAt || Date.now();
     TR.sessionDone = saved.sessionDone || 0;
@@ -1715,7 +1769,7 @@ function startTraining() {
   const doneIds = new Set((D.days[t] || {}).completed || []);
   TR.queue = scheduledFor(t).filter(id => !doneIds.has(id));
   if (!TR.queue.length) {
-    showToast(isRestDay(t) ? 'Dziś dzień odpoczynku 😌' : 'Wszystko już zrobione! 🎉');
+    showToast(isRestDay(t) ? tt('Dziś dzień odpoczynku 😌') : tt('Wszystko już zrobione! 🎉'));
     return;
   }
   TR.i = 0; TR.set = 1; TR.resting = false; TR.holding = false;
@@ -1742,8 +1796,8 @@ function trRender() {
   if (TR.resting) {
     body.innerHTML = `
       <div class="tr-emoji">😮‍💨</div>
-      <div class="tr-name">Przerwa</div>
-      <div class="tr-desc">Następna: seria ${TR.set} z ${ex.sets} · ${esc(ex.name)}</div>`;
+      <div class="tr-name">${tt('Przerwa')}</div>
+      <div class="tr-desc">${tf('Następna: seria {0} z {1} · {2}', TR.set, ex.sets, esc(ex.name))}</div>`;
     const circ = 2 * Math.PI * 66;
     bottom.innerHTML = `
       <div class="tr-rest">
@@ -1756,14 +1810,14 @@ function trRender() {
           </svg>
           <div class="tr-rest-num"><span id="tr-rest-sec">${TR.restLeft}</span><span class="tr-rest-lbl">sekund</span></div>
         </div>
-        <button class="tr-skip" onclick="trSkipRest()">Pomiń przerwę ▸</button>
+        <button class="tr-skip" onclick="trSkipRest()">${tt('Pomiń przerwę ▸')}</button>
       </div>`;
   } else if (TR.holding) {
     /* ćwiczenie na czas: odliczanie trzymania */
     body.innerHTML = `
       <div class="tr-emoji">${TYPE_EMOJI[ex.type] || '💫'}</div>
       <div class="tr-name">${esc(ex.name)}</div>
-      <div class="tr-sets">Seria ${TR.set} z ${ex.sets} · trzymaj!</div>
+      <div class="tr-sets">${tf('Seria {0} z {1} · trzymaj!', TR.set, ex.sets)}</div>
       <div class="tr-set-dots">${dots}</div>`;
     const circ = 2 * Math.PI * 66;
     bottom.innerHTML = `
@@ -1777,23 +1831,23 @@ function trRender() {
           </svg>
           <div class="tr-rest-num"><span id="tr-rest-sec">${TR.restLeft}</span><span class="tr-rest-lbl">sekund</span></div>
         </div>
-        <button class="tr-skip" onclick="trCancelHold()">Przerwij ▸</button>
+        <button class="tr-skip" onclick="trCancelHold()">${tt('Przerwij ▸')}</button>
       </div>`;
   } else {
     const doseTxt = ex.mode === 'time'
-      ? `trzymaj ${ex.seconds} s`
+      ? tf('trzymaj {0} s', ex.seconds)
       : `${ex.reps} ${P(ex.reps,'powtórzenie','powtórzenia','powtórzeń')}`;
     body.innerHTML = `
       <div class="tr-emoji">${TYPE_EMOJI[ex.type] || '💫'}</div>
       <div class="tr-name">${esc(ex.name)}</div>
-      <div class="tr-sets">Seria ${TR.set} z ${ex.sets} · ${doseTxt}</div>
+      <div class="tr-sets">${tf('Seria {0} z {1}', TR.set, ex.sets)} · ${doseTxt}</div>
       <div class="tr-set-dots">${dots}</div>
-      <div class="tr-desc">${esc(ex.desc || 'Wykonuj ruch powoli i kontrolowanie. Przerwij, jeśli poczujesz ostry ból.')}</div>`;
+      <div class="tr-desc">${esc(ex.desc || tt('Wykonuj ruch powoli i kontrolowanie. Przerwij, jeśli poczujesz ostry ból.'))}</div>`;
     bottom.innerHTML = ex.mode === 'time'
-      ? `<button class="btn btn-primary btn-full tr-action" onclick="trStartHold()">▶ Start (${ex.seconds} s)</button>
-         <button class="tr-skip" onclick="trSkipEx()">Pomiń to ćwiczenie ▸</button>`
-      : `<button class="btn btn-primary btn-full tr-action" onclick="trDoneSet()">✓ Seria ukończona</button>
-         <button class="tr-skip" onclick="trSkipEx()">Pomiń to ćwiczenie ▸</button>`;
+      ? `<button class="btn btn-primary btn-full tr-action" onclick="trStartHold()">${tf('▶ Start ({0} s)', ex.seconds)}</button>
+         <button class="tr-skip" onclick="trSkipEx()">${tt('Pomiń to ćwiczenie ▸')}</button>`
+      : `<button class="btn btn-primary btn-full tr-action" onclick="trDoneSet()">${tt('✓ Seria ukończona')}</button>
+         <button class="tr-skip" onclick="trSkipEx()">${tt('Pomiń to ćwiczenie ▸')}</button>`;
   }
 }
 
@@ -1916,13 +1970,13 @@ function trFinishEx() {
 }
 
 /* ── podsumowanie sesji: domknięcie pętli motywacyjnej ── */
-const DAYS_ACC = ['w niedzielę','w poniedziałek','we wtorek','w środę','w czwartek','w piątek','w sobotę'];
+let DAYS_ACC = RFI18N.arr('DAYS_ACC');
 function nextTrainingDay() {
   const t = today();
   for (let i = 1; i <= 7; i++) {
     const k = addDays(t, i);
     if (k > programEnd()) return null;
-    if (scheduledFor(k).length) return i === 1 ? 'jutro' : DAYS_ACC[RFCore.weekdayOf(k)];
+    if (scheduledFor(k).length) return i === 1 ? tt('jutro') : DAYS_ACC[RFCore.weekdayOf(k)];
   }
   return null;
 }
@@ -1939,16 +1993,16 @@ function trShowSummary() {
   document.getElementById('tr-count').textContent = '✓';
   document.getElementById('tr-body').innerHTML = `
     <div class="tr-emoji">🎉</div>
-    <div class="tr-name">Trening ukończony!</div>
+    <div class="tr-name">${tt('Trening ukończony!')}</div>
     <div class="tr-summary">
       <div class="trs-chip"><b>${TR.sessionDone}</b><span>${P(TR.sessionDone,'ćwiczenie','ćwiczenia','ćwiczeń')}</span></div>
-      <div class="trs-chip"><b>${mins < 1 ? '<1' : mins}</b><span>min</span></div>
+      <div class="trs-chip"><b>${mins < 1 ? '<1' : mins}</b><span>${tt('min')}</span></div>
       <div class="trs-chip"><b>+${TR.sessionXP}</b><span>XP</span></div>
-      <div class="trs-chip"><b>${streak}🔥</b><span>streak</span></div>
+      <div class="trs-chip"><b>${streak}🔥</b><span>${tt('streak')}</span></div>
     </div>
-    <div class="tr-desc">${next ? `Następny trening: ${next}. Do zobaczenia!` : 'Program dobiega końca — świetna robota!'}</div>`;
+    <div class="tr-desc">${next ? tf('Następny trening: {0}. Do zobaczenia!', next) : tt('Program dobiega końca — świetna robota!')}</div>`;
   document.getElementById('tr-bottom').innerHTML =
-    `<button class="btn btn-primary btn-full tr-action" onclick="trClose()">Zakończ</button>`;
+    `<button class="btn btn-primary btn-full tr-action" onclick="trClose()">${tt('Zakończ')}</button>`;
 }
 
 function trClose() {
@@ -2015,19 +2069,19 @@ function renderMissions() {
   const { ws, list } = currentMissions();
   const claimed = new Set(D.missionsClaimed[ws] || []);
   area.innerHTML = `
-    <div class="section-hdr"><span class="section-title">Misje tygodnia</span><span class="text-xs text-muted">reset w poniedziałek</span></div>
+    <div class="section-hdr"><span class="section-title">${tt('Misje tygodnia')}</span><span class="text-xs text-muted">${tt('reset w poniedziałek')}</span></div>
     <div class="card" style="padding:6px 16px">${list.map(m => {
       const p = Math.min(m.target, m.prog(ws));
       const done = p >= m.target, got = claimed.has(m.id);
       return `<div class="mission-row${done ? ' done' : ''}${got ? ' claimed' : ''}">
         <div class="mission-icon">${m.icon}</div>
         <div class="mission-info">
-          <div class="mission-name">${m.name}</div>
-          <div class="mission-desc">${m.desc} · ${p}/${m.target}</div>
+          <div class="mission-name">${tt(m.name)}</div>
+          <div class="mission-desc">${tt(m.desc)} · ${p}/${m.target}</div>
           <div class="mission-bar"><div class="mission-bar-fill" style="width:${p / m.target * 100}%"></div></div>
         </div>
         ${got ? '<span class="mission-xp">✓ +' + m.xp + ' XP</span>'
-          : done ? `<button class="mission-claim" onclick="claimMission('${m.id}', event)">Odbierz +${m.xp} XP</button>`
+          : done ? `<button class="mission-claim" onclick="claimMission('${m.id}', event)">${tf('Odbierz +{0} XP', m.xp)}</button>`
           : `<span class="mission-xp">+${m.xp} XP</span>`}
       </div>`;
     }).join('')}</div>`;
@@ -2082,14 +2136,14 @@ function renderCalendar() {
   const daysInMonth = new Date(y, mo + 1, 0).getDate();
   const progStart = D.startDate, progEnd = programEnd();
   document.getElementById('cal-month-title').textContent = `${MONTHS_NOM[mo]} ${y}`;
-  document.getElementById('cal-sub').textContent = `Program: ${formatShort(progStart)}–${formatShort(progEnd)} · ${totalWeeks()} tyg.`;
+  document.getElementById('cal-sub').textContent = tf('Program: {0}–{1} · {2} tyg.', formatShort(progStart), formatShort(progEnd), totalWeeks());
   // nawigacja ograniczona do zakresu danych (± 1 miesiąc zapasu)
   const minMonth = monthStartOf(addDays(earliestDataKey(), -28));
   const maxMonth = monthStartOf(addDays(progEnd > t ? progEnd : t, 28));
   document.getElementById('cal-prev').disabled = calMonth <= minMonth;
   document.getElementById('cal-next').disabled = calMonth >= maxMonth;
 
-  grid.innerHTML = ['Pn','Wt','Śr','Cz','Pt','Sb','Nd'].map(d => `<div class="cal-hdr">${d}</div>`).join('');
+  grid.innerHTML = [1,2,3,4,5,6,0].map(i => `<div class="cal-hdr">${DAYS_PL[i]}</div>`).join('');
   const lead = (first.getDay() + 6) % 7; // Pn=0
   for (let i = 0; i < lead; i++) grid.innerHTML += `<div></div>`;
   for (let day = 1; day <= daysInMonth; day++) {
@@ -2163,12 +2217,12 @@ function showCalDetail(k) {
   document.getElementById('cal-detail-date').textContent = formatDate(k);
   document.getElementById('cal-detail-edit').style.display = (k <= today()) ? 'inline' : 'none';
   let body;
-  if (isExcused(k) && anyDone === 0) body = '🤒 Dzień usprawiedliwiony — nie przerywa passy';
-  else if (isRestDay(k) && anyDone === 0) body = '😌 Dzień odpoczynku — nic nie zaplanowano';
-  else if (scheduled > 0) body = `${doneCount(k)}/${scheduled} ćwiczeń ukończono${anyDone > doneCount(k) ? ` (+${anyDone - doneCount(k)} poza planem)` : ''}`;
-  else body = `${anyDone} ćwiczeń wykonano`;
-  if (dd.pain) body += ` · Ból: ${dd.pain}/10`;
-  if (dd.difficulty) body += ` · Trudność: ${dd.difficulty}/10`;
+  if (isExcused(k) && anyDone === 0) body = tt('🤒 Dzień usprawiedliwiony — nie przerywa passy');
+  else if (isRestDay(k) && anyDone === 0) body = tt('😌 Dzień odpoczynku — nic nie zaplanowano');
+  else if (scheduled > 0) body = tf('{0}/{1} ćwiczeń ukończono', doneCount(k), scheduled) + (anyDone > doneCount(k) ? tf(' (+{0} poza planem)', anyDone - doneCount(k)) : '');
+  else body = tf('{0} ćwiczeń wykonano', anyDone);
+  if (dd.pain) body += ' · ' + tf('Ból: {0}/10', dd.pain);
+  if (dd.difficulty) body += ' · ' + tf('Trudność: {0}/10', dd.difficulty);
   if (dd.note) body += `<br><em>„${esc(dd.note)}"</em>`;
   document.getElementById('cal-detail-body').innerHTML = body;
   detail.style.display = 'block';
@@ -2178,12 +2232,12 @@ function showCalDetail(k) {
 let editDayKey = null;
 
 function openDayEdit(k) {
-  if (k > today()) { showToast('Nie można edytować przyszłości 😉'); return; }
+  if (k > today()) { showToast(tt('Nie można edytować przyszłości 😉')); return; }
   editDayKey = k;
   const dd = D.days[k] || { completed: [], pain: 0, difficulty: 0, note: '' };
   const d = dateFromKey(k);
   document.getElementById('day-modal-title').textContent =
-    (k === today() ? 'Dzisiaj — ' : '') + `${DAYS_FULL[d.getDay()]}, ${d.getDate()} ${MONTHS_PL[d.getMonth()]}`;
+    (k === today() ? tt('Dzisiaj — ') : '') + `${DAYS_FULL[d.getDay()]}, ${d.getDate()} ${MONTHS_PL[d.getMonth()]}`;
   const doneIds = new Set(dd.completed || []);
   document.getElementById('dm-list').innerHTML = D.exercises.length
     ? D.exercises.map(ex => `
@@ -2191,7 +2245,7 @@ function openDayEdit(k) {
         <div class="ex-check"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-10"/></svg></div>
         <div class="dm-name">${esc(ex.name)}</div>
       </div>`).join('')
-    : '<div class="text-sm text-muted">Brak ćwiczeń w programie.</div>';
+    : `<div class="text-sm text-muted">${tt('Brak ćwiczeń w programie.')}</div>`;
   document.getElementById('dm-pain').value = dd.pain || 0;
   document.getElementById('dm-pain-val').textContent = dd.pain || 0;
   document.getElementById('dm-diff').value = dd.difficulty || 0;
@@ -2221,7 +2275,7 @@ function saveDayEdit() {
   closeModal('day-modal');
   if (currentPage === 'calendar') { renderCalendar(); if (selectedCalDay) showCalDetail(selectedCalDay); }
   else renderHome();
-  showToast('Dzień zaktualizowany ✓');
+  showToast(tt('Dzień zaktualizowany ✓'));
   if (newBadges.length) setTimeout(() => showCelebrate(newBadges), 350);
 }
 
@@ -2262,15 +2316,15 @@ function renderWeekSummary() {
   }
   const painNow = avgPainInRange(ws, 7);
   const painPrev = w > 0 ? avgPainInRange(weekStart(w - 1), 7) : null;
-  let painTxt = painNow !== null ? `średni ból <strong>${painNow}/10</strong>` : 'brak danych o bólu';
+  let painTxt = painNow !== null ? tf('średni ból <strong>{0}/10</strong>', painNow) : tt('brak danych o bólu');
   if (painNow !== null && painPrev !== null) {
     const diff = Math.round((painNow - painPrev) * 10) / 10;
-    painTxt += diff < 0 ? ` <span style="color:var(--success)">▼ ${Math.abs(diff)} vs poprzedni</span>`
-      : diff > 0 ? ` <span style="color:var(--danger)">▲ ${diff} vs poprzedni</span>` : ' (bez zmian)';
+    painTxt += diff < 0 ? ` <span style="color:var(--success)">${tf('▼ {0} vs poprzedni', Math.abs(diff))}</span>`
+      : diff > 0 ? ` <span style="color:var(--danger)">${tf('▲ {0} vs poprzedni', diff)}</span>` : tt(' (bez zmian)');
   }
   el.innerHTML = `
-    <div class="section-hdr" style="margin-bottom:6px"><span class="section-title">Ten tydzień</span><span class="text-xs text-muted">Tydzień ${w+1} z ${totalWeeks()}</span></div>
-    <div style="font-size:15px;line-height:1.6">Pełne dni: <strong class="grad-text">${done}/${elapsed}</strong> · cel: ${D.weeklyGoal}/7<br><span class="text-sm text-muted">${painTxt}</span></div>`;
+    <div class="section-hdr" style="margin-bottom:6px"><span class="section-title">${tt('Ten tydzień')}</span><span class="text-xs text-muted">${tf('Tydzień {0} z {1}', w+1, totalWeeks())}</span></div>
+    <div style="font-size:15px;line-height:1.6">${tt('Pełne dni: ')}<strong class="grad-text">${done}/${elapsed}</strong>${tf(' · cel: {0}/7', D.weeklyGoal)}<br><span class="text-sm text-muted">${painTxt}</span></div>`;
 }
 
 function renderWeekCards() {
@@ -2279,7 +2333,7 @@ function renderWeekCards() {
   el.innerHTML = Array.from({ length: totalWeeks() }, (_, w) => {
     const ws = weekStart(w), we = addDays(ws, 6);
     return `<div class="week-card${w === curW && !isProgramOver() ? ' active' : ''}">
-      <div class="text-sm fw-700">Tydzień ${w+1}</div>
+      <div class="text-sm fw-700">${tf('Tydzień {0}', w+1)}</div>
       <div class="week-pct">${weekPct(w)}%</div>
       <div class="text-xs text-muted">${formatShort(ws)}–${formatShort(we)}</div>
     </div>`;
@@ -2320,7 +2374,7 @@ function lineChartSVG(el, series, opts = {}) {
   const used = series.filter(s => s.pts.length > 0);
   const allPts = used.flatMap(s => s.pts);
   if (allPts.length < 2) {
-    el.innerHTML = `<div class="text-xs text-muted" style="padding:14px 2px">${opts.empty || 'Za mało danych, aby narysować wykres.'}</div>`;
+    el.innerHTML = `<div class="text-xs text-muted" style="padding:14px 2px">${opts.empty || tt('Za mało danych, aby narysować wykres.')}</div>`;
     return;
   }
   const W = el.clientWidth || 300, H = opts.h || 130;
@@ -2401,9 +2455,9 @@ function renderWellbeingChart() {
     if ((dd.difficulty || 0) > 0) diff.push({ k, v: dd.difficulty });
   }
   lineChartSVG(el, [
-    { name: 'Ból', color: '#F472B6', pts: pain },
-    { name: 'Trudność', color: '#818CF8', pts: diff },
-  ], { yMin: 0, yMax: 10, unit: '/10', empty: 'Za mało danych — zapisuj ból i trudność suwakami na stronie głównej.' });
+    { name: tt('Ból'), color: '#F472B6', pts: pain },
+    { name: tt('Trudność'), color: '#818CF8', pts: diff },
+  ], { yMin: 0, yMax: 10, unit: '/10', empty: tt('Za mało danych — zapisuj ból i trudność suwakami na stronie głównej.') });
 }
 
 /* najlepsze dni tygodnia: % pełnych dni per dzień (cała historia) */
@@ -2421,7 +2475,7 @@ function renderWeekdayChart() {
   }
   const order = [1,2,3,4,5,6,0]; // Pn..Nd
   if (!poss.some(p => p > 0)) {
-    el.innerHTML = '<div class="text-xs text-muted" style="padding:8px 2px">Dane pojawią się po pierwszych treningach.</div>';
+    el.innerHTML = `<div class="text-xs text-muted" style="padding:8px 2px">${tt('Dane pojawią się po pierwszych treningach.')}</div>`;
     return;
   }
   el.innerHTML = `<div class="wd-chart">${order.map(wd => {
@@ -2473,21 +2527,21 @@ let editingMeasIdx = null; // indeks edytowanego pomiaru w D.measurements
 function measCancelEdit() {
   editingMeasIdx = null;
   const btn = document.getElementById('meas-add-btn');
-  if (btn) btn.textContent = '+ Dodaj pomiar';
+  if (btn) btn.textContent = tt('+ Dodaj pomiar');
 }
 
 function addMeasure() {
   const type = document.getElementById('meas-type').value;
   const val = parseFloat(document.getElementById('meas-val').value);
   const date = document.getElementById('meas-date').value || today();
-  if (isNaN(val) || !isFinite(val)) { showToast('Podaj wartość pomiaru'); return; }
-  if (!DATE_KEY_RE.test(date) || date > today()) { showToast('Data pomiaru nie może być w przyszłości'); return; }
+  if (isNaN(val) || !isFinite(val)) { showToast(tt('Podaj wartość pomiaru')); return; }
+  if (!DATE_KEY_RE.test(date) || date > today()) { showToast(tt('Data pomiaru nie może być w przyszłości')); return; }
   if (editingMeasIdx !== null && D.measurements[editingMeasIdx]) {
     Object.assign(D.measurements[editingMeasIdx], { date, type, value: val });
-    showToast('Pomiar zaktualizowany ✓');
+    showToast(tt('Pomiar zaktualizowany ✓'));
   } else {
     D.measurements.push({ date, type, value: val });
-    showToast('Pomiar zapisany ✓');
+    showToast(tt('Pomiar zapisany ✓'));
   }
   measCancelEdit();
   document.getElementById('meas-val').value = '';
@@ -2501,7 +2555,7 @@ function editMeasure(idx) {
   document.getElementById('meas-type').value = m.type;
   document.getElementById('meas-val').value = m.value;
   document.getElementById('meas-date').value = m.date;
-  document.getElementById('meas-add-btn').textContent = '💾 Zapisz zmianę';
+  document.getElementById('meas-add-btn').textContent = tt('💾 Zapisz zmianę');
   renderMeasures();
 }
 
@@ -2523,7 +2577,7 @@ function renderMeasures() {
     .sort((a, b) => a.date < b.date ? -1 : 1);
   drawMeasureChart(entries);
   if (!entries.length) {
-    list.innerHTML = `<div class="text-xs text-muted">Brak pomiarów typu „${MEAS_LABELS[type]}". Dodaj pierwszy powyżej.</div>`;
+    list.innerHTML = `<div class="text-xs text-muted">${tf('Brak pomiarów typu „{0}". Dodaj pierwszy powyżej.', tt(MEAS_LABELS[type]))}</div>`;
     return;
   }
   list.innerHTML = entries.slice().reverse().map(m => `
@@ -2541,7 +2595,7 @@ function drawMeasureChart(entries) {
   el.style.display = 'block';
   const type = document.getElementById('meas-type').value;
   lineChartSVG(el, [{
-    name: MEAS_LABELS[type],
+    name: tt(MEAS_LABELS[type]),
     color: '#C084FC',
     pts: entries.map(e => ({ k: e.date, v: e.value })),
   }], { unit: MEAS_UNITS[type], h: 110 });
@@ -2560,19 +2614,19 @@ function renderSummaryStats() {
   document.getElementById('summary-stats').innerHTML = [
     [doneDays, 'Pełne dni'], [computeStreak(), 'Streak'], [(D.bestStreak || 0) + '🔥', 'Rekord'],
     [D.xp, 'XP'], [avgPain, 'Śr. ból'], [D.badges.length, 'Odznaki'],
-  ].map(([v,l]) => `<div class="stat-chip"><div class="stat-val">${v}</div><div class="stat-lbl">${l}</div></div>`).join('');
+  ].map(([v,l]) => `<div class="stat-chip"><div class="stat-val">${v}</div><div class="stat-lbl">${tt(l)}</div></div>`).join('');
 }
 
 function renderArchive() {
   const area = document.getElementById('archive-area');
   if (!D.archive.length) { area.innerHTML = ''; return; }
   area.innerHTML = `
-    <div class="section-hdr"><span class="section-title">Ukończone cykle</span></div>
+    <div class="section-hdr"><span class="section-title">${tt('Ukończone cykle')}</span></div>
     <div class="gap-12">${D.archive.map((c, i) => {
       const end = addDays(c.start, c.weeks * 7 - 1);
       return `<div class="card" style="border-left:3px solid var(--success)">
-        <div class="fw-700 text-sm">Cykl ${i+1} · ${formatShort(c.start)}–${formatShort(end)}</div>
-        <div class="text-xs text-muted mt-4">Pełne dni: ${c.doneDays}/${c.totalDays}${c.avgPain !== null && c.avgPain !== undefined ? ` · śr. ból: ${c.avgPain}/10` : ''} · ${c.weeks} tyg.</div>
+        <div class="fw-700 text-sm">${tf('Cykl {0} · {1}–{2}', i+1, formatShort(c.start), formatShort(end))}</div>
+        <div class="text-xs text-muted mt-4">${tf('Pełne dni: {0}/{1}', c.doneDays, c.totalDays)}${c.avgPain !== null && c.avgPain !== undefined ? tf(' · śr. ból: {0}/10', c.avgPain) : ''}${tf(' · {0} tyg.', c.weeks)}</div>
       </div>`;
     }).join('')}</div>`;
 }
@@ -2593,7 +2647,7 @@ function openReport() {
     const sch = scheduledFor(k).length;
     daysRows += `<tr>
       <td>${formatShort(k)} (${DAYS_PL[dateFromKey(k).getDay()]})</td>
-      <td style="text-align:center">${isExcused(k) && !done ? 'uspr.' : sch ? `${done}/${sch}` : 'odpocz.'}</td>
+      <td style="text-align:center">${isExcused(k) && !done ? tt('uspr.') : sch ? `${done}/${sch}` : tt('odpocz.')}</td>
       <td style="text-align:center">${dd.pain || '–'}</td>
       <td style="text-align:center">${dd.difficulty || '–'}</td>
       <td>${esc(dd.note || '')}</td>
@@ -2601,13 +2655,13 @@ function openReport() {
   }
 
   const measRows = D.measurements.slice().sort((a,b) => a.date < b.date ? -1 : 1).map(m =>
-    `<tr><td>${formatShort(m.date)}</td><td>${MEAS_LABELS[m.type]}</td><td>${m.value}${MEAS_UNITS[m.type]}</td></tr>`).join('');
+    `<tr><td>${formatShort(m.date)}</td><td>${tt(MEAS_LABELS[m.type])}</td><td>${m.value}${MEAS_UNITS[m.type]}</td></tr>`).join('');
 
   const exRows = D.exercises.map(ex =>
-    `<tr><td>${esc(ex.name)}</td><td>${ex.mode === 'time' ? `${ex.sets}×${ex.seconds} s` : `${ex.sets}×${ex.reps}`}</td><td>${esc(ex.type)}</td></tr>`).join('');
+    `<tr><td>${esc(ex.name)}</td><td>${ex.mode === 'time' ? `${ex.sets}×${ex.seconds} s` : `${ex.sets}×${ex.reps}`}</td><td>${esc(tt(ex.type))}</td></tr>`).join('');
 
   const html = `<!DOCTYPE html><html lang="pl"><head><meta charset="UTF-8">
-<title>Raport rehabilitacji — ${esc(p.name || 'pacjent')}</title>
+<title>${tf('Raport rehabilitacji — {0}', esc(p.name || tt('pacjent')))}</title>
 <style>
   body { font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a2e; margin: 32px; font-size: 13px; }
   h1 { font-size: 22px; margin-bottom: 2px; color: #4C1D95; }
@@ -2622,35 +2676,35 @@ function openReport() {
   .footer { margin-top: 28px; color: #999; font-size: 10px; }
   @media print { body { margin: 12mm; } }
 </style></head><body>
-<h1>Raport rehabilitacji</h1>
-<div class="sub">RehabFlow · wygenerowano ${formatDate(t)}</div>
-<h2>Pacjent</h2>
+<h1>${tt('Raport rehabilitacji')}</h1>
+<div class="sub">${tf('RehabFlow · wygenerowano {0}', formatDate(t))}</div>
+<h2>${tt('Pacjent')}</h2>
 <table>
-  <tr><th style="width:30%">Imię i nazwisko</th><td>${esc(p.name || '—')}</td></tr>
-  <tr><th>Diagnoza</th><td>${esc(p.diagnosis || '—')}</td></tr>
-  <tr><th>Fizjoterapeuta</th><td>${esc(p.therapist || '—')}</td></tr>
-  <tr><th>Data urazu</th><td>${p.injuryDate ? formatDate(p.injuryDate) : '—'}</td></tr>
-  <tr><th>Program</th><td>${formatDate(start)} – ${formatDate(programEnd())} (${totalWeeks()} tyg.)</td></tr>
+  <tr><th style="width:30%">${tt('Imię i nazwisko')}</th><td>${esc(p.name || '—')}</td></tr>
+  <tr><th>${tt('Diagnoza')}</th><td>${esc(p.diagnosis || '—')}</td></tr>
+  <tr><th>${tt('Fizjoterapeuta')}</th><td>${esc(p.therapist || '—')}</td></tr>
+  <tr><th>${tt('Data urazu')}</th><td>${p.injuryDate ? formatDate(p.injuryDate) : '—'}</td></tr>
+  <tr><th>${tt('Program')}</th><td>${formatDate(start)} – ${formatDate(programEnd())} (${tf('{0} tyg.', totalWeeks())})</td></tr>
 </table>
-<h2>Podsumowanie</h2>
+<h2>${tt('Podsumowanie')}</h2>
 <div class="grid">
-  <div class="stat"><b>${st.doneDays}/${st.elapsed}</b>pełne dni</div>
-  <div class="stat"><b>${streak}</b>obecny streak</div>
-  <div class="stat"><b>${D.bestStreak || 0}</b>najdłuższy streak</div>
-  <div class="stat"><b>${st.avgPain !== null ? st.avgPain + '/10' : '—'}</b>średni ból</div>
+  <div class="stat"><b>${st.doneDays}/${st.elapsed}</b>${tt('pełne dni')}</div>
+  <div class="stat"><b>${streak}</b>${tt('obecny streak')}</div>
+  <div class="stat"><b>${D.bestStreak || 0}</b>${tt('najdłuższy streak')}</div>
+  <div class="stat"><b>${st.avgPain !== null ? st.avgPain + '/10' : '—'}</b>${tt('średni ból')}</div>
 </div>
-<h2>Program ćwiczeń</h2>
-<table><tr><th>Ćwiczenie</th><th style="width:15%">Serie×powt.</th><th style="width:20%">Typ</th></tr>${exRows || '<tr><td colspan="3">Brak ćwiczeń</td></tr>'}</table>
-${measRows ? `<h2>Pomiary</h2><table><tr><th>Data</th><th>Rodzaj</th><th>Wartość</th></tr>${measRows}</table>` : ''}
-<h2>Dziennik dzienny</h2>
-<table><tr><th style="width:18%">Data</th><th style="width:12%">Ćwiczenia</th><th style="width:8%">Ból</th><th style="width:10%">Trudność</th><th>Notatka</th></tr>${daysRows || '<tr><td colspan="5">Brak danych</td></tr>'}</table>
-${(p.therapistNotes || '').trim() ? `<h2>Notatki fizjoterapeuty</h2><p>${esc(p.therapistNotes)}</p>` : ''}
-<div class="footer">Wygenerowano przez RehabFlow — dane przechowywane lokalnie na urządzeniu pacjenta. Aby zapisać jako PDF: Drukuj → „Zapisz jako PDF".</div>
+<h2>${tt('Program ćwiczeń')}</h2>
+<table><tr><th>${tt('Ćwiczenie')}</th><th style="width:15%">${tt('Serie×powt.')}</th><th style="width:20%">${tt('Typ')}</th></tr>${exRows || `<tr><td colspan="3">${tt('Brak ćwiczeń')}</td></tr>`}</table>
+${measRows ? `<h2>${tt('Pomiary')}</h2><table><tr><th>${tt('Data')}</th><th>${tt('Rodzaj')}</th><th>${tt('Wartość')}</th></tr>${measRows}</table>` : ''}
+<h2>${tt('Dziennik dzienny')}</h2>
+<table><tr><th style="width:18%">${tt('Data')}</th><th style="width:12%">${tt('Ćwiczenia')}</th><th style="width:8%">${tt('Ból')}</th><th style="width:10%">${tt('Trudność')}</th><th>${tt('Notatka')}</th></tr>${daysRows || `<tr><td colspan="5">${tt('Brak danych')}</td></tr>`}</table>
+${(p.therapistNotes || '').trim() ? `<h2>${tt('Notatki fizjoterapeuty')}</h2><p>${esc(p.therapistNotes)}</p>` : ''}
+<div class="footer">${tt('Wygenerowano przez RehabFlow — dane przechowywane lokalnie na urządzeniu pacjenta. Aby zapisać jako PDF: Drukuj → „Zapisz jako PDF".')}</div>
 <script>window.onload = function(){ setTimeout(function(){ window.print(); }, 250); };<\/script>
 </body></html>`;
 
   const w = window.open('', '_blank');
-  if (!w) { showToast('Zezwól na wyskakujące okna, aby wygenerować raport'); return; }
+  if (!w) { showToast(tt('Zezwól na wyskakujące okna, aby wygenerować raport')); return; }
   w.document.write(html);
   w.document.close();
 }
@@ -2659,17 +2713,17 @@ ${(p.therapistNotes || '').trim() ? `<h2>Notatki fizjoterapeuty</h2><p>${esc(p.t
 function renderBadges() {
   checkBadges(); saveData();
   const xp = D.xp, level = Math.floor(xp / 200) + 1, pct = Math.min(100, (xp % 200) / 200 * 100);
-  document.getElementById('level-label').textContent = `Poziom ${level}`;
+  document.getElementById('level-label').textContent = tf('Poziom {0}', level);
   document.getElementById('level-xp').textContent = `${xp} / ${level * 200} XP`;
   document.getElementById('xp-bar').style.width = pct + '%';
   const earned = new Set(D.badges);
   document.getElementById('badge-grid').innerHTML = BADGES.map(b => `
     <div class="badge-card${earned.has(b.id) ? ' earned' : ''}">
       <div class="badge-icon">${b.icon}</div>
-      <div class="badge-name">${b.name}</div>
-      <div class="badge-desc">${b.desc}</div>
+      <div class="badge-name">${tt(b.name)}</div>
+      <div class="badge-desc">${tt(b.desc)}</div>
       <div class="badge-xp">+${b.xp} XP</div>
-      ${earned.has(b.id) ? '<div class="badge-earned-tag">✓ Zdobyta</div>' : ''}
+      ${earned.has(b.id) ? `<div class="badge-earned-tag">${tt('✓ Zdobyta')}</div>` : ''}
     </div>`).join('');
 }
 
@@ -2733,7 +2787,7 @@ function shareAchievements() {
   // statystyki
   ctx.font = '700 40px Outfit, sans-serif';
   ctx.fillStyle = '#fff';
-  ctx.fillText(`Poziom ${level}  ·  ${D.xp} XP  ·  ${D.badges.length} ${P(D.badges.length,'odznaka','odznaki','odznak')}`, S/2, 850);
+  ctx.fillText(`${tf('Poziom {0}', level)}  ·  ${D.xp} XP  ·  ${D.badges.length} ${P(D.badges.length,'odznaka','odznaki','odznak')}`, S/2, 850);
 
   // zdobyte odznaki (emoji)
   const icons = D.badges.slice(0, 6).map(bid => (BADGES.find(b => b.id === bid) || {}).icon).filter(Boolean);
@@ -2744,10 +2798,10 @@ function shareAchievements() {
 
   ctx.font = '500 30px Outfit, sans-serif';
   ctx.fillStyle = 'rgba(255,255,255,.5)';
-  ctx.fillText(`Mój dziennik rehabilitacji · ${formatDate(today())}`, S/2, 1010);
+  ctx.fillText(tf('Mój dziennik rehabilitacji · {0}', formatDate(today())), S/2, 1010);
 
   cv.toBlob(blob => {
-    if (!blob) { showToast('Nie udało się wygenerować karty'); return; }
+    if (!blob) { showToast(tt('Nie udało się wygenerować karty')); return; }
     const file = new File([blob], `rehabflow_${today()}.png`, { type: 'image/png' });
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       navigator.share({ files: [file], title: 'RehabFlow — moje postępy' }).catch(() => {});
@@ -2757,7 +2811,7 @@ function shareAchievements() {
       a.download = file.name;
       a.click();
       URL.revokeObjectURL(a.href);
-      showToast('Karta zapisana jako PNG ✓');
+      showToast(tt('Karta zapisana jako PNG ✓'));
     }
   }, 'image/png');
 }
@@ -2781,9 +2835,11 @@ function renderSettings() {
   document.getElementById('install-btn').style.display = deferredPrompt ? 'inline-flex' : 'none';
   ['dark','light','auto'].forEach(m =>
     document.getElementById('theme-' + m).classList.toggle('active', D.theme === m));
+  ['auto','pl','en'].forEach(m =>
+    document.getElementById('lang-' + m).classList.toggle('active', D.lang === m));
   document.getElementById('s-start').max = today(); // start programu nie może być w przyszłości
   if (isNativeApp()) document.getElementById('notif-hint').textContent =
-    'ℹ️ Wersja aplikacji: przypomnienia natywne — zadzwonią o ustawionej godzinie nawet przy zamkniętej aplikacji.';
+    tt('ℹ️ Wersja aplikacji: przypomnienia natywne — zadzwonią o ustawionej godzinie nawet przy zamkniętej aplikacji.');
   renderSyncCard();
   updateNotifStatus();
 }
@@ -2796,30 +2852,30 @@ function saveProfile() {
     injuryDate: document.getElementById('s-injury').value,
     therapistNotes: document.getElementById('s-therapist-notes').value,
   };
-  saveData(); showToast('Profil zapisany ✓');
+  saveData(); showToast(tt('Profil zapisany ✓'));
 }
 
 function saveSettings() {
   let sd = document.getElementById('s-start').value || today();
   if (!DATE_KEY_RE.test(sd)) sd = today();
-  if (sd > today()) { sd = today(); showToast('Data startu nie może być w przyszłości — ustawiono dziś'); }
+  if (sd > today()) { sd = today(); showToast(tt('Data startu nie może być w przyszłości — ustawiono dziś')); }
   D.startDate = sd;
   D.programWeeks = parseInt(document.getElementById('s-weeks').value, 10) || 4;
   D.weeklyGoal = parseInt(document.getElementById('s-goal').value, 10) || 5;
   D.restSec = parseInt(document.getElementById('s-rest').value, 10) || 30;
   calMonth = null; // kalendarz wróci do bieżącego miesiąca
-  checkBadges(); saveData(); showToast('Ustawienia zapisane ✓');
+  checkBadges(); saveData(); showToast(tt('Ustawienia zapisane ✓'));
 }
 
 function saveNotifSettings() {
   D.notifHour1 = document.getElementById('s-hour1').value;
   D.notifHour2 = document.getElementById('s-hour2').value;
-  saveData(); scheduleNotifications(); showToast('Godziny zapisane ✓');
+  saveData(); scheduleNotifications(); showToast(tt('Godziny zapisane ✓'));
 }
 
 function resetData() {
-  if (!confirm('Usunąć wszystkie dane? Tej operacji nie można cofnąć!\n\nWskazówka: najpierw zrób kopię zapasową (Postęp → Kopia zapasowa).')) return;
-  if (!confirm('OSTATNIE OSTRZEŻENIE: cała historia, XP, odznaki i ustawienia zostaną trwale usunięte. Kontynuować?')) return;
+  if (!confirm(tt('Usunąć wszystkie dane? Tej operacji nie można cofnąć!\n\nWskazówka: najpierw zrób kopię zapasową (Postęp → Kopia zapasowa).'))) return;
+  if (!confirm(tt('OSTATNIE OSTRZEŻENIE: cała historia, XP, odznaki i ustawienia zostaną trwale usunięte. Kontynuować?'))) return;
   localStorage.removeItem(STORE_KEY);
   localStorage.removeItem(LEGACY_KEY);
   localStorage.removeItem('rf_missed_ok');
@@ -2834,40 +2890,40 @@ function renderSyncCard() {
   if (!window.RFSync) { el.innerHTML = ''; return; }
   if (!RFSync.configured()) {
     el.innerHTML = `
-      <div class="text-xs text-muted" style="line-height:1.55;margin-bottom:10px">Konto + synchronizacja między urządzeniami i podgląd live dla fizjoterapeuty. Wymaga własnego projektu Supabase — instrukcja w pliku <a href="SUPABASE.md" style="color:var(--violet)" target="_blank">SUPABASE.md</a>.</div>
-      <div class="form-field"><label class="form-label">Adres projektu (URL)</label>
+      <div class="text-xs text-muted" style="line-height:1.55;margin-bottom:10px">${tt('Konto + synchronizacja między urządzeniami i podgląd live dla fizjoterapeuty. Wymaga własnego projektu Supabase — instrukcja w pliku')} <a href="SUPABASE.md" style="color:var(--violet)" target="_blank">SUPABASE.md</a>.</div>
+      <div class="form-field"><label class="form-label">${tt('Adres projektu (URL)')}</label>
         <input class="form-input" id="sync-url" placeholder="https://xxxx.supabase.co" autocomplete="off"></div>
-      <div class="form-field"><label class="form-label">Klucz anon (public)</label>
+      <div class="form-field"><label class="form-label">${tt('Klucz anon (public)')}</label>
         <input class="form-input" id="sync-key" placeholder="eyJ..." autocomplete="off"></div>
-      <button class="btn btn-secondary btn-full" onclick="syncSaveConfig()">Zapisz konfigurację</button>`;
+      <button class="btn btn-secondary btn-full" onclick="syncSaveConfig()">${tt('Zapisz konfigurację')}</button>`;
     return;
   }
   if (!RFSync.loggedIn()) {
     el.innerHTML = `
-      <div class="form-field"><label class="form-label">E-mail</label>
+      <div class="form-field"><label class="form-label">${tt('E-mail')}</label>
         <input class="form-input" id="sync-email" type="email" placeholder="twoj@email.pl" value="${esc(RFSync.email())}" autocomplete="email"></div>
       ${syncCodeSent ? `
-        <div class="form-field"><label class="form-label">Kod z e-maila (6 cyfr)</label>
+        <div class="form-field"><label class="form-label">${tt('Kod z e-maila (6 cyfr)')}</label>
           <input class="form-input" id="sync-code" inputmode="numeric" maxlength="6" placeholder="123456" autocomplete="one-time-code"></div>
         <div style="display:flex;gap:10px">
-          <button class="btn btn-primary" style="flex:1" onclick="syncVerifyCode()">Zaloguj</button>
-          <button class="btn btn-secondary" style="flex:1" onclick="syncSendCode()">Wyślij ponownie</button>
+          <button class="btn btn-primary" style="flex:1" onclick="syncVerifyCode()">${tt('Zaloguj')}</button>
+          <button class="btn btn-secondary" style="flex:1" onclick="syncSendCode()">${tt('Wyślij ponownie')}</button>
         </div>` : `
-        <button class="btn btn-primary btn-full" onclick="syncSendCode()">📧 Wyślij kod logowania</button>`}
-      <button class="btn btn-secondary btn-full mt-8" onclick="syncReset()">Zmień konfigurację projektu</button>`;
+        <button class="btn btn-primary btn-full" onclick="syncSendCode()">${tt('📧 Wyślij kod logowania')}</button>`}
+      <button class="btn btn-secondary btn-full mt-8" onclick="syncReset()">${tt('Zmień konfigurację projektu')}</button>`;
     return;
   }
   const last = RFSync.lastSyncAt();
   el.innerHTML = `
     <div class="text-sm" style="line-height:1.7">
-      Zalogowano: <strong>${esc(RFSync.email())}</strong><br>
-      <span class="text-muted text-xs">Ostatnia synchronizacja: ${last ? new Date(last).toLocaleString('pl-PL') : 'jeszcze nie'}</span><br>
-      Kod dla fizjoterapeuty: <strong class="grad-text" style="letter-spacing:.1em">${esc(RFSync.shareCode() || '—')}</strong>
-      ${RFSync.shareCode() ? `<button class="section-action" onclick="syncCopyCode()" style="margin-left:6px">Kopiuj</button>` : ''}
+      ${tt('Zalogowano: ')}<strong>${esc(RFSync.email())}</strong><br>
+      <span class="text-muted text-xs">${tt('Ostatnia synchronizacja: ')}${last ? new Date(last).toLocaleString(RFI18N.getLang() === 'en' ? 'en-GB' : 'pl-PL') : tt('jeszcze nie')}</span><br>
+      ${tt('Kod dla fizjoterapeuty: ')}<strong class="grad-text" style="letter-spacing:.1em">${esc(RFSync.shareCode() || '—')}</strong>
+      ${RFSync.shareCode() ? `<button class="section-action" onclick="syncCopyCode()" style="margin-left:6px">${tt('Kopiuj')}</button>` : ''}
     </div>
     <div style="display:flex;gap:10px;margin-top:12px">
-      <button class="btn btn-primary" style="flex:1" onclick="syncNow()">🔄 Synchronizuj</button>
-      <button class="btn btn-secondary" style="flex:1" onclick="syncLogout()">Wyloguj</button>
+      <button class="btn btn-primary" style="flex:1" onclick="syncNow()">${tt('🔄 Synchronizuj')}</button>
+      <button class="btn btn-secondary" style="flex:1" onclick="syncLogout()">${tt('Wyloguj')}</button>
     </div>`;
 }
 
@@ -2875,14 +2931,14 @@ function syncSaveConfig() {
   try {
     const url = document.getElementById('sync-url').value;
     const key = document.getElementById('sync-key').value;
-    if (!url.trim() || !key.trim()) { showToast('Podaj URL i klucz anon'); return; }
+    if (!url.trim() || !key.trim()) { showToast(tt('Podaj URL i klucz anon')); return; }
     RFSync.setConfig(url, key);
-    renderSyncCard(); showToast('Konfiguracja zapisana ✓');
+    renderSyncCard(); showToast(tt('Konfiguracja zapisana ✓'));
   } catch (e) { showToast(e.message); }
 }
 
 function syncReset() {
-  if (!confirm('Usunąć konfigurację synchronizacji z tego urządzenia? (dane w chmurze zostają)')) return;
+  if (!confirm(tt('Usunąć konfigurację synchronizacji z tego urządzenia? (dane w chmurze zostają)'))) return;
   RFSync.logout(); RFSync.setConfig('', '');
   syncCodeSent = false;
   renderSyncCard();
@@ -2892,8 +2948,8 @@ async function syncSendCode() {
   try {
     await RFSync.requestCode(document.getElementById('sync-email').value);
     syncCodeSent = true;
-    renderSyncCard(); showToast('Kod wysłany — sprawdź e-mail 📧');
-  } catch (e) { showToast('Błąd: ' + e.message); }
+    renderSyncCard(); showToast(tt('Kod wysłany — sprawdź e-mail 📧'));
+  } catch (e) { showToast(tf('Błąd: {0}', e.message)); }
 }
 
 async function syncVerifyCode() {
@@ -2902,8 +2958,8 @@ async function syncVerifyCode() {
     syncCodeSent = false;
     const row = await RFSync.pull().catch(() => null);
     if (row && row.data && Object.keys(row.data.days || {}).length) {
-      const when = row.updated_at ? new Date(row.updated_at).toLocaleString('pl-PL') : '?';
-      if (confirm(`Na tym koncie są już dane (ostatnia zmiana: ${when}).\n\nOK — pobierz dane z chmury na to urządzenie.\nAnuluj — wyślij dane z tego urządzenia do chmury.`)) {
+      const when = row.updated_at ? new Date(row.updated_at).toLocaleString(RFI18N.getLang() === 'en' ? 'en-GB' : 'pl-PL') : '?';
+      if (confirm(tf('Na tym koncie są już dane (ostatnia zmiana: {0}).\n\nOK — pobierz dane z chmury na to urządzenie.\nAnuluj — wyślij dane z tego urządzenia do chmury.', when))) {
         adoptRemote(row);
       } else {
         await RFSync.push(D);
@@ -2911,27 +2967,27 @@ async function syncVerifyCode() {
     } else {
       await RFSync.push(D);
     }
-    renderSettings(); showToast('Zalogowano i zsynchronizowano ✓');
-  } catch (e) { showToast('Błąd: ' + e.message); }
+    renderSettings(); showToast(tt('Zalogowano i zsynchronizowano ✓'));
+  } catch (e) { showToast(tf('Błąd: {0}', e.message)); }
 }
 
 async function syncNow() {
   try {
     const row = await RFSync.pull();
-    if (row && RFSync.remoteIsNewer(row)) { adoptRemote(row); showToast('Pobrano nowsze dane z chmury ☁️'); }
-    else { await RFSync.push(D); showToast('Wysłano do chmury ✓'); }
+    if (row && RFSync.remoteIsNewer(row)) { adoptRemote(row); showToast(tt('Pobrano nowsze dane z chmury ☁️')); }
+    else { await RFSync.push(D); showToast(tt('Wysłano do chmury ✓')); }
     renderSyncCard();
-  } catch (e) { showToast('Błąd synchronizacji: ' + e.message); }
+  } catch (e) { showToast(tf('Błąd synchronizacji: {0}', e.message)); }
 }
 
 function syncLogout() {
-  if (!confirm('Wylogować z synchronizacji na tym urządzeniu? Lokalne dane zostają.')) return;
+  if (!confirm(tt('Wylogować z synchronizacji na tym urządzeniu? Lokalne dane zostają.'))) return;
   RFSync.logout(); renderSyncCard();
 }
 
 function syncCopyCode() {
   navigator.clipboard && navigator.clipboard.writeText(RFSync.shareCode()).then(
-    () => showToast('Kod skopiowany ✓'), () => showToast(RFSync.shareCode()));
+    () => showToast(tt('Kod skopiowany ✓')), () => showToast(RFSync.shareCode()));
 }
 
 /* nadpisz lokalny stan danymi z chmury (bez ponownego push) */
@@ -2947,7 +3003,7 @@ async function syncStartupPull() {
   if (!window.RFSync || !RFSync.configured() || !RFSync.loggedIn() || !navigator.onLine) return;
   try {
     const row = await RFSync.pull();
-    if (row && RFSync.remoteIsNewer(row)) { adoptRemote(row); showToast('Pobrano nowsze dane z chmury ☁️'); }
+    if (row && RFSync.remoteIsNewer(row)) { adoptRemote(row); showToast(tt('Pobrano nowsze dane z chmury ☁️')); }
   } catch (e) {}
 }
 
@@ -2965,32 +3021,32 @@ function switchExTab(tab) {
 function renderLibrary() {
   const chips = document.getElementById('lib-chips');
   chips.innerHTML = LIB_GROUPS.map(g =>
-    `<button class="lib-chip${g.id === libGroup ? ' active' : ''}" onclick="libGroup='${g.id}';renderLibrary()">${g.name}</button>`).join('');
+    `<button class="lib-chip${g.id === libGroup ? ' active' : ''}" onclick="libGroup='${g.id}';renderLibrary()">${tt(g.name)}</button>`).join('');
   const q = (document.getElementById('lib-search').value || '').toLowerCase().trim();
-  const items = EX_DB.filter(e => q ? e.n.toLowerCase().includes(q) : e.g === libGroup);
+  const items = EX_DB.filter(e => q ? (e.n + ' ' + exName(e)).toLowerCase().includes(q) : e.g === libGroup);
   document.getElementById('lib-list').innerHTML = items.length
     ? items.map(e => `
       <div class="lib-item" onclick="pickFromLibrary('${e.id}')">
-        <div class="lib-name">${TYPE_EMOJI[e.t] || '💫'} ${esc(e.n)}</div>
-        <div class="lib-meta">${e.s} ${P(e.s,'seria','serie','serii')} × ${e.r} powt. · ${e.t}</div>
-        <div class="lib-desc">${esc(e.d)}</div>
+        <div class="lib-name">${TYPE_EMOJI[e.t] || '💫'} ${esc(exName(e))}</div>
+        <div class="lib-meta">${e.s} ${P(e.s,'seria','serie','serii')} × ${e.r} ${tt('powt.')} · ${tt(e.t)}</div>
+        <div class="lib-desc">${esc(exDesc(e))}</div>
       </div>`).join('')
-    : '<div class="text-sm text-muted" style="padding:12px">Nic nie znaleziono.</div>';
+    : `<div class="text-sm text-muted" style="padding:12px">${tt('Nic nie znaleziono.')}</div>`;
 }
 
 function pickFromLibrary(id) {
   const e = EX_DB.find(x => x.id === id);
   if (!e) return;
-  document.getElementById('ex-name').value = e.n;
+  document.getElementById('ex-name').value = exName(e);
   document.getElementById('ex-reps').value = e.r;
   document.getElementById('ex-sets').value = e.s;
   document.getElementById('ex-type').value = e.t;
-  document.getElementById('ex-desc').value = e.d;
+  document.getElementById('ex-desc').value = exDesc(e);
   // ćwiczenia izometryczne z biblioteki mają tryb czasowy (e.m/e.sec)
   setExMode(e.m === 'time' ? 'time' : 'reps');
   if (e.sec) document.getElementById('ex-secs').value = e.sec;
   switchExTab('form');
-  showToast('Wybrano z biblioteki — możesz dostosować');
+  showToast(tt('Wybrano z biblioteki — możesz dostosować'));
 }
 
 let exMode = 'reps';
@@ -3023,7 +3079,7 @@ function clampInt(id, min, max, fallback) {
 
 function openAddExercise() {
   editingExId = null;
-  document.getElementById('ex-modal-title').textContent = 'Dodaj ćwiczenie';
+  document.getElementById('ex-modal-title').textContent = tt('Dodaj ćwiczenie');
   document.getElementById('ex-name').value = '';
   document.getElementById('ex-reps').value = 10;
   document.getElementById('ex-secs').value = 30;
@@ -3045,7 +3101,7 @@ function openEditExercise(id) {
   const ex = D.exercises.find(e => e.id === id);
   if (!ex) return;
   editingExId = id;
-  document.getElementById('ex-modal-title').textContent = 'Edytuj ćwiczenie';
+  document.getElementById('ex-modal-title').textContent = tt('Edytuj ćwiczenie');
   document.getElementById('ex-name').value = ex.name;
   document.getElementById('ex-reps').value = ex.reps;
   document.getElementById('ex-secs').value = ex.seconds || 30;
@@ -3074,7 +3130,7 @@ function moveExercise(dir) {
 
 function saveExercise() {
   const name = document.getElementById('ex-name').value.trim().slice(0, 80);
-  if (!name) { showToast('Podaj nazwę ćwiczenia'); return; }
+  if (!name) { showToast(tt('Podaj nazwę ćwiczenia')); return; }
   const reps = clampInt('ex-reps', 1, 999, 10);
   const seconds = clampInt('ex-secs', 5, 600, 30);
   const sets = clampInt('ex-sets', 1, 99, 3);
@@ -3110,7 +3166,7 @@ function deleteExercise() {
   }
   undoDelete = snapshot;
   checkBadges(); saveData(); closeModal('ex-modal'); renderHome();
-  showToast(`Usunięto „${ex.name.length > 24 ? ex.name.slice(0,24) + '…' : ex.name}"`, 'Cofnij', undoDeleteExercise);
+  showToast(tf('Usunięto „{0}"', ex.name.length > 24 ? ex.name.slice(0,24) + '…' : ex.name), tt('Cofnij'), undoDeleteExercise);
 }
 
 function undoDeleteExercise() {
@@ -3120,7 +3176,7 @@ function undoDeleteExercise() {
   for (const k of daysWith) getDay(k).completed.push(ex.id);
   undoDelete = null;
   checkBadges(); saveData(); renderHome();
-  showToast('Przywrócono ćwiczenie ✓');
+  showToast(tt('Przywrócono ćwiczenie ✓'));
 }
 
 /* ══ ONBOARDING ═════════════════════════════════════════════ */
@@ -3142,60 +3198,60 @@ function renderOnboard() {
   if (obStep === 0) {
     card.innerHTML = `${obDots()}
       <div class="ob-logo"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h3l2.5-6 4 12 3-8 1.5 2H22"/></svg></div>
-      <div class="ob-title">Witaj w RehabFlow! 👋</div>
-      <div class="ob-sub">Twój osobisty dziennik rehabilitacji.<br>Skonfigurujmy go w 4 krokach.</div>
+      <div class="ob-title">${tt('Witaj w RehabFlow! 👋')}</div>
+      <div class="ob-sub">${tt('Twój osobisty dziennik rehabilitacji.<br>Skonfigurujmy go w 4 krokach.')}</div>
       <div class="ob-body">
-        <label class="form-label">Jak masz na imię?</label>
-        <input class="form-input" id="ob-name" placeholder="Twoje imię" value="${esc((D.profile || {}).name || '')}">
+        <label class="form-label">${tt('Jak masz na imię?')}</label>
+        <input class="form-input" id="ob-name" placeholder="${tt('Twoje imię')}" value="${esc((D.profile || {}).name || '')}">
       </div>
-      <div class="ob-nav"><button class="btn btn-primary" onclick="obNext()">Dalej →</button></div>`;
+      <div class="ob-nav"><button class="btn btn-primary" onclick="obNext()">${tt('Dalej →')}</button></div>`;
   } else if (obStep === 1) {
     card.innerHTML = `${obDots()}
-      <div class="ob-title">Wybierz program 🎯</div>
-      <div class="ob-sub">Gotowy zestaw ćwiczeń dopasowany do urazu — zawsze możesz go później zmienić.</div>
+      <div class="ob-title">${tt('Wybierz program 🎯')}</div>
+      <div class="ob-sub">${tt('Gotowy zestaw ćwiczeń dopasowany do urazu — zawsze możesz go później zmienić.')}</div>
       <div class="ob-body">
         ${PROGRAMS.map(p => `
           <div class="ob-prog${p.id === obProgram ? ' sel' : ''}" onclick="obProgram='${p.id}';renderOnboard()">
             <div class="ob-prog-icon">${p.icon}</div>
-            <div><div class="ob-prog-name">${p.name}</div><div class="ob-prog-desc">${p.desc}${p.ex.length ? ` · ${p.ex.length} ćwiczeń` : ''}</div></div>
+            <div><div class="ob-prog-name">${tt(p.name)}</div><div class="ob-prog-desc">${tt(p.desc)}${p.ex.length ? tf(' · {0} ćwiczeń', p.ex.length) : ''}</div></div>
           </div>`).join('')}
-        <label class="form-label" style="margin-top:14px">Długość programu</label>
+        <label class="form-label" style="margin-top:14px">${tt('Długość programu')}</label>
         <select class="form-input" id="ob-weeks">
-          <option value="2">2 tygodnie</option>
-          <option value="4" selected>4 tygodnie</option>
-          <option value="6">6 tygodni</option>
-          <option value="8">8 tygodni</option>
+          <option value="2">${tt('2 tygodnie')}</option>
+          <option value="4" selected>${tt('4 tygodnie')}</option>
+          <option value="6">${tt('6 tygodni')}</option>
+          <option value="8">${tt('8 tygodni')}</option>
         </select>
       </div>
       <div class="ob-nav">
-        <button class="btn ob-back" onclick="obPrev()">← Wstecz</button>
-        <button class="btn btn-primary" onclick="obNext()">Dalej →</button>
+        <button class="btn ob-back" onclick="obPrev()">${tt('← Wstecz')}</button>
+        <button class="btn btn-primary" onclick="obNext()">${tt('Dalej →')}</button>
       </div>`;
   } else if (obStep === 2) {
     card.innerHTML = `${obDots()}
-      <div class="ob-title">W które dni ćwiczysz? 📅</div>
-      <div class="ob-sub">Dni odpoczynku nie przerywają Twojej passy.<br>Możesz to później zmienić dla każdego ćwiczenia osobno.</div>
+      <div class="ob-title">${tt('W które dni ćwiczysz? 📅')}</div>
+      <div class="ob-sub">${tt('Dni odpoczynku nie przerywają Twojej passy.<br>Możesz to później zmienić dla każdego ćwiczenia osobno.')}</div>
       <div class="ob-body">
         <div class="dow-row" id="ob-days">
           ${[1,2,3,4,5,6,0].map(d => `<button type="button" class="dow-chip${obDaysSel.has(d) ? ' on' : ''}" onclick="obToggleDow(${d})">${DAYS_PL[d]}</button>`).join('')}
         </div>
-        <div class="xs" style="color:rgba(255,255,255,.5);font-size:11.5px;margin-top:10px;text-align:center">${obDaysSel.size === 7 ? 'Codziennie — pełna mobilizacja! 💪' : obDaysSel.size === 0 ? 'Wybierz przynajmniej jeden dzień' : `${obDaysSel.size} ${P(obDaysSel.size,'dzień','dni','dni')} treningowe w tygodniu`}</div>
+        <div class="xs" style="color:rgba(255,255,255,.5);font-size:11.5px;margin-top:10px;text-align:center">${obDaysSel.size === 7 ? tt('Codziennie — pełna mobilizacja! 💪') : obDaysSel.size === 0 ? tt('Wybierz przynajmniej jeden dzień') : tf('{0} {1} treningowe w tygodniu', obDaysSel.size, P(obDaysSel.size,'dzień','dni','dni'))}</div>
       </div>
       <div class="ob-nav">
-        <button class="btn ob-back" onclick="obPrev()">← Wstecz</button>
-        <button class="btn btn-primary" onclick="obNext()" ${obDaysSel.size === 0 ? 'disabled style="opacity:.5"' : ''}>Dalej →</button>
+        <button class="btn ob-back" onclick="obPrev()">${tt('← Wstecz')}</button>
+        <button class="btn btn-primary" onclick="obNext()" ${obDaysSel.size === 0 ? 'disabled style="opacity:.5"' : ''}>${tt('Dalej →')}</button>
       </div>`;
   } else {
     card.innerHTML = `${obDots()}
-      <div class="ob-title">Przypomnienia ⏰</div>
-      <div class="ob-sub">O której godzinie chcesz ćwiczyć? Przypomnimy Ci, gdy aplikacja będzie otwarta.</div>
+      <div class="ob-title">${tt('Przypomnienia ⏰')}</div>
+      <div class="ob-sub">${tt('O której godzinie chcesz ćwiczyć? Przypomnimy Ci, gdy aplikacja będzie otwarta.')}</div>
       <div class="ob-body">
-        <div class="ob-time-row"><span>🌅 Rano</span><input type="time" id="ob-hour1" value="${D.notifHour1 || '09:00'}"></div>
-        <div class="ob-time-row"><span>🌙 Wieczorem</span><input type="time" id="ob-hour2" value="${D.notifHour2 || '20:00'}"></div>
+        <div class="ob-time-row"><span>${tt('🌅 Rano')}</span><input type="time" id="ob-hour1" value="${D.notifHour1 || '09:00'}"></div>
+        <div class="ob-time-row"><span>${tt('🌙 Wieczorem')}</span><input type="time" id="ob-hour2" value="${D.notifHour2 || '20:00'}"></div>
       </div>
       <div class="ob-nav">
-        <button class="btn ob-back" onclick="obPrev()">← Wstecz</button>
-        <button class="btn btn-primary" onclick="finishOnboarding()">Zaczynamy! 🚀</button>
+        <button class="btn ob-back" onclick="obPrev()">${tt('← Wstecz')}</button>
+        <button class="btn btn-primary" onclick="finishOnboarding()">${tt('Zaczynamy! 🚀')}</button>
       </div>`;
   }
 }
@@ -3253,7 +3309,7 @@ function finishOnboarding() {
   checkBadges(); saveData();
   document.getElementById('onboard').classList.remove('open');
   renderHome();
-  showToast(obName ? `Powodzenia, ${obName}! 💪` : 'Powodzenia! 💪');
+  showToast(obName ? tf('Powodzenia, {0}! 💪', obName) : tt('Powodzenia! 💪'));
 }
 
 /* ══ MODALS / TOAST ═════════════════════════════════════════ */
@@ -3283,11 +3339,11 @@ function showToast(msg, actionLabel, actionFn) {
 function showCelebrate(newBadges) {
   const streak = computeStreak();
   document.getElementById('cel-icon').textContent = streak >= 7 ? '👑' : streak >= 3 ? '🔥' : '🎉';
-  document.getElementById('cel-title').textContent = streak > 0 ? `${streak} ${P(streak,'dzień','dni','dni')} z rzędu!` : 'Dzień zaliczony!';
-  let sub = 'Wszystkie ćwiczenia ukończone!';
+  document.getElementById('cel-title').textContent = streak > 0 ? tf('{0} {1} z rzędu!', streak, P(streak,'dzień','dni','dni')) : tt('Dzień zaliczony!');
+  let sub = tt('Wszystkie ćwiczenia ukończone!');
   if (newBadges && newBadges.length) {
     const names = newBadges.map(bid => BADGES.find(b => b.id === bid)).filter(Boolean);
-    sub += '\n🏆 Nowa odznaka: ' + names.map(b => b.name).join(', ');
+    sub += tt('\n🏆 Nowa odznaka: ') + names.map(b => tt(b.name)).join(', ');
   }
   document.getElementById('cel-sub').textContent = sub;
   const cel = document.getElementById('celebrate');
@@ -3356,8 +3412,8 @@ async function nativeSyncReminders() {
       const [h, m] = (hStr || '09:00').split(':').map(Number);
       return {
         id,
-        title: '🏃 Czas na rehabilitację!',
-        body: 'Twoje ćwiczenia czekają — utrzymaj passę!',
+        title: tt('🏃 Czas na rehabilitację!'),
+        body: tt('Twoje ćwiczenia czekają — utrzymaj passę!'),
         schedule: { on: { hour: h, minute: m }, allowWhileIdle: true },
       };
     };
@@ -3369,13 +3425,13 @@ async function nativeSyncReminders() {
 function updateNotifStatus() {
   const el = document.getElementById('notif-status');
   if (isNativeApp()) {
-    el.textContent = D.notifEnabled ? 'Aktywne ✓ (natywne — działają też przy zamkniętej aplikacji)' : 'Wyłączone';
+    el.textContent = D.notifEnabled ? tt('Aktywne ✓ (natywne — działają też przy zamkniętej aplikacji)') : tt('Wyłączone');
     return;
   }
-  if (!('Notification' in window)) { el.textContent = 'Nieobsługiwane w tej przeglądarce'; return; }
-  if (Notification.permission === 'granted') el.textContent = D.notifEnabled ? 'Aktywne ✓' : 'Wyłączone';
-  else if (Notification.permission === 'denied') el.textContent = 'Zablokowane — zmień w ustawieniach systemu';
-  else el.textContent = 'Włącz przełącznikiem';
+  if (!('Notification' in window)) { el.textContent = tt('Nieobsługiwane w tej przeglądarce'); return; }
+  if (Notification.permission === 'granted') el.textContent = D.notifEnabled ? tt('Aktywne ✓') : tt('Wyłączone');
+  else if (Notification.permission === 'denied') el.textContent = tt('Zablokowane — zmień w ustawieniach systemu');
+  else el.textContent = tt('Włącz przełącznikiem');
 }
 
 function toggleNotif(checkbox) {
@@ -3384,15 +3440,15 @@ function toggleNotif(checkbox) {
       D.notifEnabled = true; saveData();
       nativeSyncReminders().then(() => {
         updateNotifStatus();
-        showToast(D.notifEnabled ? 'Powiadomienia włączone! 🔔' : 'Uprawnienie odrzucone');
+        showToast(D.notifEnabled ? tt('Powiadomienia włączone! 🔔') : tt('Uprawnienie odrzucone'));
         if (!D.notifEnabled) checkbox.checked = false;
       });
       return;
     }
-    if (!('Notification' in window)) { showToast('Przeglądarka nie obsługuje powiadomień'); checkbox.checked = false; return; }
+    if (!('Notification' in window)) { showToast(tt('Przeglądarka nie obsługuje powiadomień')); checkbox.checked = false; return; }
     Notification.requestPermission().then(perm => {
-      if (perm === 'granted') { D.notifEnabled = true; saveData(); scheduleNotifications(); showToast('Powiadomienia włączone! 🔔'); }
-      else { checkbox.checked = false; showToast('Uprawnienie odrzucone'); }
+      if (perm === 'granted') { D.notifEnabled = true; saveData(); scheduleNotifications(); showToast(tt('Powiadomienia włączone! 🔔')); }
+      else { checkbox.checked = false; showToast(tt('Uprawnienie odrzucone')); }
       updateNotifStatus();
     });
   } else {
@@ -3423,10 +3479,10 @@ function fireNotif() {
   const missed = getMissedDays();
   const left = total - done;
   const leftTxt = `${left} ${P(left, 'ćwiczenie', 'ćwiczenia', 'ćwiczeń')}`;
-  let title = '🏃 Czas na rehabilitację!';
-  let body = `Masz ${leftTxt} do zrobienia.`;
-  if (missed >= 2) { title = '⚠️ Nie zapomnij o rehabilitacji!'; body = `Pominięto ${missed} dni. Wróć na właściwy tor!`; }
-  else if (streak > 0) { title = `🔥 Chroń swój streak! (${streak} ${P(streak,'dzień','dni','dni')})`; body = `Jeszcze ${leftTxt} dzisiaj.`; }
+  let title = tt('🏃 Czas na rehabilitację!');
+  let body = tf('Masz {0} do zrobienia.', leftTxt);
+  if (missed >= 2) { title = tt('⚠️ Nie zapomnij o rehabilitacji!'); body = tf('Pominięto {0} dni. Wróć na właściwy tor!', missed); }
+  else if (streak > 0) { title = tf('🔥 Chroń swój streak! ({0} {1})', streak, P(streak,'dzień','dni','dni')); body = tf('Jeszcze {0} dzisiaj.', leftTxt); }
   try { new Notification(title, { body, icon: 'icon-192.png', badge: 'icon-192.png' }); } catch (e) {}
 }
 
@@ -3448,8 +3504,8 @@ function checkMissedBanner() {
   if (missed >= 1 && D.exercises.length && !isProgramOver()) {
     const el = document.getElementById('missed-banner');
     document.getElementById('missed-banner-txt').textContent =
-      missed === 1 ? '⏰ Wczorajszy dzień nie został ukończony. Możesz go uzupełnić w kalendarzu!'
-        : `⏰ Ostatnie ${missed} dni nie zostały ukończone. Uzupełnij je w kalendarzu lub wróć do ćwiczeń dziś!`;
+      missed === 1 ? tt('⏰ Wczorajszy dzień nie został ukończony. Możesz go uzupełnić w kalendarzu!')
+        : tf('⏰ Ostatnie {0} dni nie zostały ukończone. Uzupełnij je w kalendarzu lub wróć do ćwiczeń dziś!', missed);
     el.classList.add('show');
   }
 }
@@ -3478,8 +3534,8 @@ function checkBackupBanner() {
   const since = D.lastBackup ? diffDays(D.lastBackup, t) : null;
   if (since !== null && since < 14) return;
   document.getElementById('backup-banner-txt').textContent = since === null
-    ? '💾 Masz już sporo historii, a nigdy nie zrobiono kopii zapasowej. Dane są tylko na tym urządzeniu!'
-    : `💾 Ostatnia kopia zapasowa: ${since} dni temu. Warto odświeżyć backup.`;
+    ? tt('💾 Masz już sporo historii, a nigdy nie zrobiono kopii zapasowej. Dane są tylko na tym urządzeniu!')
+    : tf('💾 Ostatnia kopia zapasowa: {0} dni temu. Warto odświeżyć backup.', since);
   el.classList.add('show');
 }
 
@@ -3499,8 +3555,8 @@ function openNotifSheet() {
   const msg = isRestDay(today())
     ? `😌 Dziś dzień odpoczynku — nic nie zaplanowano.<br>Twój streak: <strong>${streak} ${P(streak,'dzień','dni','dni')} 🔥</strong>`
     : total > 0 && done >= total
-    ? `✅ Świetna robota! Wszystkie ćwiczenia (${total}) ukończone dzisiaj!<br>Twój streak: <strong>${streak} ${P(streak,'dzień','dni','dni')} 🔥</strong>`
-    : `Zostało Ci jeszcze <strong>${left} ${P(left,'ćwiczenie','ćwiczenia','ćwiczeń')}</strong> na dziś.<br>Streak: <strong>${streak} ${P(streak,'dzień','dni','dni')} 🔥</strong><br><br>${streak > 0 ? 'Nie przerywaj passy — dasz radę!' : 'Zacznij budować streak już dziś!'}`;
+    ? tf('✅ Świetna robota! Wszystkie ćwiczenia ({0}) ukończone dzisiaj!<br>Twój streak: <strong>{1} {2} 🔥</strong>', total, streak, P(streak,'dzień','dni','dni'))
+    : tf('Zostało Ci jeszcze <strong>{0} {1}</strong> na dziś.<br>Streak: <strong>{2} {3} 🔥</strong><br><br>{4}', left, P(left,'ćwiczenie','ćwiczenia','ćwiczeń'), streak, P(streak,'dzień','dni','dni'), streak > 0 ? tt('Nie przerywaj passy — dasz radę!') : tt('Zacznij budować streak już dziś!'));
   document.getElementById('notif-sheet-body').innerHTML = msg;
   openModal('notif-sheet');
 }
@@ -3564,26 +3620,26 @@ async function addPhoto(input) {
   const file = input.files[0];
   input.value = '';
   if (!file) return;
-  if (!file.type.startsWith('image/')) { showToast('To nie jest zdjęcie'); return; }
+  if (!file.type.startsWith('image/')) { showToast(tt('To nie jest zdjęcie')); return; }
   try {
     const blob = await shrinkImage(file);
     await PhotoDB.add({ date: today(), blob });
-    showToast('Zdjęcie dodane ✓');
+    showToast(tt('Zdjęcie dodane ✓'));
     renderPhotoSection();
   } catch (e) {
-    showToast('Nie udało się zapisać zdjęcia');
+    showToast(tt('Nie udało się zapisać zdjęcia'));
   }
 }
 
 async function renderPhotoSection() {
   const strip = document.getElementById('photo-strip');
-  if (!('indexedDB' in window)) { strip.innerHTML = '<div class="text-xs text-muted">Ta przeglądarka nie obsługuje zdjęć.</div>'; return; }
+  if (!('indexedDB' in window)) { strip.innerHTML = `<div class="text-xs text-muted">${tt('Ta przeglądarka nie obsługuje zdjęć.')}</div>`; return; }
   let photos = [];
   try { photos = await PhotoDB.all(); } catch (e) { return; }
   photoURLs.forEach(u => URL.revokeObjectURL(u));
   photoURLs = [];
   if (!photos.length) {
-    strip.innerHTML = '<div class="text-xs text-muted">Dokumentuj postęp zdjęciami (np. zakres ruchu, obrzęk). Zdjęcia zostają tylko na tym urządzeniu.</div>';
+    strip.innerHTML = `<div class="text-xs text-muted">${tt('Dokumentuj postęp zdjęciami (np. zakres ruchu, obrzęk). Zdjęcia zostają tylko na tym urządzeniu.')}</div>`;
     return;
   }
   photos.sort((a, b) => a.date < b.date ? -1 : 1);
@@ -3611,11 +3667,11 @@ function closePhotoViewer() {
 
 async function deletePhotoCurrent() {
   if (viewerPhotoId === null) return;
-  if (!confirm('Usunąć to zdjęcie? Tej operacji nie można cofnąć.')) return;
+  if (!confirm(tt('Usunąć to zdjęcie? Tej operacji nie można cofnąć.'))) return;
   await PhotoDB.del(viewerPhotoId);
   closePhotoViewer();
   renderPhotoSection();
-  showToast('Zdjęcie usunięte');
+  showToast(tt('Zdjęcie usunięte'));
 }
 
 /* ══ EXPORT / IMPORT ════════════════════════════════════════ */
@@ -3627,7 +3683,7 @@ function exportJSON() {
   a.download = `rehabflow_backup_${today()}.json`;
   a.click();
   URL.revokeObjectURL(a.href);
-  showToast('Eksport gotowy ✓');
+  showToast(tt('Eksport gotowy ✓'));
 }
 
 /* kopia zapasowa jako HTML — otwiera się czytelnie na telefonie,
@@ -3655,16 +3711,16 @@ function exportHTML() {
     </tr>`;
   }).join('');
 
-  const exRows = D.exercises.map(ex => `<li><b>${esc(ex.name)}</b> — ${exDose(ex)} · ${esc(ex.type)}</li>`).join('');
+  const exRows = D.exercises.map(ex => `<li><b>${esc(ex.name)}</b> — ${exDose(ex)} · ${esc(tt(ex.type))}</li>`).join('');
   const measRows = D.measurements.slice().sort((a,b) => a.date < b.date ? -1 : 1).map(m =>
-    `<tr><td>${formatShort(m.date)}</td><td>${MEAS_LABELS[m.type]}</td><td><b>${m.value}${MEAS_UNITS[m.type]}</b></td></tr>`).join('');
+    `<tr><td>${formatShort(m.date)}</td><td>${tt(MEAS_LABELS[m.type])}</td><td><b>${m.value}${MEAS_UNITS[m.type]}</b></td></tr>`).join('');
 
   // JSON bez znaków "<" (bezpieczne osadzenie w HTML)
   const payload = JSON.stringify(D).replace(/</g, '\\u003c');
 
   const html = `<!DOCTYPE html><html lang="pl"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RehabFlow — kopia zapasowa ${t}</title>
+<title>${tf('RehabFlow — kopia zapasowa {0}', t)}</title>
 <style>
   body { margin:0; background:#0A0D20; color:#F2F1FB; font-family:'Segoe UI',system-ui,sans-serif; font-size:14px; line-height:1.55; }
   .wrap { max-width:560px; margin:0 auto; padding:22px 16px 48px; }
@@ -3687,26 +3743,26 @@ function exportHTML() {
   @media (prefers-color-scheme: light) { body { background:#F3F2FB; color:#1B1A30; } .card { background:#fff; border-color:#E3E0F2; } .stat { background:#F5F3FC; } th,td { border-color:#E3E0F2; } h2,{ color:#5C5980; } }
 </style></head><body><div class="wrap">
   <div class="hero">
-    <h1>🏃 RehabFlow — kopia zapasowa</h1>
-    <p>${esc(p.name || 'Pacjent')} · wygenerowano ${formatDate(t)}</p>
+    <h1>${tt('🏃 RehabFlow — kopia zapasowa')}</h1>
+    <p>${esc(p.name || tt('Pacjent'))} · ${tf('wygenerowano {0}', formatDate(t))}</p>
   </div>
-  <div class="card"><h2>Podsumowanie</h2>
+  <div class="card"><h2>${tt('Podsumowanie')}</h2>
     <div class="stats">
-      <div class="stat"><b>${st.doneDays}/${st.elapsed}</b><span>pełne dni</span></div>
-      <div class="stat"><b>${computeStreak()}</b><span>streak</span></div>
-      <div class="stat"><b>${D.bestStreak || 0}</b><span>rekord</span></div>
+      <div class="stat"><b>${st.doneDays}/${st.elapsed}</b><span>${tt('pełne dni')}</span></div>
+      <div class="stat"><b>${computeStreak()}</b><span>${tt('streak')}</span></div>
+      <div class="stat"><b>${D.bestStreak || 0}</b><span>${tt('rekord')}</span></div>
       <div class="stat"><b>${D.xp}</b><span>XP</span></div>
-      <div class="stat"><b>${D.badges.length}</b><span>odznaki</span></div>
-      <div class="stat"><b>${st.avgPain !== null ? st.avgPain + '/10' : '–'}</b><span>śr. ból</span></div>
+      <div class="stat"><b>${D.badges.length}</b><span>${tt('odznaki')}</span></div>
+      <div class="stat"><b>${st.avgPain !== null ? st.avgPain + '/10' : '–'}</b><span>${tt('śr. ból')}</span></div>
     </div>
   </div>
-  <div class="card"><h2>Program ćwiczeń (${D.exercises.length})</h2><ul>${exRows || '<li>Brak ćwiczeń</li>'}</ul></div>
-  ${measRows ? `<div class="card"><h2>Pomiary</h2><table><tr><th>Data</th><th>Rodzaj</th><th>Wartość</th></tr>${measRows}</table></div>` : ''}
-  <div class="card"><h2>Dziennik (${dayKeys.length} dni)</h2>
-    <table><tr><th>Data</th><th>Ćw.</th><th>Ból</th><th>Trud.</th><th>Notatka</th></tr>${dayRows || '<tr><td colspan="5">Brak danych</td></tr>'}</table>
+  <div class="card"><h2>${tf('Program ćwiczeń ({0})', D.exercises.length)}</h2><ul>${exRows || `<li>${tt('Brak ćwiczeń')}</li>`}</ul></div>
+  ${measRows ? `<div class="card"><h2>${tt('Pomiary')}</h2><table><tr><th>${tt('Data')}</th><th>${tt('Rodzaj')}</th><th>${tt('Wartość')}</th></tr>${measRows}</table></div>` : ''}
+  <div class="card"><h2>${tf('Dziennik ({0} dni)', dayKeys.length)}</h2>
+    <table><tr><th>${tt('Data')}</th><th>${tt('Ćw.')}</th><th>${tt('Ból')}</th><th>${tt('Trud.')}</th><th>${tt('Notatka')}</th></tr>${dayRows || `<tr><td colspan="5">${tt('Brak danych')}</td></tr>`}</table>
   </div>
-  <div class="import-hint">💾 Ten plik jest jednocześnie kopią zapasową — w aplikacji RehabFlow wybierz <b>Postęp → Importuj dane</b> i wskaż ten plik, aby przywrócić wszystko (bez zdjęć postępu, które zostają na urządzeniu).</div>
-  <div class="foot">RehabFlow · dane przechowywane lokalnie — ten plik zawiera Twoje dane zdrowotne, przechowuj go bezpiecznie.</div>
+  <div class="import-hint">${tt('💾 Ten plik jest jednocześnie kopią zapasową — w aplikacji RehabFlow wybierz <b>Postęp → Importuj dane</b> i wskaż ten plik, aby przywrócić wszystko (bez zdjęć postępu, które zostają na urządzeniu).')}</div>
+  <div class="foot">${tt('RehabFlow · dane przechowywane lokalnie — ten plik zawiera Twoje dane zdrowotne, przechowuj go bezpiecznie.')}</div>
 </div>
 <script type="application/json" id="rehabflow-data">${payload}<\/script>
 </body></html>`;
@@ -3717,7 +3773,7 @@ function exportHTML() {
   a.download = `rehabflow_kopia_${t}.html`;
   a.click();
   URL.revokeObjectURL(a.href);
-  showToast('Kopia zapasowa gotowa ✓');
+  showToast(tt('Kopia zapasowa gotowa ✓'));
 }
 
 function importJSON(input) {
@@ -3736,11 +3792,11 @@ function importJSON(input) {
       const d = JSON.parse(txt);
       if (d && d.rehabflowProgram === true && Array.isArray(d.exercises)) { importProgram(d); return; }
       if (!d || typeof d !== 'object' || !('exercises' in d)) throw new Error('bad');
-      if (!confirm('Zaimportować dane? Obecne dane w aplikacji zostaną zastąpione danymi z pliku.')) { return; }
+      if (!confirm(tt('Zaimportować dane? Obecne dane w aplikacji zostaną zastąpione danymi z pliku.'))) { return; }
       D = sanitizeData(d);
       if (!D.onboarded && (D.exercises.length || Object.keys(D.days).length)) D.onboarded = true;
       saveData(); location.reload();
-    } catch { showToast('Błąd: nieprawidłowy plik kopii zapasowej'); }
+    } catch { showToast(tt('Błąd: nieprawidłowy plik kopii zapasowej')); }
   };
   r.readAsText(file);
   input.value = '';
@@ -3778,12 +3834,12 @@ function importProgram(prog) {
 
 /* ══ PWA INSTALL ════════════════════════════════════════════ */
 function promptInstall() {
-  if (!deferredPrompt) { showToast('Otwórz menu przeglądarki → „Zainstaluj aplikację"'); return; }
+  if (!deferredPrompt) { showToast(tt('Otwórz menu przeglądarki → „Zainstaluj aplikację"')); return; }
   deferredPrompt.prompt();
   deferredPrompt.userChoice.then(choice => {
     if (choice.outcome === 'accepted') {
       document.getElementById('install-banner').classList.remove('show');
-      showToast('Aplikacja zainstalowana! 🎉');
+      showToast(tt('Aplikacja zainstalowana! 🎉'));
     }
     deferredPrompt = null;
   });
@@ -3821,7 +3877,7 @@ if ('serviceWorker' in navigator) {
 /* ══ SPLASH & INIT ══════════════════════════════════════════ */
 function initSplash() {
   const [quote, author] = QUOTES[Math.floor(Math.random() * QUOTES.length)];
-  document.getElementById('splash-quote').textContent = '„' + quote + '"';
+  document.getElementById('splash-quote').textContent = RFI18N.getLang() === 'en' ? '"' + tt(quote) + '"' : '„' + quote + '"';
   document.getElementById('splash-author').textContent = '— ' + author;
   // powracający użytkownik nie czeka pełnych 2 s
   const fast = D.onboarded;
@@ -3874,6 +3930,7 @@ window.addEventListener('storage', e => {
   }
 });
 
+applyLang();
 applyTheme();
 applyFont();
 renderHome();

@@ -75,7 +75,76 @@
     {id:'wlasny',    icon:'✏️', name:'Własny program',         desc:'Zacznij od pustej listy i dodaj ćwiczenia samodzielnie', ex:[]},
   ];
 
-  const api = { TYPE_EMOJI, LIB_GROUPS, EX_DB, PROGRAMS };
+  /* tłumaczenia EN biblioteki: id → [nazwa, opis] (PL pozostaje źródłem w EX_DB) */
+  const EX_EN = {
+    k1: ['Isometric quad sets', 'Sit with your leg straight. Tighten the thigh muscle, pressing the knee toward the floor. Hold 5 seconds, relax.'],
+    k2: ['Straight leg raise', 'Lying on your back with one knee bent, lift the straight leg about 30 cm off the floor. Lower slowly and with control.'],
+    k3: ['Prone knee bend', 'Lying on your stomach, slowly bend the knee, bringing the heel toward the buttock. Return with control.'],
+    k4: ['Wall half squat', 'Lean your back against a wall, feet ~40 cm away. Slide down to a slight knee bend (max 45°), hold 5 s.'],
+    k5: ['Step-ups', 'Step onto a low step with the injured leg, bring the other leg up, step down. Keep the knee from caving inward.'],
+    k6: ['Hamstring stretch', 'Sitting, straighten the leg and lean toward it with a straight back. Hold 30 seconds.'],
+    k7: ['Quadriceps stretch', 'Standing, grab your foot and pull the heel toward the buttock. Keep knees together. Hold 30 seconds.'],
+    k8: ['Side-lying leg abduction', 'Lying on your side, lift the straight top leg about 40 cm. Lower slowly without tilting the torso.'],
+    k9: ['Glute bridge', 'Lying on your back with knees bent, lift your hips into a straight torso-thigh line. Squeeze the glutes at the top, hold 3 s.'],
+    k10: ['Knee circles / bicycle', 'Lying on your back, make calm pedalling movements. Smooth and pain-free.'],
+    b1: ['Codman pendulum', 'Bend forward, rest your healthy arm on a table. Relax the injured arm and make small circular pendulum movements.'],
+    b2: ['Wall finger walk', 'Face a wall. "Walk" your fingers up as high as the shoulder allows without pain, then back down.'],
+    b3: ['External rotation with band', 'Elbow at your side bent 90°. Pull the band outward without lifting the elbow off your body.'],
+    b4: ['Internal rotation with band', 'Elbow at your side bent 90°. Pull the band toward your belly, moving only at the shoulder joint.'],
+    b5: ['Scapular squeezes', 'Sitting or standing, pull your shoulder blades down and together. Hold 5 seconds, relax.'],
+    b6: ['Front arm raise', 'With a light weight (0.5–1 kg), raise the straight arm to shoulder height. Lower slowly.'],
+    b7: ['Arm abduction to 90°', 'Raise the straight arm sideways to shoulder height, thumb pointing up. Lower slowly.'],
+    b8: ['Doorway chest stretch', 'Rest your forearms on a door frame, take a small step forward until you feel a chest stretch. Hold 30 s.'],
+    b9: ['Arm circles', 'Make slow, wide arm circles forward and backward. Smooth, controlled motion.'],
+    b10: ['Overhead stick raise', 'Lying on your back, hold a stick with both hands and raise it with straight arms overhead as far as possible without pain.'],
+    s1: ['Cat-cow', 'On all fours, alternately arch your back up (cat) and lower it down. Smooth movement with your breath.'],
+    s2: ['Dead bug', 'Lying on your back, raise legs bent 90° and arms up. Slowly lower the opposite arm and leg, bracing your core.'],
+    s3: ['Bird-dog', 'On all fours, extend the opposite arm and leg at the same time. Hold 5 s, keep your back straight.'],
+    s4: ['Bridge', 'Lying on your back with knees bent, lift your hips. Squeeze glutes and core, hold 3 seconds.'],
+    s5: ['Knees to chest', 'Lying on your back, pull both knees to your chest. Hold 30 seconds, breathe calmly.'],
+    s6: ['Lying trunk rotations', 'Lying on your back with knees bent, slowly lower both knees to one side, then the other.'],
+    s7: ['Forearm plank', 'Hold a straight body line supported on your forearms for 20–30 seconds. Do not raise your hips.'],
+    s8: ['Side plank', 'In a side support on your forearm, hold a straight body line 15–20 seconds per side.'],
+    s9: ['Hip flexor stretch', 'In a lunge with the back knee on the floor, shift your hips forward until you feel a stretch. Hold 30 seconds.'],
+    s10: ["Child's pose", 'Sit on your heels, reach your arms far forward, lower your chest to the floor. Breathe deeply 30–45 seconds.'],
+    a1: ['Ankle circles', 'Sitting, make slow foot circles in both directions. Full, pain-free range of motion.'],
+    a2: ['Dorsiflexion with band', "Band anchored in front of the foot. Pull your toes toward you against the band's resistance."],
+    a3: ['Plantarflexion with band', 'Band wrapped around the forefoot, held in your hands. Push the foot away like pressing a gas pedal.'],
+    a4: ['Alphabet with the foot', 'Lift the foot and "draw" all the letters of the alphabet in the air, moving only the ankle.'],
+    a5: ['Calf raises', 'Standing (hold a wall if needed), rise slowly onto your toes and lower even more slowly.'],
+    a6: ['Single-leg balance', 'Stand on the injured leg and keep your balance for 30 seconds. Harder: close your eyes or stand on a pillow.'],
+    a7: ['Wall calf stretch', 'In a lunge facing a wall, back leg straight with the heel on the floor. Hold 30 seconds.'],
+    a8: ['Towel scrunches', 'Sitting, use your toes to pull a towel spread on the floor under your foot.'],
+    a9: ['Heel and toe walking', 'Walk 10 steps on your heels, then 10 steps on your toes. Slowly and with control.'],
+    g1: ['Marching in place', 'March energetically in place, lifting your knees. Keep an upright posture.'],
+    g2: ['Sit-to-stand', 'Standing in front of a chair, sit down slowly with control and stand up without using your hands (if possible).'],
+    g3: ['Wall push-ups', 'Place your hands on a wall at shoulder height. Bend your arms bringing your chest toward the wall, then push back.'],
+    g4: ['Side bends', 'Standing, slide your hand down along your thigh, bending the torso sideways. Other arm overhead.'],
+    g5: ['Diaphragmatic breathing', 'Lying down, place a hand on your belly. Inhale through the nose so the belly rises (not the chest). Exhale slowly through the mouth.'],
+    g6: ['Hip circles', 'Standing with hands on hips, make wide hip circles in both directions.'],
+    g7: ['Neck stretch', 'Tilt your head toward your shoulder, gently assist with your hand. Hold 20 seconds per side.'],
+    g8: ['Lunges in place', 'Step forward and bend both knees to 90°. Front knee over the foot. Return and switch legs.'],
+  };
+
+  const PROGRAMS_EN = {
+    kolano:    ['Knee after injury', 'Strengthening and mobility of the knee joint'],
+    bark:      ['Shoulder & shoulder girdle', 'Restoring shoulder range of motion and strength'],
+    kregoslup: ['Lumbar spine', 'Back stabilisation and flexibility'],
+    kostka:    ['Sprained ankle', 'Ankle mobility, strength and balance'],
+    wlasny:    ['Custom program', 'Start with an empty list and add exercises yourself'],
+  };
+
+  /* nazwa/opis ćwiczenia w bieżącym języku (RFI18N opcjonalny — bez niego PL) */
+  function exName(e) {
+    if (typeof RFI18N !== 'undefined' && RFI18N.getLang() === 'en' && EX_EN[e.id]) return EX_EN[e.id][0];
+    return e.n;
+  }
+  function exDesc(e) {
+    if (typeof RFI18N !== 'undefined' && RFI18N.getLang() === 'en' && EX_EN[e.id]) return EX_EN[e.id][1];
+    return e.d;
+  }
+
+  const api = { TYPE_EMOJI, LIB_GROUPS, EX_DB, PROGRAMS, EX_EN, PROGRAMS_EN, exName, exDesc };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
-  else { root.RFExDB = api; root.TYPE_EMOJI = TYPE_EMOJI; root.LIB_GROUPS = LIB_GROUPS; root.EX_DB = EX_DB; root.PROGRAMS = PROGRAMS; }
+  else { root.RFExDB = api; root.TYPE_EMOJI = TYPE_EMOJI; root.LIB_GROUPS = LIB_GROUPS; root.EX_DB = EX_DB; root.PROGRAMS = PROGRAMS; root.EX_EN = EX_EN; root.PROGRAMS_EN = PROGRAMS_EN; root.exName = exName; root.exDesc = exDesc; }
 })(typeof self !== 'undefined' ? self : this);

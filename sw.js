@@ -1,8 +1,9 @@
-const CACHE = 'rehabflow-v3.4.1';
+const CACHE = 'rehabflow-v3.5.0';
 const ASSETS = [
   './',
   './index.html',
   './core.js',
+  './i18n.js',
   './exdb.js',
   './sync.js',
   './fizjo.html',
