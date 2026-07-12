@@ -86,9 +86,11 @@ html[data-font="large"] body { zoom: 1.14; }
 /* ══ LAYOUT ══════════════════════════════════════════════════ */
 #app { display: flex; flex-direction: column; height: 100dvh; overflow: hidden; position: relative; z-index: 1; }
 #page-container { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
+/* zmiana zakładki dzieje się dziesiątki razy dziennie — bez animacji wejścia
+   (animacja od opacity:0 błyskała na WebView, gdy pierwsza klatka renderowała
+   się przed startem animacji) */
 .page { display: none; min-height: 100%; }
-.page.active { display: block; animation: pageIn .3s cubic-bezier(.21,1.02,.73,1); }
-@keyframes pageIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.page.active { display: block; }
 .p-page { padding: 16px 16px calc(20px + var(--safe-bottom)); }
 .gap-12 { display: flex; flex-direction: column; gap: 12px; }
 
