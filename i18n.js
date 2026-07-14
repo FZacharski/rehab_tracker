@@ -338,6 +338,12 @@
     '\n🏆 Nowa odznaka: ': '\n🏆 New badge: ',
 
     /* home — uzupełnienia */
+    'Dziennik dnia': 'Daily journal',
+    'Notatka zapisuje się automatycznie': 'The note saves automatically',
+    'Dziś regeneracja': 'Rest day today',
+    'Trening ukończony — świetna robota!': 'Workout complete — great job!',
+    'Rozpocznij trening': 'Start workout',
+    'Następny trening: {0}': 'Next workout: {0}',
     'odpoczynek': 'rest day',
     'dziś wolne': 'off today',
     'powt.': 'reps',
