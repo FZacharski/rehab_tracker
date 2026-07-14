@@ -323,6 +323,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
 .cal-cell.outside { opacity: .55; }
 .cal-dot { width: 4px; height: 4px; border-radius: 50%; background: currentColor; margin-top: 2px; opacity: .6; }
 .legend { display: flex; gap: 14px; margin-top: 14px; flex-wrap: wrap; }
+.cal-month-sum { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); font-size: 13px; line-height: 1.6; color: var(--text2); }
 .legend span { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text2); }
 .legend i { width: 11px; height: 11px; border-radius: 4px; display: inline-block; }
 
@@ -718,6 +719,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
             <span><i style="border:1.5px dashed var(--border)"></i><span data-i18n>Odpoczynek</span></span>
             <span><i style="background:rgba(129,140,248,.15);border:1.5px dashed var(--indigo)"></i><span data-i18n>Usprawiedliwiony</span></span>
           </div>
+          <div class="cal-month-sum" id="cal-month-sum" style="display:none"></div>
         </div>
         <div class="card mt-12" id="cal-detail" style="display:none">
           <div style="display:flex;align-items:center;justify-content:space-between">
@@ -2205,7 +2207,43 @@ function renderCalendar() {
     if (!inProgram && !isToday) cls += ' outside';
     grid.innerHTML += `<div class="${cls}" style="--i:${day-1}" onclick="showCalDetail('${k}')">${day}<div class="cal-dot" style="${inProgram ? '' : 'visibility:hidden'}"></div></div>`;
   }
+  renderMonthSummary(y, mo);
   renderHeatmap();
+}
+
+/* podsumowanie przeglądanego miesiąca: dni treningowe + śr. ból z trendem m/m */
+function renderMonthSummary(y, mo) {
+  const el = document.getElementById('cal-month-sum');
+  const t = today();
+  const stats = (yy, mm) => {
+    const dim = new Date(yy, mm + 1, 0).getDate();
+    let full = 0, poss = 0, painSum = 0, painN = 0;
+    for (let day = 1; day <= dim; day++) {
+      const k = `${yy}-${String(mm + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      if (k > t) break;
+      const p = (D.days[k] || {}).pain || 0;
+      if (p > 0) { painSum += p; painN++; }
+      if (!D.exercises.length || isRestDay(k)) continue;
+      if (isFull(k)) { poss++; full++; continue; }
+      if (isExcused(k)) continue;
+      poss++;
+    }
+    return { full, poss, avgPain: painN ? Math.round(painSum / painN * 10) / 10 : null };
+  };
+  const cur = stats(y, mo);
+  if (!cur.poss && cur.avgPain === null) { el.style.display = 'none'; return; }
+  const prevD = new Date(y, mo - 1, 1);
+  const prev = stats(prevD.getFullYear(), prevD.getMonth());
+  let txt = `<strong style="color:var(--text)">${MONTHS_NOM[mo]}:</strong> ${tf('{0}/{1} dni treningowych', cur.full, cur.poss)}`;
+  if (cur.avgPain !== null) {
+    txt += ' · ' + tf('śr. ból {0}/10', cur.avgPain);
+    if (prev.avgPain !== null) {
+      const d = Math.round((cur.avgPain - prev.avgPain) * 10) / 10;
+      if (d !== 0) txt += ` <span style="color:var(--${d < 0 ? 'success' : 'danger'})">${d < 0 ? '▼' : '▲'} ${Math.abs(d)}</span>`;
+    }
+  }
+  el.innerHTML = txt;
+  el.style.display = 'block';
 }
 
 /* ── heatmapa całej historii (styl GitHub) ── */
@@ -3951,6 +3989,28 @@ document.getElementById('note-area').addEventListener('input', () => {
     saveData();
   }, 800);
 });
+
+/* ── swipe poziomy między zakładkami ── */
+const PAGE_ORDER = ['home', 'calendar', 'progress', 'badges', 'settings'];
+let swX = 0, swY = 0, swT = 0, swOK = false;
+const pageContainer = document.getElementById('page-container');
+pageContainer.addEventListener('touchstart', e => {
+  // nie koliduj z elementami przewijanymi poziomo, suwakami i wykresami
+  swOK = !e.target.closest('.day-strip, .lib-chips, .hm-scroll, .photo-strip, .chart-box, input[type=range]')
+    && !document.querySelector('.modal-overlay.open')
+    && !document.getElementById('trainer').classList.contains('open');
+  const t0 = e.touches[0];
+  swX = t0.clientX; swY = t0.clientY; swT = Date.now();
+}, { passive: true });
+pageContainer.addEventListener('touchend', e => {
+  if (!swOK) return;
+  const t0 = e.changedTouches[0];
+  const dx = t0.clientX - swX, dy = t0.clientY - swY;
+  if (Date.now() - swT > 500 || Math.abs(dx) < 64 || Math.abs(dx) < Math.abs(dy) * 2) return;
+  const i = PAGE_ORDER.indexOf(currentPage) - Math.sign(dx);
+  if (i < 0 || i >= PAGE_ORDER.length) return;
+  switchPage(PAGE_ORDER[i], document.querySelector(`[data-page=${PAGE_ORDER[i]}]`));
+}, { passive: true });
 
 /* ── Esc zamyka modale / podgląd zdjęcia / trenera ── */
 document.addEventListener('keydown', e => {

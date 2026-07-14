@@ -106,6 +106,8 @@
     'Odpoczynek': 'Rest',
     'Usprawiedliwiony': 'Excused',
     'Historia — heatmapa': 'History — heatmap',
+    '{0}/{1} dni treningowych': '{0}/{1} training days',
+    'śr. ból {0}/10': 'avg pain {0}/10',
     '✏️ Edytuj': '✏️ Edit',
     'Nie można edytować przyszłości 😉': "You can't edit the future 😉",
     '🤒 Dzień usprawiedliwiony — nie przerywa passy': "🤒 Excused day — doesn't break your streak",
