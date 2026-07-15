@@ -97,7 +97,15 @@
 [data-theme="light"][data-accent="amber"] { --indigo: #D97706; --violet: #EA580C; --pink: #DC2626; }
 html, body { height: 100%; background: var(--bg); font-family: 'Outfit', system-ui, sans-serif; color: var(--text); overflow: hidden; }
 body { font-variant-numeric: tabular-nums; }
-html[data-font="large"] body { zoom: 1.14; }
+/* duża czcionka: zoom na treści, NIE na body — zoom body rozjeżdżał 100dvh
+   i wypychał dolną nawigację poza ekran (ujawnione na telefonie) */
+html[data-font="large"] #page-container,
+html[data-font="large"] .modal-sheet,
+html[data-font="large"] .tr-top,
+html[data-font="large"] .tr-body,
+html[data-font="large"] .tr-bottom,
+html[data-font="large"] .ob-card,
+html[data-font="large"] .celebrate-card { zoom: 1.14; }
 
 /* ══ AURORA BACKGROUND ═══════════════════════════════════════ */
 .aurora { position: fixed; border-radius: 50%; filter: blur(90px); pointer-events: none; z-index: 0; opacity: .32; }
