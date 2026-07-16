@@ -133,13 +133,22 @@ Dni z `excused: true` traktuj jak odpoczynek (poza mianownikami statystyk).
   Gotowy APK: `capacitor-build/RehabFlow-v3.4.0-signed.apk` (cert SHA-256 zgodny z TWA).
   Ikony przeniesione z twa-build; splash = jednolity granat. Uwaga: skróty long-press
   z manifestu webowego nie działają w Capacitor (wymagałyby shortcuts.xml — TODO).
-- **Supabase „wariant 1"** (konta + sync + live dla fizjo): moduł `sync.js` — czysty REST
-  (GoTrue OTP 6-cyfrowym kodem e-mail — bez redirectów, działa w APK; PostgREST upsert
-  z Prefer: resolution=merge-duplicates). Karta w Ustawieniach (URL+klucz anon → e-mail →
-  kod), auto-push po każdej zmianie (debounce 4 s), pull przy starcie/powrocie z LWW po
-  updated_at, kod udostępnienia (8 znaków) → RPC get_patient_by_code w fizjo.html.
-  Setup właściciela: `SUPABASE.md` (SQL: tabela patient_state + RLS + RPC; region UE, RODO).
-  Funkcja jest w pełni opcjonalna — bez konfiguracji aplikacja działa jak dotąd.
+- **Supabase „wariant 1"** (konta + sync + live dla fizjo): moduł `sync.js` — czysty REST,
+  PostgREST upsert z Prefer: resolution=merge-duplicates, auto-push po każdej zmianie
+  (debounce 4 s), pull przy starcie/powrocie z LWW po updated_at, kod udostępnienia
+  (8 znaków) → RPC get_patient_by_code w fizjo.html.
+  **v3.6: logowanie anonimowe jako domyślna ścieżka** — jeden przycisk „🔗 Udostępnij
+  fizjoterapeucie" w Ustawieniach zakłada konto (GoTrue `/auth/v1/signup` z pustym body,
+  wymaga Anonymous Sign-Ins włączonych w Supabase) i wysyła dane bez e-maila/kodu.
+  Fizjoterapeuta klika link `fizjo.html#kod=XXXX` (Web Share API) — panel auto-pobiera
+  dane z hasha, zero wpisywania. Stare logowanie e-mailem (OTP 6-cyfrowym kodem) zostaje
+  jako „Zaawansowane" — do synchronizacji tego samego konta na kilku urządzeniach pacjenta;
+  niezależne od konta anonimowego (brak migracji anon→email w tej wersji).
+  `DEFAULT_URL`/`DEFAULT_ANON_KEY` na górze `sync.js` — właściciel wkleja po założeniu
+  projektu (`SUPABASE.md`, teraz też z krokiem „włącz Anonymous Sign-Ins"); dopóki puste,
+  przycisk szybkiego udostępniania jest wyłączony, a „Zaawansowane" (własny URL+klucz)
+  nadal działa jak wcześniej. Funkcja jest w pełni opcjonalna — bez konfiguracji aplikacja
+  działa jak dotąd.
 
 - **i18n PL/EN (v3.5)**: `i18n.js` w stylu gettext — kluczem jest polski tekst,
   brak tłumaczenia = fallback PL (polska wersja zawsze nienaruszona). Teksty dynamiczne:

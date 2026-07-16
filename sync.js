@@ -1,8 +1,20 @@
 /* RehabFlow sync — opcjonalna synchronizacja przez Supabase (czysty REST, bez zależności).
-   Nieaktywna, dopóki właściciel nie poda URL projektu i klucza anon (Ustawienia → Synchronizacja).
-   Logowanie: 6-cyfrowy kod e-mail (GoTrue OTP) — działa też w powłoce Capacitor (bez redirectów). */
+   Dwa tryby logowania:
+   1) Anonimowe (domyślne) — jeden przycisk „Udostępnij fizjoterapeucie", zero konfiguracji
+      dla użytkownika. Wymaga wbudowanego projektu (DEFAULT_URL/DEFAULT_ANON_KEY poniżej)
+      i włączonego „Anonymous sign-ins" w Supabase (patrz SUPABASE.md).
+   2) E-mail + kod OTP („Zaawansowane") — dla kogoś, kto chce synchronizować to samo konto
+      między kilkoma urządzeniami; można też wskazać własny projekt Supabase.
+   Działa też w powłoce Capacitor (bez redirectów). */
 (function (root) {
   'use strict';
+
+  /* Wbudowany projekt Supabase — uzupełnia właściciel aplikacji po założeniu projektu
+     (SUPABASE.md). Klucz anon jest z założenia publiczny; bezpieczeństwo zapewnia RLS
+     po stronie bazy. Dopóki puste, przycisk szybkiego udostępniania jest wyłączony,
+     a użytkownik może nadal skonfigurować własny projekt w sekcji „Zaawansowane". */
+  const DEFAULT_URL = '';
+  const DEFAULT_ANON_KEY = '';
 
   const KEY = 'rehabflow_sync_v1';
 
@@ -10,13 +22,18 @@
     try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; }
   }
 
-  let S = load(); // {url, anonKey, email, session:{access_token,refresh_token,expires_at,user_id}, shareCode, lastSyncAt}
+  let S = load(); // {url, anonKey, email, anonymous, session:{...}, shareCode, lastSyncAt}
   let pushTimer = null;
 
   function save() { localStorage.setItem(KEY, JSON.stringify(S)); }
 
-  function configured() { return !!(S.url && S.anonKey); }
+  function hasBuiltIn() { return !!(DEFAULT_URL && DEFAULT_ANON_KEY); }
+  function effUrl() { return S.url || DEFAULT_URL; }
+  function effKey() { return S.anonKey || DEFAULT_ANON_KEY; }
+  function configured() { return !!(effUrl() && effKey()); }
+  function usingCustomProject() { return !!(S.url && S.anonKey); }
   function loggedIn() { return !!(S.session && S.session.refresh_token); }
+  function isAnonymous() { return loggedIn() && S.anonymous === true; }
   function email() { return S.email || ''; }
   function shareCode() { return S.shareCode || null; }
   function lastSyncAt() { return S.lastSyncAt || null; }
@@ -29,11 +46,11 @@
     save();
   }
 
-  function base() { return S.url; }
+  function base() { return effUrl(); }
 
   async function http(path, opts, useAuth) {
     const headers = Object.assign(
-      { apikey: S.anonKey, 'Content-Type': 'application/json' },
+      { apikey: effKey(), 'Content-Type': 'application/json' },
       (opts && opts.headers) || {}
     );
     if (useAuth) {
@@ -66,14 +83,23 @@
     if (Date.now() < (S.session.expires_at - 60) * 1000) return;
     const res = await fetch(base() + '/auth/v1/token?grant_type=refresh_token', {
       method: 'POST',
-      headers: { apikey: S.anonKey, 'Content-Type': 'application/json' },
+      headers: { apikey: effKey(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ refresh_token: S.session.refresh_token }),
     });
     if (!res.ok) { S.session = null; save(); throw new Error('Sesja wygasła — zaloguj się ponownie'); }
     adoptSession(await res.json());
   }
 
-  /* krok 1: wyślij 6-cyfrowy kod na e-mail */
+  /* logowanie anonimowe: jedno kliknięcie, bez e-maila i haseł (wymaga Anonymous
+     sign-ins włączonych w Supabase) */
+  async function signInAnonymously() {
+    if (!configured()) throw new Error('Synchronizacja nie jest jeszcze skonfigurowana');
+    const d = await http('/auth/v1/signup', { method: 'POST', body: JSON.stringify({}) }, false);
+    adoptSession(d);
+    S.anonymous = true; S.email = ''; save();
+  }
+
+  /* krok 1: wyślij 6-cyfrowy kod na e-mail (tryb zaawansowany — kilka urządzeń) */
   async function requestCode(mail) {
     mail = String(mail || '').trim().toLowerCase();
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) throw new Error('Podaj poprawny adres e-mail');
@@ -91,9 +117,10 @@
       body: JSON.stringify({ type: 'email', email: S.email, token: code }),
     }, false);
     adoptSession(d);
+    S.anonymous = false; save();
   }
 
-  function logout() { S.session = null; S.lastSyncAt = null; save(); }
+  function logout() { S.session = null; S.lastSyncAt = null; S.anonymous = false; save(); }
 
   /* kod udostępnienia dla fizjoterapeuty (bez 0/O/1/I — łatwy do podyktowania) */
   function genCode() {
@@ -142,7 +169,8 @@
     pushTimer = setTimeout(() => { push(getData()).catch(() => {}); }, 4000);
   }
 
-  /* odczyt danych pacjenta po kodzie udostępnienia (panel fizjoterapeuty, klucz anon) */
+  /* odczyt danych pacjenta po kodzie udostępnienia — z jawnym URL/kluczem
+     (panel fizjoterapeuty z własnym projektem, tryb zaawansowany) */
   async function fetchByShareCode(url, anonKey, code) {
     url = String(url || '').trim().replace(/\/+$/, '');
     const res = await fetch(url + '/rest/v1/rpc/get_patient_by_code', {
@@ -156,11 +184,17 @@
     return data;
   }
 
+  /* jak wyżej, ale z wbudowanym projektem — jedyne co potrzebne to kod pacjenta */
+  async function fetchByShareCodeBuiltIn(code) {
+    if (!hasBuiltIn()) throw new Error('Brak wbudowanej konfiguracji Supabase');
+    return fetchByShareCode(DEFAULT_URL, DEFAULT_ANON_KEY, code);
+  }
+
   root.RFSync = {
-    configured, loggedIn, email, shareCode, lastSyncAt,
-    setConfig, requestCode, verifyCode, logout,
+    hasBuiltIn, configured, usingCustomProject, loggedIn, isAnonymous, email, shareCode, lastSyncAt,
+    setConfig, signInAnonymously, requestCode, verifyCode, logout,
     push, pull, remoteIsNewer, markSynced, schedulePush,
-    fetchByShareCode,
+    fetchByShareCode, fetchByShareCodeBuiltIn,
     _url: () => S.url || '', _anonKey: () => S.anonKey || '',
   };
 })(typeof self !== 'undefined' ? self : this);

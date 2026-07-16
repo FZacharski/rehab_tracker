@@ -132,15 +132,18 @@ canvas { width: 100%; }
     </div>
 
     <div class="card" style="margin-top:14px">
-      <h2>1b · Podgląd live <span class="xs">(Supabase — opcjonalnie)</span></h2>
-      <p class="muted">Jeśli pacjent włączył synchronizację, wpisz dane projektu i jego 8-znakowy kod udostępnienia (pacjent znajdzie go w Ustawienia → Synchronizacja). Konfiguracja: <a href="SUPABASE.md" target="_blank" style="color:var(--violet)">SUPABASE.md</a>.</p>
+      <h2>1b · Podgląd live</h2>
+      <p class="muted" id="live-hint">Pacjent wysyła Ci link (Ustawienia → Synchronizacja → „Udostępnij fizjoterapeucie") — kliknięcie w niego otworzy ten panel z gotowym podglądem. Możesz też wpisać jego 8-znakowy kod ręcznie.</p>
       <div style="display:grid;gap:8px;margin-top:10px">
-        <input class="form-input" id="live-url" placeholder="https://xxxx.supabase.co">
-        <input class="form-input" id="live-key" placeholder="Klucz anon (eyJ...)">
+        <div id="live-project-fields" style="display:none;gap:8px">
+          <input class="form-input" id="live-url" placeholder="https://xxxx.supabase.co">
+          <input class="form-input" id="live-key" placeholder="Klucz anon (eyJ...)">
+        </div>
         <div style="display:grid;grid-template-columns:1fr auto;gap:8px">
           <input class="form-input" id="live-code" placeholder="Kod pacjenta (np. K7KPQ2ZM)" maxlength="8" style="text-transform:uppercase;letter-spacing:.08em">
           <button class="btn btn-primary" onclick="loadLivePatient()">Pobierz</button>
         </div>
+        <button type="button" class="xs" style="background:none;border:none;color:var(--violet);text-align:left;cursor:pointer;padding:0" onclick="toggleLiveAdvanced()" id="live-adv-toggle">Zaawansowane: własny projekt Supabase ▾</button>
       </div>
     </div>
 
@@ -220,22 +223,44 @@ drop.addEventListener('drop', e => { const f = e.dataTransfer.files[0]; if (f) l
 
 /* ── podgląd live przez Supabase (kod udostępnienia pacjenta) ── */
 const LIVE_KEY = 'fizjo_supabase';
+let liveAdvancedOpen = false;
+
+function toggleLiveAdvanced() {
+  liveAdvancedOpen = !liveAdvancedOpen;
+  document.getElementById('live-project-fields').style.display = liveAdvancedOpen ? 'grid' : 'none';
+  document.getElementById('live-adv-toggle').textContent = 'Zaawansowane: własny projekt Supabase ' + (liveAdvancedOpen ? '▴' : '▾');
+}
+
 (function initLive() {
   try {
     const s = JSON.parse(localStorage.getItem(LIVE_KEY)) || {};
     if (s.url) document.getElementById('live-url').value = s.url;
     if (s.key) document.getElementById('live-key').value = s.key;
+    if ((s.url || s.key) && !RFSync.hasBuiltIn()) toggleLiveAdvanced();
   } catch (e) {}
+
+  // link od pacjenta: fizjo.html#kod=XXXX — wypełnij kod i pobierz od razu
+  const m = location.hash.match(/kod=([A-Za-z0-9]{4,10})/i);
+  if (m) {
+    document.getElementById('live-code').value = m[1].toUpperCase();
+    history.replaceState(null, '', location.pathname);
+    loadLivePatient();
+  }
 })();
 
 async function loadLivePatient() {
-  const url = document.getElementById('live-url').value.trim();
-  const key = document.getElementById('live-key').value.trim();
+  const custom = document.getElementById('live-project-fields').style.display !== 'none';
+  const url = custom ? document.getElementById('live-url').value.trim() : '';
+  const key = custom ? document.getElementById('live-key').value.trim() : '';
   const code = document.getElementById('live-code').value.trim();
-  if (!url || !key || !code) { showToast('Wypełnij adres projektu, klucz i kod pacjenta'); return; }
+  if (!code) { showToast('Wpisz kod pacjenta'); return; }
+  if (custom && (!url || !key)) { showToast('Wypełnij adres projektu i klucz'); return; }
+  if (!custom && !RFSync.hasBuiltIn()) { showToast('Brak wbudowanej konfiguracji — użyj Zaawansowane'); return; }
   try {
-    const data = await RFSync.fetchByShareCode(url, key, code);
-    localStorage.setItem(LIVE_KEY, JSON.stringify({ url, key }));
+    const data = custom
+      ? await RFSync.fetchByShareCode(url, key, code)
+      : await RFSync.fetchByShareCodeBuiltIn(code);
+    if (custom) localStorage.setItem(LIVE_KEY, JSON.stringify({ url, key }));
     renderPatient(data);
     showToast('Dane pacjenta pobrane na żywo ✓');
   } catch (e) { showToast('Błąd: ' + e.message); }

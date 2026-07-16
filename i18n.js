@@ -281,6 +281,18 @@
 
     /* synchronizacja */
     'Synchronizacja': 'Sync',
+    'Udostępnij podgląd swoich postępów fizjoterapeucie — bez zakładania konta.': 'Share your progress with your physiotherapist — no account needed.',
+    'Udostępnij fizjoterapeucie': 'Share with physiotherapist',
+    'Włączanie udostępniania…': 'Turning on sharing…',
+    'Udostępnianie włączone ✓': 'Sharing turned on ✓',
+    'Funkcja wymaga jednorazowej konfiguracji przez twórcę aplikacji — zobacz Zaawansowane.': 'This feature needs a one-time setup by the app owner — see Advanced.',
+    'Zaawansowane': 'Advanced',
+    'Zaloguj się e-mailem, aby synchronizować to samo konto na kilku urządzeniach.': 'Sign in with e-mail to sync the same account across multiple devices.',
+    'Udostępnianie aktywne': 'Sharing is active',
+    'Wyślij link fizjoterapeucie': 'Send link to physiotherapist',
+    'Wyłącz': 'Turn off',
+    'Podgląd mojego postępu w RehabFlow': 'My progress in RehabFlow',
+    'Link skopiowany ✓': 'Link copied ✓',
 
     /* formularz ćwiczenia */
     'Dodaj ćwiczenie': 'Add exercise',

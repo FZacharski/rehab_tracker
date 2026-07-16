@@ -168,6 +168,7 @@ html[data-font="large"] .celebrate-card { zoom: 1.14; }
 .accent-dot { width: 34px; height: 34px; border-radius: 50%; border: 2.5px solid transparent; cursor: pointer; transition: transform .12s, border-color .15s, box-shadow .15s; }
 .accent-dot:active { transform: scale(.9); }
 .accent-dot.active { border-color: var(--text); box-shadow: 0 0 0 3px var(--surface2); }
+.share-link-box { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 10px 12px; }
 .hero-cta:active { transform: scale(.97); }
 .hero-done { text-align: center; font-size: 13.5px; font-weight: 700; padding-top: 2px; opacity: .95; }
 /* pływający CTA nad nawigacją */
@@ -3064,47 +3065,106 @@ function resetData() {
 
 /* ══ SYNCHRONIZACJA (Supabase — opcjonalna) ═════════════════ */
 let syncCodeSent = false;
+let syncAdvancedOpen = false;
+let syncBusy = false;
+
+function toggleSyncAdvanced() {
+  syncAdvancedOpen = !syncAdvancedOpen;
+  renderSyncCard();
+}
+
+/* link dla fizjoterapeuty: fizjo.html#kod=XXXX — otwiera panel z gotowym podglądem */
+function shareLink() {
+  const code = RFSync.shareCode();
+  if (!code) return null;
+  const url = new URL('fizjo.html', location.href);
+  url.hash = 'kod=' + code;
+  return url.toString();
+}
+
+async function shareWithTherapist() {
+  const link = shareLink();
+  if (!link) return;
+  if (navigator.share) {
+    try { await navigator.share({ title: 'RehabFlow', text: tt('Podgląd mojego postępu w RehabFlow'), url: link }); return; }
+    catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  if (navigator.clipboard) navigator.clipboard.writeText(link).then(() => showToast(tt('Link skopiowany ✓')), () => showToast(link));
+  else showToast(link);
+}
+
+/* jeden przycisk: zakłada anonimowe konto (jeśli trzeba) i wysyła dane w tle */
+async function quickShareSetup() {
+  if (syncBusy) return;
+  if (!RFSync.hasBuiltIn() && !RFSync.usingCustomProject()) { syncAdvancedOpen = true; renderSyncCard(); return; }
+  syncBusy = true;
+  const btn = document.getElementById('sync-quick-btn');
+  if (btn) { btn.disabled = true; btn.textContent = tt('Włączanie udostępniania…'); }
+  try {
+    if (!RFSync.loggedIn()) await RFSync.signInAnonymously();
+    await RFSync.push(D);
+    renderSyncCard();
+    showToast(tt('Udostępnianie włączone ✓'));
+  } catch (e) { showToast(tf('Błąd: {0}', e.message)); }
+  finally { syncBusy = false; }
+}
 
 function renderSyncCard() {
   const el = document.getElementById('sync-card');
   if (!window.RFSync) { el.innerHTML = ''; return; }
-  if (!RFSync.configured()) {
-    el.innerHTML = `
-      <div class="text-xs text-muted" style="line-height:1.55;margin-bottom:10px">${tt('Konto + synchronizacja między urządzeniami i podgląd live dla fizjoterapeuty. Wymaga własnego projektu Supabase — instrukcja w pliku')} <a href="SUPABASE.md" style="color:var(--violet)" target="_blank">SUPABASE.md</a>.</div>
-      <div class="form-field"><label class="form-label">${tt('Adres projektu (URL)')}</label>
-        <input class="form-input" id="sync-url" placeholder="https://xxxx.supabase.co" autocomplete="off"></div>
-      <div class="form-field"><label class="form-label">${tt('Klucz anon (public)')}</label>
-        <input class="form-input" id="sync-key" placeholder="eyJ..." autocomplete="off"></div>
-      <button class="btn btn-secondary btn-full" onclick="syncSaveConfig()">${tt('Zapisz konfigurację')}</button>`;
-    return;
-  }
+
+  const advancedBlock = () => {
+    if (!RFSync.configured()) {
+      return `
+        <div class="form-field"><label class="form-label">${tt('Adres projektu (URL)')}</label>
+          <input class="form-input" id="sync-url" placeholder="https://xxxx.supabase.co" autocomplete="off"></div>
+        <div class="form-field"><label class="form-label">${tt('Klucz anon (public)')}</label>
+          <input class="form-input" id="sync-key" placeholder="eyJ..." autocomplete="off"></div>
+        <button class="btn btn-secondary btn-full" onclick="syncSaveConfig()">${tt('Zapisz konfigurację')}</button>`;
+    }
+    if (!RFSync.loggedIn() || RFSync.isAnonymous()) {
+      return `
+        <div class="text-xs text-muted" style="margin-bottom:8px">${tt('Zaloguj się e-mailem, aby synchronizować to samo konto na kilku urządzeniach.')}</div>
+        <div class="form-field"><label class="form-label">${tt('E-mail')}</label>
+          <input class="form-input" id="sync-email" type="email" placeholder="twoj@email.pl" value="${esc(RFSync.email())}" autocomplete="email"></div>
+        ${syncCodeSent ? `
+          <div class="form-field"><label class="form-label">${tt('Kod z e-maila (6 cyfr)')}</label>
+            <input class="form-input" id="sync-code" inputmode="numeric" maxlength="6" placeholder="123456" autocomplete="one-time-code"></div>
+          <div style="display:flex;gap:10px">
+            <button class="btn btn-primary" style="flex:1" onclick="syncVerifyCode()">${tt('Zaloguj')}</button>
+            <button class="btn btn-secondary" style="flex:1" onclick="syncSendCode()">${tt('Wyślij ponownie')}</button>
+          </div>` : `
+          <button class="btn btn-primary btn-full" onclick="syncSendCode()">${tt('📧 Wyślij kod logowania')}</button>`}
+        ${RFSync.usingCustomProject() ? `<button class="btn btn-secondary btn-full mt-8" onclick="syncReset()">${tt('Zmień konfigurację projektu')}</button>` : ''}`;
+    }
+    return `<button class="btn btn-secondary btn-full" onclick="syncReset()">${tt('Zmień konfigurację projektu')}</button>`;
+  };
+
   if (!RFSync.loggedIn()) {
     el.innerHTML = `
-      <div class="form-field"><label class="form-label">${tt('E-mail')}</label>
-        <input class="form-input" id="sync-email" type="email" placeholder="twoj@email.pl" value="${esc(RFSync.email())}" autocomplete="email"></div>
-      ${syncCodeSent ? `
-        <div class="form-field"><label class="form-label">${tt('Kod z e-maila (6 cyfr)')}</label>
-          <input class="form-input" id="sync-code" inputmode="numeric" maxlength="6" placeholder="123456" autocomplete="one-time-code"></div>
-        <div style="display:flex;gap:10px">
-          <button class="btn btn-primary" style="flex:1" onclick="syncVerifyCode()">${tt('Zaloguj')}</button>
-          <button class="btn btn-secondary" style="flex:1" onclick="syncSendCode()">${tt('Wyślij ponownie')}</button>
-        </div>` : `
-        <button class="btn btn-primary btn-full" onclick="syncSendCode()">${tt('📧 Wyślij kod logowania')}</button>`}
-      <button class="btn btn-secondary btn-full mt-8" onclick="syncReset()">${tt('Zmień konfigurację projektu')}</button>`;
+      <div class="text-xs text-muted" style="line-height:1.55;margin-bottom:10px">${tt('Udostępnij podgląd swoich postępów fizjoterapeucie — bez zakładania konta.')}</div>
+      <button class="btn btn-primary btn-full" id="sync-quick-btn" onclick="quickShareSetup()" ${RFSync.hasBuiltIn() ? '' : 'style="opacity:.6"'}>🔗 ${tt('Udostępnij fizjoterapeucie')}</button>
+      ${!RFSync.hasBuiltIn() && !RFSync.usingCustomProject() ? `<div class="text-xs text-muted mt-8">${tt('Funkcja wymaga jednorazowej konfiguracji przez twórcę aplikacji — zobacz Zaawansowane.')}</div>` : ''}
+      <button type="button" class="section-action mt-8" onclick="toggleSyncAdvanced()">${tt('Zaawansowane')} ${syncAdvancedOpen ? '▴' : '▾'}</button>
+      <div style="display:${syncAdvancedOpen ? 'block' : 'none'};margin-top:10px">${advancedBlock()}</div>`;
     return;
   }
+
   const last = RFSync.lastSyncAt();
+  const link = shareLink();
   el.innerHTML = `
     <div class="text-sm" style="line-height:1.7">
-      ${tt('Zalogowano: ')}<strong>${esc(RFSync.email())}</strong><br>
-      <span class="text-muted text-xs">${tt('Ostatnia synchronizacja: ')}${last ? new Date(last).toLocaleString(RFI18N.getLang() === 'en' ? 'en-GB' : 'pl-PL') : tt('jeszcze nie')}</span><br>
-      ${tt('Kod dla fizjoterapeuty: ')}<strong class="grad-text" style="letter-spacing:.1em">${esc(RFSync.shareCode() || '—')}</strong>
-      ${RFSync.shareCode() ? `<button class="section-action" onclick="syncCopyCode()" style="margin-left:6px">${tt('Kopiuj')}</button>` : ''}
+      ✓ ${RFSync.isAnonymous() ? tt('Udostępnianie aktywne') : tf('Zalogowano: {0}', esc(RFSync.email()))}<br>
+      <span class="text-muted text-xs">${tt('Ostatnia synchronizacja: ')}${last ? new Date(last).toLocaleString(RFI18N.getLang() === 'en' ? 'en-GB' : 'pl-PL') : tt('jeszcze nie')}</span>
     </div>
-    <div style="display:flex;gap:10px;margin-top:12px">
-      <button class="btn btn-primary" style="flex:1" onclick="syncNow()">${tt('🔄 Synchronizuj')}</button>
-      <button class="btn btn-secondary" style="flex:1" onclick="syncLogout()">${tt('Wyloguj')}</button>
-    </div>`;
+    ${link ? `<div class="share-link-box mt-8"><code style="font-size:12px;word-break:break-all;color:var(--text2)">${esc(link)}</code></div>` : ''}
+    <button class="btn btn-primary btn-full mt-8" onclick="shareWithTherapist()">📤 ${tt('Wyślij link fizjoterapeucie')}</button>
+    <div style="display:flex;gap:10px;margin-top:10px">
+      <button class="btn btn-secondary" style="flex:1" onclick="syncNow()">🔄 ${tt('Odśwież')}</button>
+      <button class="btn btn-secondary" style="flex:1" onclick="syncLogout()">${RFSync.isAnonymous() ? tt('Wyłącz') : tt('Wyloguj')}</button>
+    </div>
+    <button type="button" class="section-action mt-8" onclick="toggleSyncAdvanced()">${tt('Zaawansowane')} ${syncAdvancedOpen ? '▴' : '▾'}</button>
+    <div style="display:${syncAdvancedOpen ? 'block' : 'none'};margin-top:10px">${advancedBlock()}</div>`;
 }
 
 function syncSaveConfig() {
@@ -3163,11 +3223,6 @@ async function syncNow() {
 function syncLogout() {
   if (!confirm(tt('Wylogować z synchronizacji na tym urządzeniu? Lokalne dane zostają.'))) return;
   RFSync.logout(); renderSyncCard();
-}
-
-function syncCopyCode() {
-  navigator.clipboard && navigator.clipboard.writeText(RFSync.shareCode()).then(
-    () => showToast(tt('Kod skopiowany ✓')), () => showToast(RFSync.shareCode()));
 }
 
 /* nadpisz lokalny stan danymi z chmury (bez ponownego push) */
