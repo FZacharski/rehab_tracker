@@ -365,6 +365,8 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
 .cal-cell.rest { background: transparent; border-style: dashed; border-color: var(--border); color: var(--text3); }
 .cal-cell.excused { background: rgba(129,140,248,.1); border-style: dashed; border-color: var(--indigo); color: var(--indigo); opacity: .8; }
 .cal-cell.future { opacity: .35; }
+/* aktualnie wybrany dzień (po tapnięciu) — obwódka niezależna od stanu dnia */
+.cal-cell.selected { outline: 2px solid var(--violet); outline-offset: 2px; opacity: 1; }
 .cal-cell.outside { opacity: .55; }
 .cal-dot { width: 4px; height: 4px; border-radius: 50%; background: currentColor; margin-top: 2px; opacity: .6; }
 .legend { display: flex; gap: 14px; margin-top: 14px; flex-wrap: wrap; }
@@ -2303,7 +2305,8 @@ function renderCalendar() {
     else if (isRestDay(k)) cls += ' rest';
     else if (isPast && inProgram && D.exercises.length > 0) cls += ' missed';
     if (!inProgram && !isToday) cls += ' outside';
-    grid.innerHTML += `<div class="${cls}" style="--i:${day-1}" onclick="showCalDetail('${k}')">${day}<div class="cal-dot" style="${inProgram ? '' : 'visibility:hidden'}"></div></div>`;
+    if (k === selectedCalDay) cls += ' selected'; // zaznaczenie przetrwa nawigację miesięcy
+    grid.innerHTML += `<div class="${cls}" style="--i:${day-1}" data-k="${k}" onclick="showCalDetail('${k}')">${day}<div class="cal-dot" style="${inProgram ? '' : 'visibility:hidden'}"></div></div>`;
   }
   renderMonthSummary(y, mo);
   renderHeatmap();
@@ -2387,6 +2390,10 @@ function renderHeatmap() {
 
 function showCalDetail(k) {
   selectedCalDay = k;
+  // podświetl tapnięty dzień w siatce
+  document.querySelectorAll('.cal-cell.selected').forEach(c => c.classList.remove('selected'));
+  const cell = document.querySelector(`.cal-cell[data-k="${k}"]`);
+  if (cell) cell.classList.add('selected');
   const dd = D.days[k] || {};
   const scheduled = scheduledFor(k).length;
   const anyDone = (dd.completed || []).filter(id => exIds().includes(id)).length;
