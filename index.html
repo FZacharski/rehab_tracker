@@ -3082,31 +3082,36 @@ function shareLink() {
   return url.toString();
 }
 
+/* jedno kliknięcie robi wszystko: zakłada anonimowe konto (za pierwszym razem),
+   wysyła dane i od razu otwiera systemowe „Udostępnij" z linkiem — użytkownik
+   nigdy nie widzi osobnego kroku „konfiguracji" */
 async function shareWithTherapist() {
-  const link = shareLink();
-  if (!link) return;
-  if (navigator.share) {
-    try { await navigator.share({ title: 'RehabFlow', text: tt('Podgląd mojego postępu w RehabFlow'), url: link }); return; }
-    catch (e) { if (e && e.name === 'AbortError') return; }
-  }
-  if (navigator.clipboard) navigator.clipboard.writeText(link).then(() => showToast(tt('Link skopiowany ✓')), () => showToast(link));
-  else showToast(link);
-}
-
-/* jeden przycisk: zakłada anonimowe konto (jeśli trzeba) i wysyła dane w tle */
-async function quickShareSetup() {
   if (syncBusy) return;
-  if (!RFSync.hasBuiltIn() && !RFSync.usingCustomProject()) { syncAdvancedOpen = true; renderSyncCard(); return; }
+  if (!RFSync.hasBuiltIn() && !RFSync.usingCustomProject()) {
+    syncAdvancedOpen = true; renderSyncCard();
+    showToast(tt('Funkcja wymaga jednorazowej konfiguracji przez twórcę aplikacji — zobacz Zaawansowane.'));
+    return;
+  }
   syncBusy = true;
   const btn = document.getElementById('sync-quick-btn');
-  if (btn) { btn.disabled = true; btn.textContent = tt('Włączanie udostępniania…'); }
+  if (btn) { btn.disabled = true; btn.textContent = tt('Przygotowywanie linku…'); }
   try {
     if (!RFSync.loggedIn()) await RFSync.signInAnonymously();
     await RFSync.push(D);
-    renderSyncCard();
-    showToast(tt('Udostępnianie włączone ✓'));
+    const link = shareLink();
+    if (navigator.share) {
+      try { await navigator.share({ title: 'RehabFlow', text: tt('Podgląd mojego postępu w RehabFlow'), url: link }); }
+      catch (e) {
+        if (e && e.name === 'AbortError') { /* użytkownik zamknął arkusz — nic nie rób */ }
+        else if (navigator.clipboard) { await navigator.clipboard.writeText(link); showToast(tt('Link skopiowany ✓')); }
+        else showToast(link);
+      }
+    } else if (navigator.clipboard) {
+      await navigator.clipboard.writeText(link);
+      showToast(tt('Link skopiowany ✓'));
+    } else showToast(link);
   } catch (e) { showToast(tf('Błąd: {0}', e.message)); }
-  finally { syncBusy = false; }
+  finally { syncBusy = false; renderSyncCard(); }
 }
 
 function renderSyncCard() {
@@ -3140,29 +3145,20 @@ function renderSyncCard() {
     return `<button class="btn btn-secondary btn-full" onclick="syncReset()">${tt('Zmień konfigurację projektu')}</button>`;
   };
 
-  if (!RFSync.loggedIn()) {
-    el.innerHTML = `
-      <div class="text-xs text-muted" style="line-height:1.55;margin-bottom:10px">${tt('Udostępnij podgląd swoich postępów fizjoterapeucie — bez zakładania konta.')}</div>
-      <button class="btn btn-primary btn-full" id="sync-quick-btn" onclick="quickShareSetup()" ${RFSync.hasBuiltIn() ? '' : 'style="opacity:.6"'}>🔗 ${tt('Udostępnij fizjoterapeucie')}</button>
-      ${!RFSync.hasBuiltIn() && !RFSync.usingCustomProject() ? `<div class="text-xs text-muted mt-8">${tt('Funkcja wymaga jednorazowej konfiguracji przez twórcę aplikacji — zobacz Zaawansowane.')}</div>` : ''}
-      <button type="button" class="section-action mt-8" onclick="toggleSyncAdvanced()">${tt('Zaawansowane')} ${syncAdvancedOpen ? '▴' : '▾'}</button>
-      <div style="display:${syncAdvancedOpen ? 'block' : 'none'};margin-top:10px">${advancedBlock()}</div>`;
-    return;
-  }
-
+  // jeden przycisk zawsze widoczny — pierwsze kliknięcie zakłada konto,
+  // wysyła dane i otwiera udostępnianie w jednym tapnięciu; kolejne kliknięcia
+  // po prostu odświeżają dane i ponownie otwierają udostępnianie
+  const ready = RFSync.loggedIn();
   const last = RFSync.lastSyncAt();
   const link = shareLink();
   el.innerHTML = `
-    <div class="text-sm" style="line-height:1.7">
-      ✓ ${RFSync.isAnonymous() ? tt('Udostępnianie aktywne') : tf('Zalogowano: {0}', esc(RFSync.email()))}<br>
-      <span class="text-muted text-xs">${tt('Ostatnia synchronizacja: ')}${last ? new Date(last).toLocaleString(RFI18N.getLang() === 'en' ? 'en-GB' : 'pl-PL') : tt('jeszcze nie')}</span>
-    </div>
-    ${link ? `<div class="share-link-box mt-8"><code style="font-size:12px;word-break:break-all;color:var(--text2)">${esc(link)}</code></div>` : ''}
-    <button class="btn btn-primary btn-full mt-8" onclick="shareWithTherapist()">📤 ${tt('Wyślij link fizjoterapeucie')}</button>
-    <div style="display:flex;gap:10px;margin-top:10px">
-      <button class="btn btn-secondary" style="flex:1" onclick="syncNow()">🔄 ${tt('Odśwież')}</button>
-      <button class="btn btn-secondary" style="flex:1" onclick="syncLogout()">${RFSync.isAnonymous() ? tt('Wyłącz') : tt('Wyloguj')}</button>
-    </div>
+    <div class="text-xs text-muted" style="line-height:1.55;margin-bottom:10px">${tt('Udostępnij podgląd swoich postępów fizjoterapeucie — bez zakładania konta.')}</div>
+    <button class="btn btn-primary btn-full" id="sync-quick-btn" onclick="shareWithTherapist()" ${RFSync.hasBuiltIn() || RFSync.usingCustomProject() ? '' : 'style="opacity:.6"'}>🔗 ${tt('Udostępnij fizjoterapeucie')}</button>
+    ${!RFSync.hasBuiltIn() && !RFSync.usingCustomProject() ? `<div class="text-xs text-muted mt-8">${tt('Funkcja wymaga jednorazowej konfiguracji przez twórcę aplikacji — zobacz Zaawansowane.')}</div>` : ''}
+    ${ready ? `
+      <div class="text-xs text-muted mt-8">${tt('Ostatnia synchronizacja: ')}${last ? new Date(last).toLocaleString(RFI18N.getLang() === 'en' ? 'en-GB' : 'pl-PL') : tt('jeszcze nie')}</div>
+      ${link ? `<div class="share-link-box mt-8"><code style="font-size:12px;word-break:break-all;color:var(--text2)">${esc(link)}</code></div>` : ''}
+      <button class="btn btn-secondary btn-full mt-8" onclick="syncLogout()">${tt('Wyłącz udostępnianie')}</button>` : ''}
     <button type="button" class="section-action mt-8" onclick="toggleSyncAdvanced()">${tt('Zaawansowane')} ${syncAdvancedOpen ? '▴' : '▾'}</button>
     <div style="display:${syncAdvancedOpen ? 'block' : 'none'};margin-top:10px">${advancedBlock()}</div>`;
 }
@@ -3209,15 +3205,6 @@ async function syncVerifyCode() {
     }
     renderSettings(); showToast(tt('Zalogowano i zsynchronizowano ✓'));
   } catch (e) { showToast(tf('Błąd: {0}', e.message)); }
-}
-
-async function syncNow() {
-  try {
-    const row = await RFSync.pull();
-    if (row && RFSync.remoteIsNewer(row)) { adoptRemote(row); showToast(tt('Pobrano nowsze dane z chmury ☁️')); }
-    else { await RFSync.push(D); showToast(tt('Wysłano do chmury ✓')); }
-    renderSyncCard();
-  } catch (e) { showToast(tf('Błąd synchronizacji: {0}', e.message)); }
 }
 
 function syncLogout() {
