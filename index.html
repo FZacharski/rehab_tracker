@@ -153,8 +153,10 @@ html[data-font="large"] .celebrate-card { zoom: 1.14; }
 .hero-xp-val { font-size: 26px; font-weight: 800; }
 .hero-xp-lbl { font-size: 11px; opacity: .85; font-weight: 600; letter-spacing: .08em; }
 .hero-flame-sm { font-size: 20px; margin-left: 5px; vertical-align: 4px; filter: drop-shadow(0 2px 6px rgba(255,160,60,.5)); }
-/* ring dzisiejszego postępu wewnątrz hero */
-.hero-ring { width: 76px; height: 76px; flex-shrink: 0; }
+/* ring dzisiejszego postępu wewnątrz hero — selektor złożony (.ring-box.hero-ring),
+   bo .ring-box (96px) jest zdefiniowany niżej w arkuszu i przy równej specyficzności
+   wygrywałby kolejnością, rozjeżdżając % (96px kontener) z grafiką SVG (76px) */
+.ring-box.hero-ring { width: 76px; height: 76px; flex-shrink: 0; }
 .hring-bg { fill: none; stroke: rgba(255,255,255,.28); }
 .hring-fill { fill: none; stroke: #fff; stroke-linecap: round; transition: stroke-dashoffset .8s cubic-bezier(.4,0,.2,1); }
 .hring-pct { font-size: 16px; font-weight: 800; color: #fff; }
@@ -683,7 +685,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
         <div class="hero">
           <div class="hero-inner">
             <div class="ring-box hero-ring">
-              <svg class="ring-svg" width="76" height="76" viewBox="0 0 76 76">
+              <svg class="ring-svg" width="100%" height="100%" viewBox="0 0 76 76">
                 <circle class="hring-bg" cx="38" cy="38" r="32" stroke-width="7"/>
                 <circle class="hring-fill" id="ring-fill" cx="38" cy="38" r="32" stroke-width="7"
                   stroke-dasharray="201.1" stroke-dashoffset="201.1"/>
