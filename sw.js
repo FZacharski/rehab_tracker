@@ -1,4 +1,4 @@
-const CACHE = 'rehabflow-v3.6.3';
+const CACHE = 'rehabflow-v3.6.4';
 const ASSETS = [
   './',
   './index.html',

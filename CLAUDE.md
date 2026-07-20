@@ -31,8 +31,10 @@ font Outfit, animowane tło „aurora", glassmorphism.
 - **PWA live:** https://fzacharski.github.io/rehab_tracker/
   (GitHub Pages, gałąź `master`, katalog główny; repo publiczne — wymóg darmowego Pages).
 - Deploy = zwykły `git push origin master`; Pages buduje się 1-2 min.
-- **Przy każdej zmianie aplikacji podbić wersję cache w `sw.js`** (np. `rehabflow-v3.0.1`),
-  inaczej użytkownicy zobaczą starą wersję z cache.
+- **Przy każdej zmianie aplikacji podbić wersję w TRZECH miejscach** (ta sama liczba):
+  cache w `sw.js` (`rehabflow-vX.Y.Z`), splash w `index.html` (`.splash-version`)
+  i stopka w Ustawieniach (`RehabFlow vX.Y.Z`) — inaczej użytkownicy zobaczą starą
+  wersję z cache, a stopka pozwala sprawdzić, którą wersję urządzenie faktycznie ma.
 - **APK (TWA/Bubblewrap):** GitHub Release v3.0.0 → `app-release-signed.apk`.
   Pakiet: `io.github.fzacharski.rehabflow`. APK ładuje treść z Pages, więc zmiany
   w aplikacji webowej trafiają do APK automatycznie — nowy APK potrzebny tylko przy
