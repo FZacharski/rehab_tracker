@@ -467,6 +467,22 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
 .photo-viewer .pv-date { color: #fff; font-size: 14px; font-weight: 700; margin-top: 14px; }
 .photo-viewer .pv-actions { display: flex; gap: 10px; margin-top: 14px; }
 
+/* ══ TIP / GOAL CARDS ════════════════════════════════════════ */
+.tip-card { border-left: 4px solid var(--indigo); }
+.tip-card.tip-good { border-left-color: var(--success); background: linear-gradient(120deg, var(--surface), var(--success-bg)); }
+.tip-card.tip-warn { border-left-color: var(--warn); background: linear-gradient(120deg, var(--surface), var(--warn-bg)); }
+.tip-head { display: flex; align-items: center; gap: 9px; }
+.tip-icon { font-size: 22px; }
+.tip-x { margin-left: auto; background: none; border: none; color: var(--text3); font-size: 15px; cursor: pointer; padding: 2px 6px; }
+.goal-card { display: flex; flex-direction: column; gap: 8px; }
+.goal-top { display: flex; align-items: center; gap: 10px; }
+.goal-emoji { font-size: 24px; }
+.goal-text { font-size: 15px; font-weight: 700; flex: 1; min-width: 0; }
+.goal-days { font-size: 13px; font-weight: 800; }
+.goal-bar { height: 8px; background: var(--surface2); border-radius: 5px; overflow: hidden; }
+.goal-bar-fill { height: 100%; background: var(--grad); border-radius: 5px; transition: width .6s cubic-bezier(.4,0,.2,1); }
+.goal-edit { background: none; border: none; color: var(--text3); font-size: 14px; cursor: pointer; padding: 2px 6px; }
+
 /* ══ COMPLETE CARD ═══════════════════════════════════════════ */
 .complete-card { position: relative; border-radius: var(--r-xl); padding: 24px; color: #fff; overflow: hidden; background: linear-gradient(135deg, #059669, #10B981 50%, #34D399); box-shadow: 0 4px 28px rgba(16,185,129,.4); text-align: center; }
 .complete-card .cc-icon { font-size: 48px; }
@@ -620,7 +636,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
     </svg>
   </div>
   <div class="splash-title">RehabFlow</div>
-  <div class="splash-version">TRACKER REHABILITACJI · v3.6.4</div>
+  <div class="splash-version">TRACKER REHABILITACJI · v3.7.0</div>
   <div class="splash-divider"></div>
   <div class="splash-quote" id="splash-quote"></div>
   <div class="splash-author" id="splash-author"></div>
@@ -717,6 +733,15 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
         <div class="card" style="padding:13px">
           <div class="day-strip" id="day-strip"></div>
         </div>
+
+        <!-- niedzielne podsumowanie tygodnia -->
+        <div id="weekly-area"></div>
+
+        <!-- cel rehabilitacji -->
+        <div id="goal-area"></div>
+
+        <!-- inteligentna progresja / ostrzeżenie -->
+        <div id="progress-tip-area"></div>
 
         <!-- misje tygodnia (zwijane) -->
         <div id="missions-area"></div>
@@ -1013,7 +1038,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
           <div class="section-title" style="margin-bottom:14px" data-i18n>Aplikacja</div>
           <button class="btn btn-secondary btn-full" id="install-btn" style="display:none" onclick="promptInstall()" data-i18n>📲 Zainstaluj na telefonie</button>
           <div class="text-xs text-muted mt-8" style="text-align:center">
-            RehabFlow v3.6.4 · dane przechowywane lokalnie na urządzeniu<br>
+            RehabFlow v3.7.0 · dane przechowywane lokalnie na urządzeniu<br>
             <a href="prywatnosc.html" style="color:var(--violet)" data-i18n>Polityka prywatności</a> ·
             <a href="fizjo.html" style="color:var(--violet)" data-i18n>Panel fizjoterapeuty</a>
           </div>
@@ -1581,12 +1606,64 @@ function renderHome() {
     : tf('Tydzień {0} z {1} · RehabFlow', weekOf(t)+1, totalWeeks());
   renderHero();
   renderDayStrip();
+  renderWeeklySummary();
+  renderGoalCard();
+  renderProgressTip();
   renderMissions();
   renderCompleteCard();
   renderExList();
   loadPainDiff();
   loadNote();
   renderRecentNotes();
+}
+
+function renderWeeklySummary() { /* zaimplementowane w kroku „niedzielne podsumowanie" */ }
+function renderGoalCard() { /* zaimplementowane w kroku „cel rehabilitacji" */ }
+
+/* ── inteligentna progresja: karta sugestii na podstawie danych ── */
+function renderProgressTip() {
+  const area = document.getElementById('progress-tip-area');
+  if (!D.exercises.length || isProgramOver()) { area.innerHTML = ''; return; }
+  if (localStorage.getItem('rf_tip_dismiss') === today()) { area.innerHTML = ''; return; }
+  const r = RFCore.analyzeProgression(D.days, D.exercises, today());
+  if (!r) { area.innerHTML = ''; return; }
+  const conf = {
+    increase: { cls: 'tip-good', icon: '💪', title: tt('Idzie Ci świetnie!'),
+      body: tf('Ostatnie treningi były łatwe (trudność {0}/10, ból {1}/10). Rozważ zwiększenie liczby powtórzeń o 2.', r.diff, r.pain),
+      action: `<button class="btn btn-primary" style="flex:1" onclick="applyProgression()">${tt('Zwiększ o 2 powt.')}</button>` },
+    ease: { cls: 'tip-warn', icon: '⚠️', title: tt('Ból rośnie'),
+      body: tt('Twój ból narasta kilka dni z rzędu. Rozważ lżejszą wersję ćwiczeń i skonsultuj się z fizjoterapeutą.'),
+      action: '' },
+    caution: { cls: 'tip-warn', icon: '🩹', title: tt('Wysoki poziom bólu'),
+      body: tf('Średni ból z ostatnich treningów to {0}/10. Nie forsuj się — jeśli utrzymuje się, skonsultuj z fizjoterapeutą.', r.pain),
+      action: '' },
+  }[r.type];
+  area.innerHTML = `
+    <div class="card tip-card ${conf.cls}">
+      <div class="tip-head"><span class="tip-icon">${conf.icon}</span><span class="fw-700">${conf.title}</span>
+        <button class="tip-x" onclick="dismissTip()" aria-label="Zamknij">✕</button></div>
+      <div class="text-sm text-muted mt-4" style="line-height:1.5">${conf.body}</div>
+      ${conf.action ? `<div style="display:flex;gap:10px;margin-top:12px">${conf.action}
+        <button class="btn btn-secondary" style="flex:1" onclick="dismissTip()">${tt('Nie teraz')}</button></div>` : ''}
+    </div>`;
+}
+
+function dismissTip() {
+  localStorage.setItem('rf_tip_dismiss', today());
+  document.getElementById('progress-tip-area').innerHTML = '';
+}
+
+/* zwiększ powtórzenia o 2 we wszystkich ćwiczeniach powtórzeniowych */
+function applyProgression() {
+  let changed = 0;
+  D.exercises.forEach(ex => {
+    if (ex.mode !== 'time') { ex.reps = Math.min(999, (ex.reps || 10) + 2); changed++; }
+    else { ex.seconds = Math.min(600, (ex.seconds || 30) + 5); changed++; }
+  });
+  localStorage.setItem('rf_tip_dismiss', today());
+  saveData();
+  renderHome();
+  showToast(tf('Zwiększono dawkę w {0} {1} ✓', changed, P(changed, 'ćwiczeniu', 'ćwiczeniach', 'ćwiczeniach')));
 }
 
 function renderHero() {

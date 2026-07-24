@@ -254,3 +254,58 @@ test('mondayOf zwraca poniedziałek tygodnia', () => {
   assert.strictEqual(RF.mondayOf('2026-06-08'), '2026-06-08'); // pon → pon
   assert.strictEqual(RF.mondayOf('2026-06-14'), '2026-06-08'); // nd → pon
 });
+
+/* ── inteligentna progresja ── */
+function day(ids, pain, diff) { return { completed: ids.slice(), pain: pain, difficulty: diff, note: '' }; }
+
+test('progresja: null przy zbyt małej liczbie danych', () => {
+  const days = { '2026-06-10': day([1], 1, 2), '2026-06-11': day([1], 1, 2) };
+  assert.strictEqual(RF.analyzeProgression(days, [1], '2026-06-11'), null);
+});
+
+test('progresja: sugestia zwiększenia przy niskiej trudności i bólu', () => {
+  const days = {};
+  for (let i = 0; i < 5; i++) days[RF.addDays('2026-06-07', i)] = day([1], 1, 2);
+  const r = RF.analyzeProgression(days, [1], '2026-06-11');
+  assert.strictEqual(r.type, 'increase');
+  assert.ok(r.diff <= 3 && r.pain <= 2);
+});
+
+test('progresja: ostrzeżenie przy rosnącym bólu 3 dni z rzędu', () => {
+  const days = {
+    '2026-06-07': day([1], 3, 5),
+    '2026-06-08': day([1], 3, 5),
+    '2026-06-09': day([1], 5, 5),
+    '2026-06-10': day([1], 6, 5),
+    '2026-06-11': day([1], 7, 5), // 5<6<7 rosnąco, >=5
+  };
+  const r = RF.analyzeProgression(days, [1], '2026-06-11');
+  assert.strictEqual(r.type, 'ease');
+});
+
+test('progresja: ostrożnie przy stale wysokim bólu bez trendu', () => {
+  const days = {};
+  for (let i = 0; i < 5; i++) days[RF.addDays('2026-06-07', i)] = day([1], 7, 6);
+  const r = RF.analyzeProgression(days, [1], '2026-06-11');
+  assert.strictEqual(r.type, 'caution');
+});
+
+test('progresja: brak sugestii przy średnich wartościach', () => {
+  const days = {};
+  for (let i = 0; i < 5; i++) days[RF.addDays('2026-06-07', i)] = day([1], 3, 5);
+  assert.strictEqual(RF.analyzeProgression(days, [1], '2026-06-11'), null);
+});
+
+test('progresja: dni odpoczynku i niepełne pomijane', () => {
+  // plan pon-pt (1..5); weekend odpoczynek; jeden dzień niepełny
+  const ex = [{ id: 1, days: [1, 2, 3, 4, 5] }];
+  const days = {
+    '2026-06-08': day([1], 1, 2), // pon
+    '2026-06-09': day([1], 1, 2), // wt
+    '2026-06-10': day([], 8, 8),  // śr niepełny — nie liczony
+    '2026-06-11': day([1], 1, 2), // czw
+    '2026-06-12': day([1], 1, 2), // pt
+  };
+  const r = RF.analyzeProgression(days, ex, '2026-06-12');
+  assert.strictEqual(r.type, 'increase'); // niepełna środa z bólem 8 nie psuje wniosku
+});

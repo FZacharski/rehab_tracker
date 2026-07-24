@@ -186,6 +186,53 @@
     return addDays(k, -((weekdayOf(k) + 6) % 7));
   }
 
+  /* ── inteligentna progresja: analiza ostatnich dni treningowych ──
+     Zwraca sugestię na podstawie trudności i bólu z dni, w których pacjent
+     realnie ćwiczył (pełny dzień). NIE modyfikuje danych — tylko rekomendacja.
+     Wynik: null | { type:'increase'|'caution'|'ease', pain, diff, days } */
+  function analyzeProgression(days, exercises, todayK) {
+    const ex = normEx(exercises);
+    if (!hasAnyScheduledDay(ex)) return null;
+
+    /* zbierz ostatnie pełne dni treningowe (max 10 wstecz od dziś), od najnowszego */
+    const full = [];
+    let d = todayK, guard = 0;
+    while (full.length < 6 && guard++ < 40) {
+      if (!isRestDay(ex, d) && isFull(days, ex, d)) {
+        const dd = days[d] || {};
+        full.push({ k: d, pain: dd.pain || 0, diff: dd.difficulty || 0 });
+      }
+      d = addDays(d, -1);
+    }
+    if (full.length < 4) return null; // za mało danych na wniosek
+
+    const last4 = full.slice(0, 4);
+    const withPain = last4.filter(function (x) { return x.pain > 0; });
+    const avgPain = withPain.length ? withPain.reduce(function (s, x) { return s + x.pain; }, 0) / withPain.length : 0;
+    const withDiff = last4.filter(function (x) { return x.diff > 0; });
+    const avgDiff = withDiff.length ? withDiff.reduce(function (s, x) { return s + x.diff; }, 0) / withDiff.length : 0;
+
+    /* ostrzeżenie: ból rośnie 3 pełne dni z rzędu (monotonicznie) i sięga >=5 */
+    if (full.length >= 3) {
+      var p0 = full[0].pain, p1 = full[1].pain, p2 = full[2].pain;
+      if (p0 > 0 && p1 > 0 && p2 > 0 && p0 > p1 && p1 > p2 && p0 >= 5) {
+        return { type: 'ease', pain: Math.round(avgPain * 10) / 10, diff: Math.round(avgDiff * 10) / 10, days: full.length };
+      }
+    }
+
+    /* ostrożnie: średni ból wysoki (>=6) mimo braku trendu */
+    if (withPain.length >= 3 && avgPain >= 6) {
+      return { type: 'caution', pain: Math.round(avgPain * 10) / 10, diff: Math.round(avgDiff * 10) / 10, days: full.length };
+    }
+
+    /* zwiększ dawkę: co najmniej 4 pełne dni, trudność niska (<=3) i ból niski (<=2) */
+    if (withDiff.length >= 3 && avgDiff > 0 && avgDiff <= 3 && avgPain <= 2) {
+      return { type: 'increase', pain: Math.round(avgPain * 10) / 10, diff: Math.round(avgDiff * 10) / 10, days: full.length };
+    }
+
+    return null;
+  }
+
   /* polska odmiana: plural(2,'seria','serie','serii') -> 'serie' */
   function plural(n, one, few, many) {
     n = Math.abs(n);
@@ -217,5 +264,6 @@
     hashStr: hashStr,
     pickIndices: pickIndices,
     mondayOf: mondayOf,
+    analyzeProgression: analyzeProgression,
   };
 });

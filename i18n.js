@@ -22,6 +22,17 @@
     'Program zakończony · RehabFlow': 'Program finished · RehabFlow',
     'Dzisiaj — ': 'Today — ',
 
+    /* inteligentna progresja */
+    'Idzie Ci świetnie!': "You're doing great!",
+    'Ostatnie treningi były łatwe (trudność {0}/10, ból {1}/10). Rozważ zwiększenie liczby powtórzeń o 2.': 'Your recent workouts felt easy (difficulty {0}/10, pain {1}/10). Consider adding 2 more reps.',
+    'Zwiększ o 2 powt.': 'Add 2 reps',
+    'Ból rośnie': 'Pain is rising',
+    'Twój ból narasta kilka dni z rzędu. Rozważ lżejszą wersję ćwiczeń i skonsultuj się z fizjoterapeutą.': 'Your pain has been rising for several days. Consider an easier variation and consult your physiotherapist.',
+    'Wysoki poziom bólu': 'High pain level',
+    'Średni ból z ostatnich treningów to {0}/10. Nie forsuj się — jeśli utrzymuje się, skonsultuj z fizjoterapeutą.': 'Your average recent pain is {0}/10. Don\'t push too hard — if it persists, consult your physiotherapist.',
+    'Nie teraz': 'Not now',
+    'Zwiększono dawkę w {0} {1} ✓': 'Increased the dose in {0} {1} ✓',
+
     /* strona główna */
     'Zacznij dzisiaj!': 'Start today!',
     'Dobry start! Kontynuuj!': 'Great start! Keep going!',
@@ -567,6 +578,7 @@
     'dzień': ['day', 'days'],
     'dzień z rzędu': ['day in a row', 'days in a row'],
     'ćwiczenie': ['exercise', 'exercises'],
+    'ćwiczeniu': ['exercise', 'exercises'],
     'odznaka': ['badge', 'badges'],
   };
 
