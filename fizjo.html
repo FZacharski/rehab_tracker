@@ -36,9 +36,17 @@ header h1 { font-size: 17px; font-weight: 800; }
 header .sub { font-size: 12px; color: var(--text2); }
 header a { margin-left: auto; color: var(--violet); font-size: 13px; font-weight: 600; text-decoration: none; }
 
-main { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 22px 18px 60px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
-@media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+main { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; padding: 18px 18px 60px; }
 .col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+
+/* zakładki panelu */
+.ftabs { display: flex; gap: 6px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 5px; margin-bottom: 18px; position: sticky; top: 74px; z-index: 40; }
+.ftab { flex: 1; padding: 11px 8px; border: none; border-radius: 11px; background: transparent; color: var(--text2); font-family: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; transition: background .2s, color .2s; display: flex; align-items: center; justify-content: center; gap: 7px; }
+.ftab.active { background: var(--grad); color: #fff; box-shadow: 0 2px 12px rgba(168,85,247,.35); }
+.ftab .fdot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--success); box-shadow: 0 0 7px var(--success); }
+.ftab-panel { display: none; }
+.ftab-panel.active { display: block; animation: fpIn .25s ease; }
+@keyframes fpIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 18px; box-shadow: var(--shadow); }
 h2 { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 12px; }
@@ -118,75 +126,88 @@ canvas { width: 100%; }
 </header>
 
 <main>
-  <!-- ════ KOLUMNA: PODGLĄD PACJENTA ════ -->
-  <div class="col">
-    <div class="card">
-      <h2>1 · Postęp pacjenta</h2>
-      <p class="muted">Poproś pacjenta o plik kopii zapasowej (w aplikacji: <strong>Postęp → Kopia zapasowa</strong> lub <strong>Eksportuj dane (JSON)</strong>) i wczytaj go tutaj. Analiza odbywa się w całości na Twoim urządzeniu.</p>
-      <div class="drop" id="drop" onclick="document.getElementById('file-in').click()" style="margin-top:12px">
-        <div class="ic">📂</div>
-        <div class="t1">Upuść plik pacjenta lub kliknij</div>
-        <div class="xs" style="margin-top:4px">rehabflow_kopia_*.html lub rehabflow_backup_*.json</div>
-      </div>
-      <input type="file" id="file-in" accept=".json,.html,application/json,text/html" style="display:none" onchange="loadPatientFile(this.files[0]);this.value=''">
-    </div>
-
-    <div class="card" style="margin-top:14px">
-      <h2>1b · Podgląd live</h2>
-      <p class="muted" id="live-hint">Pacjent wysyła Ci link (Ustawienia → Synchronizacja → „Udostępnij fizjoterapeucie") — kliknięcie w niego otworzy ten panel z gotowym podglądem. Możesz też wpisać jego 8-znakowy kod ręcznie.</p>
-      <div style="display:grid;gap:8px;margin-top:10px">
-        <div id="live-project-fields" style="display:none;gap:8px">
-          <input class="form-input" id="live-url" placeholder="https://xxxx.supabase.co">
-          <input class="form-input" id="live-key" placeholder="Klucz anon (eyJ...)">
-        </div>
-        <div style="display:grid;grid-template-columns:1fr auto;gap:8px">
-          <input class="form-input" id="live-code" placeholder="Kod pacjenta (np. K7KPQ2ZM)" maxlength="8" style="text-transform:uppercase;letter-spacing:.08em">
-          <button class="btn btn-primary" onclick="loadLivePatient()">Pobierz</button>
-        </div>
-        <button type="button" class="xs" style="background:none;border:none;color:var(--violet);text-align:left;cursor:pointer;padding:0" onclick="toggleLiveAdvanced()" id="live-adv-toggle">Zaawansowane: własny projekt Supabase ▾</button>
-      </div>
-    </div>
-
-    <div id="patient-area"></div>
+  <div class="ftabs">
+    <button class="ftab active" id="ftab-view" onclick="switchFTab('view')">👤 Podgląd pacjenta</button>
+    <button class="ftab" id="ftab-build" onclick="switchFTab('build')">🏗️ Kreator programu</button>
   </div>
 
-  <!-- ════ KOLUMNA: KREATOR PROGRAMU ════ -->
-  <div class="col">
-    <div class="card">
-      <h2>2 · Kreator programu ćwiczeń</h2>
-      <p class="muted">Ułóż zestaw ćwiczeń i pobierz plik programu. Pacjent wczyta go w aplikacji przez <strong>Postęp → Importuj dane</strong> — zastąpi tylko listę ćwiczeń, historia zostaje.</p>
+  <!-- ════ ZAKŁADKA: PODGLĄD PACJENTA ════ -->
+  <div class="ftab-panel active" id="fpanel-view">
+    <div class="col">
+      <div class="card">
+        <h2>Wczytaj dane pacjenta</h2>
+        <p class="muted">Masz dwie drogi: <strong>plik</strong> od pacjenta albo <strong>podgląd na żywo</strong> po kodzie. Analiza odbywa się w całości na Twoim urządzeniu — dane nie opuszczają tej przeglądarki.</p>
 
-      <label>Nazwa programu</label>
-      <input class="form-input" id="p-name" placeholder="np. Kolano — etap 2 (wzmacnianie)">
-      <div class="row2">
-        <div><label>Fizjoterapeuta</label><input class="form-input" id="p-author" placeholder="Dr Nowak"></div>
-        <div><label>Wskazówki dla pacjenta</label><input class="form-input" id="p-notes" placeholder="np. Ćwicz po rozgrzewce"></div>
+        <h3>Z pliku kopii zapasowej</h3>
+        <div class="drop" id="drop" onclick="document.getElementById('file-in').click()">
+          <div class="ic">📂</div>
+          <div class="t1">Upuść plik pacjenta lub kliknij</div>
+          <div class="xs" style="margin-top:4px">rehabflow_kopia_*.html lub rehabflow_backup_*.json</div>
+        </div>
+        <input type="file" id="file-in" accept=".json,.html,application/json,text/html" style="display:none" onchange="loadPatientFile(this.files[0]);this.value=''">
+
+        <h3>Podgląd na żywo (kod)</h3>
+        <p class="muted" id="live-hint" style="font-size:12px">Pacjent wysyła Ci link (Ustawienia → Synchronizacja → „Udostępnij fizjoterapeucie") — kliknięcie w niego otworzy ten panel gotowy. Możesz też wpisać jego 8-znakowy kod ręcznie.</p>
+        <div style="display:grid;gap:8px;margin-top:10px">
+          <div id="live-project-fields" style="display:none;gap:8px">
+            <input class="form-input" id="live-url" placeholder="https://xxxx.supabase.co">
+            <input class="form-input" id="live-key" placeholder="Klucz anon (eyJ...)">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr auto;gap:8px">
+            <input class="form-input" id="live-code" placeholder="Kod pacjenta (np. K7KPQ2ZM)" maxlength="8" style="text-transform:uppercase;letter-spacing:.08em">
+            <button class="btn btn-primary" onclick="loadLivePatient()">Pobierz</button>
+          </div>
+          <button type="button" class="xs" style="background:none;border:none;color:var(--violet);text-align:left;cursor:pointer;padding:0" onclick="toggleLiveAdvanced()" id="live-adv-toggle">Zaawansowane: własny projekt Supabase ▾</button>
+        </div>
       </div>
 
-      <h3>Wybrane ćwiczenia (<span id="p-count">0</span>)</h3>
-      <div id="prog-list"><p class="xs">Dodawaj ćwiczenia z biblioteki poniżej lub wpisz własne.</p></div>
-      <button class="btn btn-primary btn-full" style="margin-top:12px" onclick="downloadProgram()">⬇️ Pobierz plik programu</button>
+      <div id="patient-area"></div>
+    </div>
+  </div>
 
-      <h3>Biblioteka ćwiczeń</h3>
-      <input class="form-input" id="lib-q" placeholder="🔍 Szukaj..." oninput="renderLib()" style="margin-bottom:8px">
-      <div class="chips" id="lib-chips"></div>
-      <div class="lib-list" id="lib-list"></div>
+  <!-- ════ ZAKŁADKA: KREATOR PROGRAMU ════ -->
+  <div class="ftab-panel" id="fpanel-build">
+    <div class="col">
+      <div class="card">
+        <h2>Kreator programu ćwiczeń</h2>
+        <p class="muted">Ułóż zestaw ćwiczeń i pobierz plik programu. Pacjent wczyta go w aplikacji przez <strong>Postęp → Importuj dane</strong> — zastąpi tylko listę ćwiczeń, historia zostaje.</p>
 
-      <h3>Własne ćwiczenie</h3>
-      <input class="form-input" id="c-name" placeholder="Nazwa ćwiczenia">
-      <div class="row2" style="margin-top:8px">
-        <input class="form-input" id="c-reps" type="number" min="1" value="10" title="Powtórzenia">
-        <input class="form-input" id="c-sets" type="number" min="1" value="3" title="Serie">
+        <label>Nazwa programu</label>
+        <input class="form-input" id="p-name" placeholder="np. Kolano — etap 2 (wzmacnianie)">
+        <div class="row2">
+          <div><label>Fizjoterapeuta</label><input class="form-input" id="p-author" placeholder="Dr Nowak"></div>
+          <div><label>Wskazówki dla pacjenta</label><input class="form-input" id="p-notes" placeholder="np. Ćwicz po rozgrzewce"></div>
+        </div>
+
+        <h3>Wybrane ćwiczenia (<span id="p-count">0</span>)</h3>
+        <div id="prog-list"><p class="xs">Dodawaj ćwiczenia z biblioteki poniżej lub wpisz własne.</p></div>
+        <button class="btn btn-primary btn-full" style="margin-top:12px" onclick="downloadProgram()">⬇️ Pobierz plik programu</button>
       </div>
-      <div class="row2" style="margin-top:8px">
-        <select class="form-input" id="c-type">
-          <option>Siłowe</option><option selected>Rozciąganie</option><option>Równowaga</option>
-          <option>Aerobowe</option><option>Oddechowe</option><option>Mobilność</option><option>Inne</option>
-        </select>
-        <button class="btn btn-secondary" onclick="addCustom()">+ Dodaj własne</button>
+
+      <div class="card">
+        <h2>Biblioteka ćwiczeń</h2>
+        <input class="form-input" id="lib-q" placeholder="🔍 Szukaj..." oninput="renderLib()" style="margin-bottom:8px">
+        <div class="chips" id="lib-chips"></div>
+        <div class="lib-list" id="lib-list"></div>
       </div>
-      <textarea id="c-desc" rows="2" placeholder="Opis wykonania (opcjonalnie)" style="margin-top:8px"></textarea>
-      <input class="form-input" id="c-video" type="url" placeholder="Link wideo (opcjonalnie) — https://youtube.com/..." style="margin-top:8px">
+
+      <div class="card">
+        <h2>Własne ćwiczenie</h2>
+        <input class="form-input" id="c-name" placeholder="Nazwa ćwiczenia">
+        <div class="row2" style="margin-top:8px">
+          <input class="form-input" id="c-reps" type="number" min="1" value="10" title="Powtórzenia">
+          <input class="form-input" id="c-sets" type="number" min="1" value="3" title="Serie">
+        </div>
+        <div class="row2" style="margin-top:8px">
+          <select class="form-input" id="c-type">
+            <option>Siłowe</option><option selected>Rozciąganie</option><option>Równowaga</option>
+            <option>Aerobowe</option><option>Oddechowe</option><option>Mobilność</option><option>Inne</option>
+          </select>
+          <button class="btn btn-secondary" onclick="addCustom()">+ Dodaj własne</button>
+        </div>
+        <textarea id="c-desc" rows="2" placeholder="Opis wykonania (opcjonalnie)" style="margin-top:8px"></textarea>
+        <input class="form-input" id="c-video" type="url" placeholder="Link wideo (opcjonalnie) — https://youtube.com/..." style="margin-top:8px">
+      </div>
     </div>
   </div>
 </main>
@@ -214,6 +235,15 @@ function showToast(msg) {
   t.textContent = msg; t.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+/* ════ ZAKŁADKI PANELU ════ */
+function switchFTab(tab) {
+  ['view', 'build'].forEach(id => {
+    document.getElementById('ftab-' + id).classList.toggle('active', id === tab);
+    document.getElementById('fpanel-' + id).classList.toggle('active', id === tab);
+  });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 /* ════ PODGLĄD PACJENTA ════ */
@@ -289,6 +319,7 @@ function loadPatientFile(file) {
 }
 
 function renderPatient(d) {
+  switchFTab('view'); // upewnij się, że podgląd jest widoczny
   const area = document.getElementById('patient-area');
   const ids = d.exercises.map(e => e.id);
   const todayK = RFCore.keyFromDate(new Date());

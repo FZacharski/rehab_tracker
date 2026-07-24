@@ -172,6 +172,12 @@ html[data-font="large"] .celebrate-card { zoom: 1.14; }
 .accent-dot:focus, .accent-dot:focus-visible { outline: none; }
 .accent-dot.active { border-color: var(--text); box-shadow: 0 0 0 3px var(--surface2); }
 .share-link-box { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 10px 12px; }
+.physio-card { display: flex; align-items: center; gap: 14px; text-decoration: none; color: var(--text); border-color: var(--violet); background: linear-gradient(120deg, var(--surface), var(--grad-soft)); transition: transform .12s; }
+.physio-card:active { transform: scale(.98); }
+.physio-ico { width: 46px; height: 46px; border-radius: 13px; background: var(--grad); display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; box-shadow: 0 4px 14px rgba(var(--glow),.35); }
+.physio-title { font-size: 15px; font-weight: 800; }
+.physio-sub { font-size: 12px; color: var(--text2); margin-top: 2px; line-height: 1.4; }
+.physio-arrow { font-size: 20px; color: var(--violet); flex-shrink: 0; }
 .hero-cta:active { transform: scale(.97); }
 .hero-done { text-align: center; font-size: 13.5px; font-weight: 700; padding-top: 2px; opacity: .95; }
 /* pływający CTA nad nawigacją */
@@ -639,7 +645,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
     </svg>
   </div>
   <div class="splash-title">RehabFlow</div>
-  <div class="splash-version">TRACKER REHABILITACJI · v3.7.4</div>
+  <div class="splash-version">TRACKER REHABILITACJI · v3.7.5</div>
   <div class="splash-divider"></div>
   <div class="splash-quote" id="splash-quote"></div>
   <div class="splash-author" id="splash-author"></div>
@@ -1051,13 +1057,21 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
           <div id="sync-card"></div>
         </div>
 
+        <a href="fizjo.html" class="card physio-card">
+          <div class="physio-ico">🩺</div>
+          <div style="flex:1;min-width:0">
+            <div class="physio-title" data-i18n>Panel fizjoterapeuty</div>
+            <div class="physio-sub" data-i18n>Podgląd postępu pacjenta i kreator programu ćwiczeń</div>
+          </div>
+          <div class="physio-arrow">→</div>
+        </a>
+
         <div class="card">
           <div class="section-title" style="margin-bottom:14px" data-i18n>Aplikacja</div>
           <button class="btn btn-secondary btn-full" id="install-btn" style="display:none" onclick="promptInstall()" data-i18n>📲 Zainstaluj na telefonie</button>
           <div class="text-xs text-muted mt-8" style="text-align:center">
-            RehabFlow v3.7.4 · dane przechowywane lokalnie na urządzeniu<br>
-            <a href="prywatnosc.html" style="color:var(--violet)" data-i18n>Polityka prywatności</a> ·
-            <a href="fizjo.html" style="color:var(--violet)" data-i18n>Panel fizjoterapeuty</a>
+            RehabFlow v3.7.5 · dane przechowywane lokalnie na urządzeniu<br>
+            <a href="prywatnosc.html" style="color:var(--violet)" data-i18n>Polityka prywatności</a>
           </div>
         </div>
 

@@ -316,6 +316,7 @@
     'Aplikacja zainstalowana! 🎉': 'App installed! 🎉',
     'Polityka prywatności': 'Privacy policy',
     'Panel fizjoterapeuty': 'Physiotherapist panel',
+    'Podgląd postępu pacjenta i kreator programu ćwiczeń': "Patient progress overview and exercise program builder",
     'Strefa niebezpieczna': 'Danger zone',
     '🗑 Resetuj wszystkie dane': '🗑 Reset all data',
     'Usunąć wszystkie dane? Tej operacji nie można cofnąć!\n\nWskazówka: najpierw zrób kopię zapasową (Postęp → Kopia zapasowa).': 'Delete all data? This cannot be undone!\n\nTip: make a backup first (Progress → Backup).',
