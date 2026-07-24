@@ -215,6 +215,15 @@ html[data-font="large"] .celebrate-card { zoom: 1.14; }
 .missions-body { display: none; }
 .missions-open .missions-body { display: block; }
 .note-hint { margin-top: 6px; text-align: right; }
+/* zwijany dziennik dnia */
+.journal-head { display: flex; align-items: center; gap: 12px; width: 100%; padding: 0; background: none; border: none; cursor: pointer; font-family: inherit; color: var(--text); }
+.journal-sum { margin-top: 2px; }
+/* zwijanie przez grid-template-rows 0fr→1fr (sterowane inline z JS);
+   grid-template-rows celowo POZA transition — ten WebView go nie animuje
+   i utyka na 0; płynność daje fade opacity */
+.journal-body { display: grid; grid-template-rows: 0fr; opacity: 0; transition: opacity .25s ease, margin-top .25s ease; }
+.journal-body-inner { overflow: hidden; min-height: 0; }
+.journal-card.open .journal-head .acc-chev { transform: rotate(180deg); }
 
 /* ══ PROGRESS RING ═══════════════════════════════════════════ */
 .ring-wrap { display: flex; align-items: center; gap: 18px; }
@@ -666,7 +675,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
     </svg>
   </div>
   <div class="splash-title">RehabFlow</div>
-  <div class="splash-version">TRACKER REHABILITACJI · v3.7.9</div>
+  <div class="splash-version">TRACKER REHABILITACJI · v3.8.0</div>
   <div class="splash-divider"></div>
   <div class="splash-quote" id="splash-quote"></div>
   <div class="splash-author" id="splash-author"></div>
@@ -786,21 +795,30 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
         </div>
         <div id="ex-list" class="gap-12"></div>
 
-        <!-- dziennik dnia: samopoczucie + notatka w jednej karcie -->
-        <div class="section-hdr mt-8"><span class="section-title" data-i18n>Dziennik dnia</span></div>
-        <div class="card">
-          <div class="slider-wrap" style="margin-bottom:14px">
-            <label data-i18n>😣 Ból</label>
-            <input type="range" min="0" max="10" value="0" id="pain-slider" oninput="document.getElementById('pain-val').textContent=this.value;savePainDiff()">
-            <span class="slider-val" id="pain-val">0</span>
-          </div>
-          <div class="slider-wrap" style="margin-bottom:14px">
-            <label data-i18n>💪 Trudność</label>
-            <input type="range" min="0" max="10" value="0" id="diff-slider" oninput="document.getElementById('diff-val').textContent=this.value;savePainDiff()">
-            <span class="slider-val" id="diff-val">0</span>
-          </div>
-          <textarea id="note-area" rows="2" maxlength="600" data-i18n-ph placeholder="Jak się czujesz? Co sprawiło trudność?"></textarea>
-          <div class="note-hint text-xs text-muted" id="note-hint" data-i18n>Notatka zapisuje się automatycznie</div>
+        <!-- dziennik dnia: samopoczucie + notatka (zwijane) -->
+        <div class="card journal-card mt-8" id="journal-card" style="padding:16px">
+          <button type="button" class="journal-head" onclick="toggleJournal()">
+            <span class="acc-ic">📝</span>
+            <div style="flex:1;min-width:0;text-align:left">
+              <div class="acc-ttl" data-i18n>Dziennik dnia</div>
+              <div class="journal-sum text-xs text-muted" id="journal-sum"></div>
+            </div>
+            <span class="acc-chev">▾</span>
+          </button>
+          <div class="journal-body"><div class="journal-body-inner">
+            <div class="slider-wrap" style="margin-bottom:14px">
+              <label data-i18n>😣 Ból</label>
+              <input type="range" min="0" max="10" value="0" id="pain-slider" oninput="document.getElementById('pain-val').textContent=this.value;savePainDiff()">
+              <span class="slider-val" id="pain-val">0</span>
+            </div>
+            <div class="slider-wrap" style="margin-bottom:14px">
+              <label data-i18n>💪 Trudność</label>
+              <input type="range" min="0" max="10" value="0" id="diff-slider" oninput="document.getElementById('diff-val').textContent=this.value;savePainDiff()">
+              <span class="slider-val" id="diff-val">0</span>
+            </div>
+            <textarea id="note-area" rows="2" maxlength="600" data-i18n-ph placeholder="Jak się czujesz? Co sprawiło trudność?"></textarea>
+            <div class="note-hint text-xs text-muted" id="note-hint" data-i18n>Notatka zapisuje się automatycznie</div>
+          </div></div>
         </div>
         <div id="recent-notes"></div>
       </div>
@@ -1092,7 +1110,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
           <div class="section-title" style="margin-bottom:14px" data-i18n>Aplikacja</div>
           <button class="btn btn-secondary btn-full" id="install-btn" style="display:none" onclick="promptInstall()" data-i18n>📲 Zainstaluj na telefonie</button>
           <div class="text-xs text-muted mt-8" style="text-align:center">
-            RehabFlow v3.7.9 · dane przechowywane lokalnie na urządzeniu<br>
+            RehabFlow v3.8.0 · dane przechowywane lokalnie na urządzeniu<br>
             <a href="prywatnosc.html" style="color:var(--violet)" data-i18n>Polityka prywatności</a>
           </div>
         </div>
@@ -1703,6 +1721,7 @@ function renderHome() {
   renderExList();
   loadPainDiff();
   loadNote();
+  renderJournalSummary();
   renderRecentNotes();
 }
 
@@ -2095,13 +2114,41 @@ function savePainDiff() {
   const dd = getDay(today());
   dd.pain = parseInt(document.getElementById('pain-slider').value, 10);
   dd.difficulty = parseInt(document.getElementById('diff-slider').value, 10);
-  checkBadges(); saveData();
+  checkBadges(); saveData(); renderJournalSummary();
 }
 
 function loadNote() {
   const el = document.getElementById('note-area');
   if (document.activeElement === el) return; // nie nadpisuj tekstu w trakcie pisania
   el.value = (D.days[today()] || {}).note || '';
+}
+
+let journalOpen = false;
+/* stan zwijania: klasa .open steruje chevronem/opacity, a grid-template-rows
+   ustawiany jest inline (pewne, niezależne od kaskady) */
+function applyJournalState() {
+  const card = document.getElementById('journal-card');
+  const body = card.querySelector('.journal-body');
+  card.classList.toggle('open', journalOpen);
+  body.style.gridTemplateRows = journalOpen ? '1fr' : '0fr';
+  body.style.opacity = journalOpen ? '1' : '0';
+  body.style.marginTop = journalOpen ? '14px' : '0';
+  document.querySelector('.journal-head').setAttribute('aria-expanded', journalOpen ? 'true' : 'false');
+}
+function toggleJournal() {
+  journalOpen = !journalOpen;
+  applyJournalState();
+}
+
+/* podsumowanie w nagłówku dziennika, gdy zwinięty */
+function renderJournalSummary() {
+  const dd = D.days[today()] || {};
+  applyJournalState();
+  const parts = [];
+  if (dd.pain) parts.push('😣 ' + dd.pain);
+  if (dd.difficulty) parts.push('💪 ' + dd.difficulty);
+  if ((dd.note || '').trim()) parts.push('📝');
+  document.getElementById('journal-sum').textContent = parts.length ? parts.join(' · ') : tt('＋ Dotknij, aby dodać wpis');
 }
 
 
@@ -4599,7 +4646,7 @@ document.getElementById('note-area').addEventListener('input', () => {
   noteTimer = setTimeout(() => {
     const dd = getDay(today());
     dd.note = document.getElementById('note-area').value;
-    saveData();
+    saveData(); renderJournalSummary();
   }, 800);
 });
 

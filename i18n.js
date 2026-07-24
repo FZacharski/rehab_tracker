@@ -415,6 +415,7 @@
 
     /* home — uzupełnienia */
     'Dziennik dnia': 'Daily journal',
+    '＋ Dotknij, aby dodać wpis': '＋ Tap to add an entry',
     'Notatka zapisuje się automatycznie': 'The note saves automatically',
     'Dziś regeneracja': 'Rest day today',
     'Trening ukończony — świetna robota!': 'Workout complete — great job!',
