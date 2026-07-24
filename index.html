@@ -172,12 +172,16 @@ html[data-font="large"] .celebrate-card { zoom: 1.14; }
 .accent-dot:focus, .accent-dot:focus-visible { outline: none; }
 .accent-dot.active { border-color: var(--text); box-shadow: 0 0 0 3px var(--surface2); }
 .share-link-box { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 10px 12px; }
-.physio-card { display: flex; align-items: center; gap: 14px; text-decoration: none; color: var(--text); border-color: var(--violet); background: linear-gradient(120deg, var(--surface), var(--grad-soft)); transition: transform .12s; }
-.physio-card:active { transform: scale(.98); }
-.physio-ico { width: 46px; height: 46px; border-radius: 13px; background: var(--grad); display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; box-shadow: 0 4px 14px rgba(var(--glow),.35); }
-.physio-title { font-size: 15px; font-weight: 800; }
-.physio-sub { font-size: 12px; color: var(--text2); margin-top: 2px; line-height: 1.4; }
-.physio-arrow { font-size: 20px; color: var(--violet); flex-shrink: 0; }
+/* strona-pośrednik fizjoterapeuty */
+.physio-hero { text-align: center; padding: 8px 4px 4px; }
+.physio-hero-ico { width: 72px; height: 72px; margin: 0 auto 12px; border-radius: 20px; background: var(--grad); display: flex; align-items: center; justify-content: center; font-size: 38px; box-shadow: 0 8px 26px rgba(var(--glow),.4); }
+.physio-hero-title { font-size: 21px; font-weight: 800; }
+.physio-hero-sub { font-size: 13.5px; color: var(--text2); margin-top: 8px; line-height: 1.55; max-width: 340px; margin-left: auto; margin-right: auto; }
+.physio-step { display: flex; gap: 13px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.physio-step:last-child { border-bottom: none; }
+.ps-num { width: 28px; height: 28px; flex-shrink: 0; border-radius: 50%; background: var(--grad-soft); border: 1.5px solid var(--violet); color: var(--violet); font-weight: 800; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+.ps-t { font-size: 14.5px; font-weight: 700; }
+.ps-d { font-size: 12.5px; color: var(--text2); margin-top: 2px; line-height: 1.5; }
 .hero-cta:active { transform: scale(.97); }
 .hero-done { text-align: center; font-size: 13.5px; font-weight: 700; padding-top: 2px; opacity: .95; }
 /* pływający CTA nad nawigacją */
@@ -645,7 +649,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
     </svg>
   </div>
   <div class="splash-title">RehabFlow</div>
-  <div class="splash-version">TRACKER REHABILITACJI · v3.7.5</div>
+  <div class="splash-version">TRACKER REHABILITACJI · v3.7.6</div>
   <div class="splash-divider"></div>
   <div class="splash-quote" id="splash-quote"></div>
   <div class="splash-author" id="splash-author"></div>
@@ -1057,20 +1061,11 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
           <div id="sync-card"></div>
         </div>
 
-        <a href="fizjo.html" class="card physio-card">
-          <div class="physio-ico">🩺</div>
-          <div style="flex:1;min-width:0">
-            <div class="physio-title" data-i18n>Panel fizjoterapeuty</div>
-            <div class="physio-sub" data-i18n>Podgląd postępu pacjenta i kreator programu ćwiczeń</div>
-          </div>
-          <div class="physio-arrow">→</div>
-        </a>
-
         <div class="card">
           <div class="section-title" style="margin-bottom:14px" data-i18n>Aplikacja</div>
           <button class="btn btn-secondary btn-full" id="install-btn" style="display:none" onclick="promptInstall()" data-i18n>📲 Zainstaluj na telefonie</button>
           <div class="text-xs text-muted mt-8" style="text-align:center">
-            RehabFlow v3.7.5 · dane przechowywane lokalnie na urządzeniu<br>
+            RehabFlow v3.7.6 · dane przechowywane lokalnie na urządzeniu<br>
             <a href="prywatnosc.html" style="color:var(--violet)" data-i18n>Polityka prywatności</a>
           </div>
         </div>
@@ -1079,6 +1074,24 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
           <div class="section-title" style="color:var(--danger);margin-bottom:12px" data-i18n>Strefa niebezpieczna</div>
           <button class="btn btn-danger btn-full" onclick="resetData()" data-i18n>🗑 Resetuj wszystkie dane</button>
         </div>
+      </div>
+    </div>
+
+    <!-- ══ PAGE: FIZJOTERAPEUTA (ekran-pośrednik) ══ -->
+    <div class="page" id="page-physio">
+      <div class="topbar"><div><div class="topbar-title" data-i18n>Fizjoterapeuta</div><div class="topbar-sub" data-i18n>Współpraca z fizjoterapeutą</div></div></div>
+      <div class="p-page gap-12">
+        <div class="physio-hero">
+          <div class="physio-hero-ico">🩺</div>
+          <div class="physio-hero-title" data-i18n>Panel dla fizjoterapeuty</div>
+          <div class="physio-hero-sub" data-i18n>Osobny panel do podglądu Twoich postępów i układania programu ćwiczeń. Dane analizowane są lokalnie w przeglądarce.</div>
+        </div>
+        <div class="card">
+          <div class="physio-step"><div class="ps-num">1</div><div><div class="ps-t" data-i18n>Podgląd pacjenta</div><div class="ps-d" data-i18n>Wczytaj plik kopii zapasowej lub podgląd na żywo po kodzie — zobacz frekwencję, ból, pomiary i notatki.</div></div></div>
+          <div class="physio-step"><div class="ps-num">2</div><div><div class="ps-t" data-i18n>Kreator programu</div><div class="ps-d" data-i18n>Ułóż zestaw ćwiczeń z biblioteki lub własnych i pobierz plik, który pacjent wczyta w aplikacji.</div></div></div>
+        </div>
+        <a href="fizjo.html" class="btn btn-primary btn-full" style="text-decoration:none" data-i18n>🩺 Przejdź do panelu →</a>
+        <div class="text-xs text-muted" style="text-align:center;line-height:1.5" data-i18n>Panel otworzy się jako osobna strona. Wróć przyciskiem „← Aplikacja pacjenta".</div>
       </div>
     </div>
 
@@ -1101,6 +1114,10 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
     <button class="nav-btn" onclick="switchPage('badges',this)" data-page="badges">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="6"/><path d="M8.5 14L7 22l5-3 5 3-1.5-8"/></svg>
       <span data-i18n>Odznaki</span>
+    </button>
+    <button class="nav-btn" onclick="switchPage('physio',this)" data-page="physio">
+      <svg viewBox="0 0 24 24"><path d="M6 3v6a4 4 0 008 0V3"/><path d="M4 3h3M13 3h3M10 13v3a5 5 0 0010 0v-1"/><circle cx="20" cy="12" r="2"/></svg>
+      <span data-i18n>Fizjo</span>
     </button>
     <button class="nav-btn" onclick="switchPage('settings',this)" data-page="settings">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 13.5a7.6 7.6 0 000-3l2-1.6-2-3.4-2.4 1a7.6 7.6 0 00-2.6-1.5L14 2.5h-4L9.6 5a7.6 7.6 0 00-2.6 1.5l-2.4-1-2 3.4 2 1.6a7.6 7.6 0 000 3l-2 1.6 2 3.4 2.4-1a7.6 7.6 0 002.6 1.5l.4 2.5h4l.4-2.5a7.6 7.6 0 002.6-1.5l2.4 1 2-3.4z"/></svg>
