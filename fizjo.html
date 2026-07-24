@@ -186,6 +186,7 @@ canvas { width: 100%; }
         <button class="btn btn-secondary" onclick="addCustom()">+ Dodaj własne</button>
       </div>
       <textarea id="c-desc" rows="2" placeholder="Opis wykonania (opcjonalnie)" style="margin-top:8px"></textarea>
+      <input class="form-input" id="c-video" type="url" placeholder="Link wideo (opcjonalnie) — https://youtube.com/..." style="margin-top:8px">
     </div>
   </div>
 </main>
@@ -421,15 +422,18 @@ function addFromLib(id) {
 function addCustom() {
   const name = document.getElementById('c-name').value.trim();
   if (!name) { showToast('Podaj nazwę ćwiczenia'); return; }
+  const rawVideo = document.getElementById('c-video').value.trim();
   prog.push({
     name,
     reps: parseInt(document.getElementById('c-reps').value, 10) || 10,
     sets: parseInt(document.getElementById('c-sets').value, 10) || 3,
     type: document.getElementById('c-type').value,
     desc: document.getElementById('c-desc').value.trim(),
+    video: /^https?:\/\//i.test(rawVideo) ? rawVideo.slice(0, 300) : '',
   });
   document.getElementById('c-name').value = '';
   document.getElementById('c-desc').value = '';
+  document.getElementById('c-video').value = '';
   renderProg();
 }
 

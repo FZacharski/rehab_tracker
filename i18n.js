@@ -350,6 +350,8 @@
     'Wszystkie dni = ćwiczenie codzienne': 'All days = daily exercise',
     'Kolejność': 'Order',
     'Opis wykonania (opcjonalnie)': 'How to perform (optional)',
+    'Link wideo (opcjonalnie)': 'Video link (optional)',
+    'Zobacz technikę': 'Watch technique',
     'Jak wykonać ćwiczenie...': 'How to do the exercise...',
     'Podaj nazwę ćwiczenia': 'Enter an exercise name',
     '🗑 Usuń ćwiczenie': '🗑 Delete exercise',
