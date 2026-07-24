@@ -59,6 +59,14 @@ font Outfit, animowane tło „aurora", glassmorphism.
 - Styl kodu: dopasować się do istniejącego `index.html` (sekcje oznaczone `/* ══ ... ══ */`,
   zwięzły vanilla JS, brak zależności zewnętrznych poza Google Fonts).
 - Testowanie lokalne: `py -m http.server 8123` i przeglądarka (mobile viewport 375px).
+- **Pułapka WebView/CSS:** ten silnik NIE animuje `grid-template-rows` (0fr→1fr)
+  przez `transition` — utyka na 0px i element ma wysokość 0. Do zwijania z animacją
+  albo NIE dawać grid-template-rows w `transition` (przełączać wartość skokowo,
+  płynność dać na `opacity`), albo sterować wartością inline z JS. Wzorzec `max-height`
+  z transition działa (akordeon Ustawień). Przykład: zwijany „Dziennik dnia" na home.
+- **Wersję podbijać w 3 miejscach RAZEM i commitować z sw.js** — inaczej deployowany
+  cache SW zostaje na starej nazwie i użytkownicy nie dostają nowych plików mimo
+  zmiany index.html.
 
 ## Roadmapa uzgodniona z właścicielem (poziom komercyjny)
 
