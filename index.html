@@ -649,7 +649,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
     </svg>
   </div>
   <div class="splash-title">RehabFlow</div>
-  <div class="splash-version">TRACKER REHABILITACJI · v3.7.6</div>
+  <div class="splash-version">TRACKER REHABILITACJI · v3.7.7</div>
   <div class="splash-divider"></div>
   <div class="splash-quote" id="splash-quote"></div>
   <div class="splash-author" id="splash-author"></div>
@@ -1065,7 +1065,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
           <div class="section-title" style="margin-bottom:14px" data-i18n>Aplikacja</div>
           <button class="btn btn-secondary btn-full" id="install-btn" style="display:none" onclick="promptInstall()" data-i18n>📲 Zainstaluj na telefonie</button>
           <div class="text-xs text-muted mt-8" style="text-align:center">
-            RehabFlow v3.7.6 · dane przechowywane lokalnie na urządzeniu<br>
+            RehabFlow v3.7.7 · dane przechowywane lokalnie na urządzeniu<br>
             <a href="prywatnosc.html" style="color:var(--violet)" data-i18n>Polityka prywatności</a>
           </div>
         </div>
@@ -1800,7 +1800,6 @@ function renderGoalCard() {
   const area = document.getElementById('goal-area');
   if (!D.goal || !D.goal.text) { area.innerHTML = ''; return; }
   const t = today();
-  const hasDate = D.goal.date && D.goal.date >= t;
   let progressHtml = '';
   if (D.goal.date) {
     // postęp mierzony od startu programu do daty celu
@@ -1827,16 +1826,32 @@ function renderGoalCard() {
 }
 
 /* ── inteligentna progresja: karta sugestii na podstawie danych ── */
+/* czy sugestia progresji jest wyciszona: odrzucona dziś LUB zastosowana
+   w ciągu ostatnich 7 dni (blokuje codzienne „ratchetowanie" obciążenia) */
+function progTipSuppressed() {
+  const t = today();
+  if (localStorage.getItem('rf_tip_dismiss') === t) return true;
+  const applied = localStorage.getItem('rf_tip_applied');
+  if (applied && DATE_KEY_RE.test(applied) && diffDays(applied, t) < 7) return true;
+  return false;
+}
+
+/* czy program ma wyłącznie ćwiczenia na czas (etykieta przycisku) */
+function allTimeMode() {
+  return D.exercises.length > 0 && D.exercises.every(e => e.mode === 'time');
+}
+
 function renderProgressTip() {
   const area = document.getElementById('progress-tip-area');
   if (!D.exercises.length || isProgramOver()) { area.innerHTML = ''; return; }
-  if (localStorage.getItem('rf_tip_dismiss') === today()) { area.innerHTML = ''; return; }
+  if (progTipSuppressed()) { area.innerHTML = ''; return; }
   const r = RFCore.analyzeProgression(D.days, D.exercises, today());
   if (!r) { area.innerHTML = ''; return; }
+  const incLabel = allTimeMode() ? tt('Zwiększ o 5 s') : tt('Zwiększ dawkę');
   const conf = {
     increase: { cls: 'tip-good', icon: '💪', title: tt('Idzie Ci świetnie!'),
-      body: tf('Ostatnie treningi były łatwe (trudność {0}/10, ból {1}/10). Rozważ zwiększenie liczby powtórzeń o 2.', r.diff, r.pain),
-      action: `<button class="btn btn-primary" style="flex:1" onclick="applyProgression()">${tt('Zwiększ o 2 powt.')}</button>` },
+      body: tf('Ostatnie treningi były łatwe (trudność {0}/10, ból {1}/10). Rozważ zwiększenie obciążenia.', r.diff, r.pain),
+      action: `<button class="btn btn-primary" style="flex:1" onclick="applyProgression()">${incLabel}</button>` },
     ease: { cls: 'tip-warn', icon: '⚠️', title: tt('Ból rośnie'),
       body: tt('Twój ból narasta kilka dni z rzędu. Rozważ lżejszą wersję ćwiczeń i skonsultuj się z fizjoterapeutą.'),
       action: '' },
@@ -1859,14 +1874,16 @@ function dismissTip() {
   document.getElementById('progress-tip-area').innerHTML = '';
 }
 
-/* zwiększ powtórzenia o 2 we wszystkich ćwiczeniach powtórzeniowych */
+/* zwiększ obciążenie: +2 powt. (tryb powtórzeniowy) lub +5 s (tryb czasowy).
+   Wycisza sugestię na 7 dni, żeby uniknąć codziennego ratchetowania. */
 function applyProgression() {
   let changed = 0;
   D.exercises.forEach(ex => {
     if (ex.mode !== 'time') { ex.reps = Math.min(999, (ex.reps || 10) + 2); changed++; }
     else { ex.seconds = Math.min(600, (ex.seconds || 30) + 5); changed++; }
   });
-  localStorage.setItem('rf_tip_dismiss', today());
+  localStorage.setItem('rf_tip_applied', today());
+  localStorage.removeItem('rf_tip_dismiss');
   saveData();
   renderHome();
   showToast(tf('Zwiększono dawkę w {0} {1} ✓', changed, P(changed, 'ćwiczeniu', 'ćwiczeniach', 'ćwiczeniach')));

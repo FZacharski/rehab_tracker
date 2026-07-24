@@ -35,8 +35,9 @@
 
     /* inteligentna progresja */
     'Idzie Ci świetnie!': "You're doing great!",
-    'Ostatnie treningi były łatwe (trudność {0}/10, ból {1}/10). Rozważ zwiększenie liczby powtórzeń o 2.': 'Your recent workouts felt easy (difficulty {0}/10, pain {1}/10). Consider adding 2 more reps.',
-    'Zwiększ o 2 powt.': 'Add 2 reps',
+    'Ostatnie treningi były łatwe (trudność {0}/10, ból {1}/10). Rozważ zwiększenie obciążenia.': 'Your recent workouts felt easy (difficulty {0}/10, pain {1}/10). Consider increasing the load.',
+    'Zwiększ dawkę': 'Increase load',
+    'Zwiększ o 5 s': 'Add 5 s',
     'Ból rośnie': 'Pain is rising',
     'Twój ból narasta kilka dni z rzędu. Rozważ lżejszą wersję ćwiczeń i skonsultuj się z fizjoterapeutą.': 'Your pain has been rising for several days. Consider an easier variation and consult your physiotherapist.',
     'Wysoki poziom bólu': 'High pain level',
