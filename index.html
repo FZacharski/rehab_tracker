@@ -637,7 +637,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
     </svg>
   </div>
   <div class="splash-title">RehabFlow</div>
-  <div class="splash-version">TRACKER REHABILITACJI · v3.7.2</div>
+  <div class="splash-version">TRACKER REHABILITACJI · v3.7.3</div>
   <div class="splash-divider"></div>
   <div class="splash-quote" id="splash-quote"></div>
   <div class="splash-author" id="splash-author"></div>
@@ -1053,7 +1053,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
           <div class="section-title" style="margin-bottom:14px" data-i18n>Aplikacja</div>
           <button class="btn btn-secondary btn-full" id="install-btn" style="display:none" onclick="promptInstall()" data-i18n>📲 Zainstaluj na telefonie</button>
           <div class="text-xs text-muted mt-8" style="text-align:center">
-            RehabFlow v3.7.2 · dane przechowywane lokalnie na urządzeniu<br>
+            RehabFlow v3.7.3 · dane przechowywane lokalnie na urządzeniu<br>
             <a href="prywatnosc.html" style="color:var(--violet)" data-i18n>Polityka prywatności</a> ·
             <a href="fizjo.html" style="color:var(--violet)" data-i18n>Panel fizjoterapeuty</a>
           </div>
@@ -1641,7 +1641,121 @@ function renderHome() {
   renderRecentNotes();
 }
 
-function renderWeeklySummary() { /* zaimplementowane w kroku „niedzielne podsumowanie" */ }
+/* ── niedzielne podsumowanie tygodnia (karta-celebracja na home) ── */
+function weeklyStats() {
+  const t = today();
+  const ws = RFCore.mondayOf(t);
+  let done = 0, poss = 0, painSum = 0, painN = 0, secs = 0;
+  for (let i = 0; i < 7; i++) {
+    const k = addDays(ws, i);
+    if (k > t) break;
+    const dd = D.days[k] || {};
+    if ((dd.pain || 0) > 0) { painSum += dd.pain; painN++; }
+    secs += dd.sessionSec || 0;
+    if (isRestDay(k)) continue;
+    if (isFull(k)) { poss++; done++; continue; }
+    if (isExcused(k)) continue;
+    poss++;
+  }
+  // ból poprzedniego tygodnia (trend)
+  const pw = addDays(ws, -7);
+  let ppSum = 0, ppN = 0;
+  for (let i = 0; i < 7; i++) { const p = (D.days[addDays(pw, i)] || {}).pain || 0; if (p > 0) { ppSum += p; ppN++; } }
+  // ukończone misje w tym tygodniu
+  const claimed = (D.missionsClaimed[ws] || []).length;
+  return {
+    ws, done, poss,
+    avgPain: painN ? Math.round(painSum / painN * 10) / 10 : null,
+    prevPain: ppN ? Math.round(ppSum / ppN * 10) / 10 : null,
+    mins: Math.round(secs / 60),
+    missions: claimed,
+  };
+}
+
+function renderWeeklySummary() {
+  const area = document.getElementById('weekly-area');
+  if (!area) return;
+  const t = today();
+  // pokaż tylko w niedzielę, raz na tydzień, gdy jest jakikolwiek trening
+  if (RFCore.weekdayOf(t) !== 0 || !D.exercises.length) { area.innerHTML = ''; return; }
+  const ws = RFCore.mondayOf(t);
+  if (localStorage.getItem('rf_weekly_seen') === ws) { area.innerHTML = ''; return; }
+  const s = weeklyStats();
+  if (!s.poss) { area.innerHTML = ''; return; }
+  let painLine = '';
+  if (s.avgPain !== null) {
+    painLine = tf('Średni ból: {0}/10', s.avgPain);
+    if (s.prevPain !== null) {
+      const d = Math.round((s.avgPain - s.prevPain) * 10) / 10;
+      if (d < 0) painLine += ` ${tf('▼ {0}', Math.abs(d))}`;
+      else if (d > 0) painLine += ` ${tf('▲ {0}', d)}`;
+    }
+  }
+  area.innerHTML = `
+    <div class="complete-card weekly-card">
+      <button class="tip-x" style="position:absolute;top:12px;right:14px;color:rgba(255,255,255,.8)" onclick="dismissWeekly()" aria-label="Zamknij">✕</button>
+      <div class="cc-icon">📅</div>
+      <div class="cc-title">${tt('Podsumowanie tygodnia')}</div>
+      <div class="cc-sub">
+        ${tf('Pełne dni: {0}/{1}', s.done, s.poss)}${s.missions ? ` · ${tf('{0} {1}', s.missions, P(s.missions,'misja','misje','misji'))}` : ''}<br>
+        ${s.mins ? tf('Czas ćwiczeń: {0} min', s.mins) : ''}${s.mins && painLine ? ' · ' : ''}${painLine}
+      </div>
+      <button class="btn" onclick="shareWeekly()">📸 ${tt('Udostępnij podsumowanie')}</button>
+    </div>`;
+}
+
+function dismissWeekly() {
+  localStorage.setItem('rf_weekly_seen', RFCore.mondayOf(today()));
+  document.getElementById('weekly-area').innerHTML = '';
+}
+
+/* obrazek PNG z podsumowaniem tygodnia (ta sama estetyka co karta osiągnięć) */
+function shareWeekly() {
+  const s = weeklyStats();
+  const S = 1080;
+  const cv = document.createElement('canvas');
+  cv.width = S; cv.height = S;
+  const ctx = cv.getContext('2d');
+  const bg = ctx.createLinearGradient(0, 0, S, S);
+  bg.addColorStop(0, '#0A0D20'); bg.addColorStop(.35, '#1E1B4B'); bg.addColorStop(.7, '#4C1D95'); bg.addColorStop(1, '#831843');
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, S, S);
+  [['#6366F1', 180, 160], ['#EC4899', 900, 880], ['#A855F7', 850, 240]].forEach(([c, x, y]) => {
+    const g = ctx.createRadialGradient(x, y, 0, x, y, 340);
+    g.addColorStop(0, c + '55'); g.addColorStop(1, c + '00');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, S, S);
+  });
+  ctx.textAlign = 'center'; ctx.fillStyle = '#fff';
+  ctx.font = '90px sans-serif'; ctx.fillText('📅', S/2, 230);
+  ctx.font = '800 60px Outfit, sans-serif'; ctx.fillText(tt('Mój tydzień'), S/2, 330);
+  const name = (D.profile || {}).name || '';
+  if (name) { ctx.font = '600 38px Outfit, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,.75)'; ctx.fillText(name, S/2, 390); }
+  // duże liczby
+  ctx.fillStyle = '#fff'; ctx.font = '800 150px Outfit, sans-serif';
+  ctx.fillText(`${s.done}/${s.poss}`, S/2, 610);
+  ctx.font = '600 44px Outfit, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,.8)';
+  ctx.fillText(tt('pełne dni treningowe'), S/2, 680);
+  // wiersze statystyk
+  ctx.font = '700 42px Outfit, sans-serif'; ctx.fillStyle = '#fff';
+  const lines = [];
+  if (s.mins) lines.push(tf('⏱ {0} min ćwiczeń', s.mins));
+  if (s.avgPain !== null) lines.push(tf('😣 średni ból {0}/10', s.avgPain));
+  if (s.missions) lines.push(tf('🎯 {0} {1}', s.missions, P(s.missions,'misja','misje','misji')));
+  lines.forEach((ln, i) => ctx.fillText(ln, S/2, 790 + i * 70));
+  ctx.font = '500 30px Outfit, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,.5)';
+  ctx.fillText('RehabFlow · ' + formatDate(today()), S/2, 1020);
+
+  cv.toBlob(blob => {
+    if (!blob) { showToast(tt('Nie udało się wygenerować karty')); return; }
+    const file = new File([blob], `rehabflow_tydzien_${today()}.png`, { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      navigator.share({ files: [file], title: 'RehabFlow' }).catch(() => {});
+    } else {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = file.name; a.click();
+      URL.revokeObjectURL(a.href); showToast(tt('Karta zapisana jako PNG ✓'));
+    }
+  }, 'image/png');
+}
 
 /* ── cel rehabilitacji: karta z paskiem postępu do daty docelowej ── */
 function renderGoalCard() {

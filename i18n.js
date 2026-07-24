@@ -33,6 +33,22 @@
     'Nie teraz': 'Not now',
     'Zwiększono dawkę w {0} {1} ✓': 'Increased the dose in {0} {1} ✓',
 
+    /* niedzielne podsumowanie tygodnia */
+    'Podsumowanie tygodnia': 'Weekly summary',
+    'Pełne dni: {0}/{1}': 'Full days: {0}/{1}',
+    '{0} {1}': '{0} {1}',
+    'Czas ćwiczeń: {0} min': 'Exercise time: {0} min',
+    'Średni ból: {0}/10': 'Average pain: {0}/10',
+    '▼ {0}': '▼ {0}',
+    '▲ {0}': '▲ {0}',
+    '📸 Udostępnij podsumowanie': '📸 Share summary',
+    'Udostępnij podsumowanie': 'Share summary',
+    'Mój tydzień': 'My week',
+    'pełne dni treningowe': 'full training days',
+    '⏱ {0} min ćwiczeń': '⏱ {0} min of exercise',
+    '😣 średni ból {0}/10': '😣 average pain {0}/10',
+    '🎯 {0} {1}': '🎯 {0} {1}',
+
     /* strona główna */
     'Zacznij dzisiaj!': 'Start today!',
     'Dobry start! Kontynuuj!': 'Great start! Keep going!',
@@ -595,6 +611,7 @@
     'ćwiczenie': ['exercise', 'exercises'],
     'ćwiczeniu': ['exercise', 'exercises'],
     'odznaka': ['badge', 'badges'],
+    'misja': ['mission', 'missions'],
   };
 
   /* ── daty ── */
