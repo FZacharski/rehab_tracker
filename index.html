@@ -636,7 +636,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
     </svg>
   </div>
   <div class="splash-title">RehabFlow</div>
-  <div class="splash-version">TRACKER REHABILITACJI · v3.7.0</div>
+  <div class="splash-version">TRACKER REHABILITACJI · v3.7.1</div>
   <div class="splash-divider"></div>
   <div class="splash-quote" id="splash-quote"></div>
   <div class="splash-author" id="splash-author"></div>
@@ -975,6 +975,10 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
               </select>
             </div>
           </div>
+          <div class="toggle-row" style="border-top:1px solid var(--border);margin-top:6px;padding-top:14px">
+            <div><div class="toggle-label" data-i18n>🎙️ Głosowy trener</div><div class="toggle-sub" data-i18n>Zapowiada serie i odlicza przerwy</div></div>
+            <label class="switch"><input type="checkbox" id="voice-toggle" onchange="toggleVoice(this)"><span class="switch-track"></span></label>
+          </div>
           <button class="btn btn-primary btn-full" onclick="saveSettings()" data-i18n>Zapisz</button>
         </div>
 
@@ -1038,7 +1042,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
           <div class="section-title" style="margin-bottom:14px" data-i18n>Aplikacja</div>
           <button class="btn btn-secondary btn-full" id="install-btn" style="display:none" onclick="promptInstall()" data-i18n>📲 Zainstaluj na telefonie</button>
           <div class="text-xs text-muted mt-8" style="text-align:center">
-            RehabFlow v3.7.0 · dane przechowywane lokalnie na urządzeniu<br>
+            RehabFlow v3.7.1 · dane przechowywane lokalnie na urządzeniu<br>
             <a href="prywatnosc.html" style="color:var(--violet)" data-i18n>Polityka prywatności</a> ·
             <a href="fizjo.html" style="color:var(--violet)" data-i18n>Panel fizjoterapeuty</a>
           </div>
@@ -1306,6 +1310,8 @@ function defaultData() {
     fontScale: 'normal',
     lang: 'auto', // 'auto' | 'pl' | 'en'
     accent: 'violet', // 'violet' | 'ocean' | 'emerald' | 'amber'
+    voiceCoach: false,
+    goal: null, // { text, date } cel rehabilitacji
     xp: 0, badges: [],
     bestStreak: 0,
     archive: [],
@@ -1366,6 +1372,9 @@ function sanitizeData(d) {
   if (!['dark','light','auto'].includes(d.theme)) d.theme = 'dark';
   if (!['auto','pl','en'].includes(d.lang)) d.lang = 'auto';
   if (!['violet','ocean','emerald','amber'].includes(d.accent)) d.accent = 'violet';
+  d.voiceCoach = d.voiceCoach === true;
+  if (d.goal && (typeof d.goal !== 'object' || typeof d.goal.text !== 'string' || !d.goal.text.trim())) d.goal = null;
+  if (d.goal) { d.goal.text = String(d.goal.text).slice(0, 80); if (d.goal.date && !DATE_KEY_RE.test(String(d.goal.date))) d.goal.date = null; }
   return d;
 }
 
@@ -1574,6 +1583,10 @@ function toggleFont(cb) {
 }
 function applyFont() {
   document.documentElement.setAttribute('data-font', D.fontScale || 'normal');
+}
+function toggleVoice(cb) {
+  D.voiceCoach = cb.checked; saveData();
+  if (cb.checked) speak(tt('Głosowy trener włączony')); // próbka + „odblokowanie" mowy gestem
 }
 
 /* ══ NAVIGATION ═════════════════════════════════════════════ */
@@ -1974,6 +1987,7 @@ function startTraining() {
   }
   TR.i = 0; TR.set = 1; TR.resting = false; TR.holding = false;
   TR.startedAt = Date.now(); TR.sessionDone = 0; TR.sessionXP = 0;
+  TR._spokenKey = null;
   document.getElementById('trainer').classList.add('open');
   acquireWakeLock();
   trRender();
@@ -2048,6 +2062,13 @@ function trRender() {
          <button class="tr-skip" onclick="trSkipEx()">${tt('Pomiń to ćwiczenie ▸')}</button>`
       : `<button class="btn btn-primary btn-full tr-action" onclick="trDoneSet()">${tt('✓ Seria ukończona')}</button>
          <button class="tr-skip" onclick="trSkipEx()">${tt('Pomiń to ćwiczenie ▸')}</button>`;
+    // głosowa zapowiedź ćwiczenia i serii — raz na (ćwiczenie, seria)
+    const key = `${TR.i}-${TR.set}`;
+    if (TR._spokenKey !== key) {
+      TR._spokenKey = key;
+      const dose = ex.mode === 'time' ? tf('trzymaj {0} sekund', ex.seconds) : `${ex.reps} ${P(ex.reps,'powtórzenie','powtórzenia','powtórzeń')}`;
+      speak(`${ex.name}. ${tf('Seria {0} z {1}', TR.set, ex.sets)}. ${dose}.`, { interrupt: true });
+    }
   }
 }
 
@@ -2059,6 +2080,7 @@ function trStartHold() {
   TR.holding = true;
   TR.restTotal = TR.restLeft = ex.seconds || 30;
   TR.holdEnd = Date.now() + TR.restTotal * 1000;
+  speak(tt('Start!'), { interrupt: true });
   trRender();
   clearInterval(TR.timer);
   TR.timer = setInterval(() => {
@@ -2066,13 +2088,14 @@ function trStartHold() {
     if (left !== TR.restLeft) {
       TR.restLeft = left;
       trTickRing(left);
-      if (left <= 3 && left > 0) beep(660, .1);
+      if (left <= 3 && left > 0) { beep(660, .1); speak(String(left), { interrupt: true }); }
     }
     if (left <= 0) {
       clearInterval(TR.timer);
       beep(990, .25);
       if (navigator.vibrate) navigator.vibrate([80, 60, 80]);
       TR.holding = false;
+      speak(tt('Gotowe!'), { interrupt: true });
       trDoneSet();
     }
   }, 200);
@@ -2105,6 +2128,7 @@ function trDoneSet() {
   TR.restTotal = TR.restLeft = D.restSec || 30;
   // odliczanie wg zegara, nie interwału — przeglądarka dławi interwały w tle
   TR.restEnd = Date.now() + TR.restTotal * 1000;
+  speak(tf('Przerwa {0} sekund', TR.restTotal), { interrupt: true });
   trRender();
   clearInterval(TR.timer);
   TR.timer = setInterval(() => {
@@ -2112,7 +2136,7 @@ function trDoneSet() {
     if (left !== TR.restLeft) {
       TR.restLeft = left;
       trTickRing(left);
-      if (left <= 3 && left > 0) beep(660, .1);
+      if (left <= 3 && left > 0) { beep(660, .1); speak(String(left), { interrupt: true }); }
     }
     if (left <= 0) {
       clearInterval(TR.timer);
@@ -2186,6 +2210,7 @@ function trShowSummary() {
   TR.resting = false; TR.holding = false;
   trClearState();
   if (!TR.sessionDone) { trClose(); return; }
+  speak(tt('Trening ukończony! Świetna robota.'), { interrupt: true });
   const mins = Math.round((Date.now() - (TR.startedAt || Date.now())) / 60000);
   // zapis czasu sesji do statystyk (sumuje się przy kilku sesjach dziennie)
   const secs = Math.max(30, Math.round((Date.now() - (TR.startedAt || Date.now())) / 1000));
@@ -2214,6 +2239,7 @@ function trClose() {
   clearInterval(TR.timer);
   TR.resting = false;
   TR.holding = false;
+  stopSpeech();
   releaseWakeLock();
   // trening dokończony lub dzień pełny → stan niepotrzebny; ręczne zamknięcie go zachowuje
   if (TR.i >= TR.queue.length || isFull(today())) trClearState();
@@ -2234,6 +2260,26 @@ function beep(freq, dur) {
     o.start(); o.stop(ctx.currentTime + (dur || .15));
   } catch (e) {}
 }
+
+/* ── głosowy trener (SpeechSynthesis — offline, systemowe głosy) ── */
+function voiceSupported() { return 'speechSynthesis' in window; }
+
+function speak(text, opts) {
+  if (!D.voiceCoach || !voiceSupported() || !text) return;
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = RFI18N.getLang() === 'en' ? 'en-US' : 'pl-PL';
+    u.rate = (opts && opts.rate) || 1;
+    u.pitch = 1;
+    // wybierz głos pasujący do języka, jeśli dostępny
+    const v = (speechSynthesis.getVoices() || []).find(x => x.lang && x.lang.toLowerCase().startsWith(u.lang.slice(0,2)));
+    if (v) u.voice = v;
+    if (opts && opts.interrupt) speechSynthesis.cancel();
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+
+function stopSpeech() { try { if (voiceSupported()) speechSynthesis.cancel(); } catch (e) {} }
 
 /* ══ MISJE TYGODNIOWE ═══════════════════════════════════════ */
 /* katalog misji — postęp liczony z danych tygodnia (ws = poniedziałek) */
@@ -3100,6 +3146,8 @@ function renderSettings() {
   document.getElementById('s-hour2').value = D.notifHour2 || '20:00';
   document.getElementById('notif-toggle').checked = D.notifEnabled || false;
   document.getElementById('font-toggle').checked = (D.fontScale === 'large');
+  const vt = document.getElementById('voice-toggle');
+  vt.checked = D.voiceCoach === true; vt.disabled = !voiceSupported();
   document.getElementById('install-btn').style.display = deferredPrompt ? 'inline-flex' : 'none';
   ['dark','light','auto'].forEach(m =>
     document.getElementById('theme-' + m).classList.toggle('active', D.theme === m));
