@@ -167,8 +167,9 @@ html[data-font="large"] .celebrate-card { zoom: 1.14; }
 .hero-cta { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 13px; border: none; border-radius: var(--r-md); background: #fff; color: var(--violet); font-family: inherit; font-size: 15px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,.18); transition: transform .12s; }
 /* swatche akcentów w ustawieniach */
 .accent-row { display: flex; gap: 12px; padding: 4px 0 8px; }
-.accent-dot { width: 34px; height: 34px; border-radius: 50%; border: 2.5px solid transparent; cursor: pointer; transition: transform .12s, border-color .15s, box-shadow .15s; }
+.accent-dot { width: 34px; height: 34px; border-radius: 50%; border: 2.5px solid transparent; cursor: pointer; padding: 0; outline: none; -webkit-appearance: none; appearance: none; background-clip: padding-box; -webkit-tap-highlight-color: transparent; transition: transform .12s, border-color .15s, box-shadow .15s; }
 .accent-dot:active { transform: scale(.9); }
+.accent-dot:focus, .accent-dot:focus-visible { outline: none; }
 .accent-dot.active { border-color: var(--text); box-shadow: 0 0 0 3px var(--surface2); }
 .share-link-box { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 10px 12px; }
 .hero-cta:active { transform: scale(.97); }
@@ -636,7 +637,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
     </svg>
   </div>
   <div class="splash-title">RehabFlow</div>
-  <div class="splash-version">TRACKER REHABILITACJI · v3.7.1</div>
+  <div class="splash-version">TRACKER REHABILITACJI · v3.7.2</div>
   <div class="splash-divider"></div>
   <div class="splash-quote" id="splash-quote"></div>
   <div class="splash-author" id="splash-author"></div>
@@ -937,6 +938,16 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
             <label class="form-label" data-i18n>Notatki fizjoterapeuty</label>
             <textarea id="s-therapist-notes" rows="3" data-i18n-ph placeholder="Zalecenia, uwagi..."></textarea>
           </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label class="form-label" data-i18n>🎯 Cel rehabilitacji</label>
+              <input class="form-input" id="s-goal-text" maxlength="80" data-i18n-ph placeholder="np. Wrócić do biegania">
+            </div>
+            <div class="form-field">
+              <label class="form-label" data-i18n>Data celu</label>
+              <input class="form-input" id="s-goal-date" type="date">
+            </div>
+          </div>
           <button class="btn btn-primary btn-full" onclick="saveProfile()" data-i18n>Zapisz profil</button>
         </div>
 
@@ -1042,7 +1053,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
           <div class="section-title" style="margin-bottom:14px" data-i18n>Aplikacja</div>
           <button class="btn btn-secondary btn-full" id="install-btn" style="display:none" onclick="promptInstall()" data-i18n>📲 Zainstaluj na telefonie</button>
           <div class="text-xs text-muted mt-8" style="text-align:center">
-            RehabFlow v3.7.1 · dane przechowywane lokalnie na urządzeniu<br>
+            RehabFlow v3.7.2 · dane przechowywane lokalnie na urządzeniu<br>
             <a href="prywatnosc.html" style="color:var(--violet)" data-i18n>Polityka prywatności</a> ·
             <a href="fizjo.html" style="color:var(--violet)" data-i18n>Panel fizjoterapeuty</a>
           </div>
@@ -1631,7 +1642,37 @@ function renderHome() {
 }
 
 function renderWeeklySummary() { /* zaimplementowane w kroku „niedzielne podsumowanie" */ }
-function renderGoalCard() { /* zaimplementowane w kroku „cel rehabilitacji" */ }
+
+/* ── cel rehabilitacji: karta z paskiem postępu do daty docelowej ── */
+function renderGoalCard() {
+  const area = document.getElementById('goal-area');
+  if (!D.goal || !D.goal.text) { area.innerHTML = ''; return; }
+  const t = today();
+  const hasDate = D.goal.date && D.goal.date >= t;
+  let progressHtml = '';
+  if (D.goal.date) {
+    // postęp mierzony od startu programu do daty celu
+    const start = D.startDate;
+    const total = Math.max(1, diffDays(start, D.goal.date));
+    const done = Math.max(0, Math.min(total, diffDays(start, t)));
+    const pct = Math.round(done / total * 100);
+    const daysLeft = diffDays(t, D.goal.date);
+    const daysTxt = daysLeft > 0 ? tf('{0} {1} do celu', daysLeft, P(daysLeft, 'dzień', 'dni', 'dni'))
+      : daysLeft === 0 ? tt('Dziś termin celu! 🎯') : tt('Termin minął');
+    progressHtml = `
+      <div class="goal-bar"><div class="goal-bar-fill" style="width:${pct}%"></div></div>
+      <div class="text-xs text-muted">${daysTxt}${daysLeft >= 0 ? ` · ${pct}%` : ''}</div>`;
+  }
+  area.innerHTML = `
+    <div class="card goal-card">
+      <div class="goal-top">
+        <span class="goal-emoji">🎯</span>
+        <span class="goal-text">${esc(D.goal.text)}</span>
+        <button class="goal-edit" onclick="switchPage('settings', document.querySelector('[data-page=settings]'))" aria-label="Edytuj">✏️</button>
+      </div>
+      ${progressHtml}
+    </div>`;
+}
 
 /* ── inteligentna progresja: karta sugestii na podstawie danych ── */
 function renderProgressTip() {
@@ -2999,6 +3040,7 @@ function openReport() {
   <tr><th>${tt('Fizjoterapeuta')}</th><td>${esc(p.therapist || '—')}</td></tr>
   <tr><th>${tt('Data urazu')}</th><td>${p.injuryDate ? formatDate(p.injuryDate) : '—'}</td></tr>
   <tr><th>${tt('Program')}</th><td>${formatDate(start)} – ${formatDate(programEnd())} (${tf('{0} tyg.', totalWeeks())})</td></tr>
+  ${D.goal && D.goal.text ? `<tr><th>${tt('Cel rehabilitacji')}</th><td>${esc(D.goal.text)}${D.goal.date ? ' — ' + formatDate(D.goal.date) : ''}</td></tr>` : ''}
 </table>
 <h2>${tt('Podsumowanie')}</h2>
 <div class="grid">
@@ -3138,6 +3180,8 @@ function renderSettings() {
   document.getElementById('s-therapist').value = p.therapist || '';
   document.getElementById('s-injury').value = p.injuryDate || '';
   document.getElementById('s-therapist-notes').value = p.therapistNotes || '';
+  document.getElementById('s-goal-text').value = (D.goal && D.goal.text) || '';
+  document.getElementById('s-goal-date').value = (D.goal && D.goal.date) || '';
   document.getElementById('s-start').value = D.startDate || today();
   document.getElementById('s-weeks').value = totalWeeks();
   document.getElementById('s-goal').value = D.weeklyGoal || 5;
@@ -3170,7 +3214,11 @@ function saveProfile() {
     injuryDate: document.getElementById('s-injury').value,
     therapistNotes: document.getElementById('s-therapist-notes').value,
   };
+  const goalText = document.getElementById('s-goal-text').value.trim();
+  const goalDate = document.getElementById('s-goal-date').value;
+  D.goal = goalText ? { text: goalText.slice(0, 80), date: DATE_KEY_RE.test(goalDate) ? goalDate : null } : null;
   saveData(); showToast(tt('Profil zapisany ✓'));
+  if (currentPage === 'home') renderHome();
 }
 
 function saveSettings() {
