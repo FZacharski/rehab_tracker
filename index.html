@@ -172,6 +172,17 @@ html[data-font="large"] .celebrate-card { zoom: 1.14; }
 .accent-dot:focus, .accent-dot:focus-visible { outline: none; }
 .accent-dot.active { border-color: var(--text); box-shadow: 0 0 0 3px var(--surface2); }
 .share-link-box { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 10px 12px; }
+/* akordeon ustawień */
+.acc { padding: 0 !important; overflow: hidden; }
+.acc-head { display: flex; align-items: center; gap: 12px; width: 100%; padding: 16px; background: none; border: none; font-family: inherit; color: var(--text); cursor: pointer; text-align: left; }
+.acc-head .acc-ic { font-size: 20px; flex-shrink: 0; }
+.acc-head .acc-ttl { flex: 1; min-width: 0; font-size: 14px; font-weight: 700; }
+.acc-head .acc-chev { color: var(--text3); font-size: 13px; transition: transform .25s cubic-bezier(.4,0,.2,1); }
+.acc.open .acc-head .acc-chev { transform: rotate(180deg); }
+.acc-body { padding: 0 16px; max-height: 0; opacity: 0; overflow: hidden; transition: max-height .3s cubic-bezier(.4,0,.2,1), opacity .2s, padding .3s; }
+.acc.open .acc-body { max-height: 1600px; opacity: 1; padding: 0 16px 16px; }
+.acc.acc-danger .acc-head .acc-ttl { color: var(--danger); }
+
 /* strona-pośrednik fizjoterapeuty */
 .physio-hero { text-align: center; padding: 8px 4px 4px; }
 .physio-hero-ico { width: 72px; height: 72px; margin: 0 auto 12px; border-radius: 20px; background: var(--grad); display: flex; align-items: center; justify-content: center; font-size: 38px; box-shadow: 0 8px 26px rgba(var(--glow),.4); }
@@ -649,7 +660,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
     </svg>
   </div>
   <div class="splash-title">RehabFlow</div>
-  <div class="splash-version">TRACKER REHABILITACJI · v3.7.7</div>
+  <div class="splash-version">TRACKER REHABILITACJI · v3.7.8</div>
   <div class="splash-divider"></div>
   <div class="splash-quote" id="splash-quote"></div>
   <div class="splash-author" id="splash-author"></div>
@@ -926,7 +937,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
     <div class="page" id="page-settings">
       <div class="topbar"><div><div class="topbar-title" data-i18n>Ustawienia</div><div class="topbar-sub" data-i18n>Profil i program</div></div></div>
       <div class="p-page gap-12">
-        <div class="card">
+        <div class="card acc" data-acc="profil" data-icon="🧑">
           <div class="section-title" style="margin-bottom:14px" data-i18n>Profil pacjenta</div>
           <div class="form-field">
             <label class="form-label" data-i18n>Imię i nazwisko</label>
@@ -963,7 +974,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
           <button class="btn btn-primary btn-full" onclick="saveProfile()" data-i18n>Zapisz profil</button>
         </div>
 
-        <div class="card">
+        <div class="card acc" data-acc="program" data-icon="📋">
           <div class="section-title" style="margin-bottom:14px" data-i18n>Program rehabilitacji</div>
           <div class="form-row">
             <div class="form-field">
@@ -1005,7 +1016,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
           <button class="btn btn-primary btn-full" onclick="saveSettings()" data-i18n>Zapisz</button>
         </div>
 
-        <div class="card">
+        <div class="card acc" data-acc="notif" data-icon="🔔">
           <div class="section-title" style="margin-bottom:4px" data-i18n>Powiadomienia</div>
           <div class="toggle-row">
             <div><div class="toggle-label" data-i18n>Przypomnienia push</div><div class="toggle-sub" id="notif-status">Sprawdzanie...</div></div>
@@ -1023,7 +1034,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
           <div class="text-xs text-muted mt-8" style="line-height:1.5" id="notif-hint">ℹ️ Przypomnienia działają, gdy aplikacja jest otwarta lub uruchomiona w tle przeglądarki. Po ponownym otwarciu aplikacja przypomni też o zaległych dniach.</div>
         </div>
 
-        <div class="card">
+        <div class="card acc" data-acc="look" data-icon="🎨">
           <div class="section-title" style="margin-bottom:4px" data-i18n>Wygląd</div>
           <div class="toggle-row">
             <div><div class="toggle-label" data-i18n>Motyw</div><div class="toggle-sub" data-i18n>Auto podąża za systemem</div></div>
@@ -1056,21 +1067,21 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
           </div>
         </div>
 
-        <div class="card">
+        <div class="card acc" data-acc="sync" data-icon="🔗">
           <div class="section-title" style="margin-bottom:10px">Synchronizacja <span style="text-transform:none;letter-spacing:0;color:var(--text3)">· beta</span></div>
           <div id="sync-card"></div>
         </div>
 
-        <div class="card">
+        <div class="card acc" data-acc="app" data-icon="📱">
           <div class="section-title" style="margin-bottom:14px" data-i18n>Aplikacja</div>
           <button class="btn btn-secondary btn-full" id="install-btn" style="display:none" onclick="promptInstall()" data-i18n>📲 Zainstaluj na telefonie</button>
           <div class="text-xs text-muted mt-8" style="text-align:center">
-            RehabFlow v3.7.7 · dane przechowywane lokalnie na urządzeniu<br>
+            RehabFlow v3.7.8 · dane przechowywane lokalnie na urządzeniu<br>
             <a href="prywatnosc.html" style="color:var(--violet)" data-i18n>Polityka prywatności</a>
           </div>
         </div>
 
-        <div class="card" style="border-color:var(--danger)">
+        <div class="card acc" data-acc="danger" data-icon="⚠️" style="border-color:var(--danger)">
           <div class="section-title" style="color:var(--danger);margin-bottom:12px" data-i18n>Strefa niebezpieczna</div>
           <button class="btn btn-danger btn-full" onclick="resetData()" data-i18n>🗑 Resetuj wszystkie dane</button>
         </div>
@@ -3375,6 +3386,44 @@ function renderSettings() {
     tt('ℹ️ Wersja aplikacji: przypomnienia natywne — zadzwonią o ustawionej godzinie nawet przy zamkniętej aplikacji.');
   renderSyncCard();
   updateNotifStatus();
+  initSettingsAccordion();
+}
+
+/* zamienia karty Ustawień w akordeon — transformacja DOM raz na kartę */
+function initSettingsAccordion() {
+  const open = new Set((() => { try { return JSON.parse(localStorage.getItem('rf_acc_open') || '[]'); } catch (e) { return []; } })());
+  document.querySelectorAll('#page-settings .acc').forEach(card => {
+    if (card.dataset.accReady) return;
+    card.dataset.accReady = '1';
+    const key = card.dataset.acc, icon = card.dataset.icon || '⚙️';
+    const title = card.querySelector('.section-title');
+    if (!title) return;
+    title.classList.add('acc-ttl');
+    title.removeAttribute('style');
+    const body = document.createElement('div');
+    body.className = 'acc-body';
+    [...card.children].forEach(ch => { if (ch !== title) body.appendChild(ch); });
+    const head = document.createElement('button');
+    head.type = 'button'; head.className = 'acc-head';
+    const ic = document.createElement('span'); ic.className = 'acc-ic'; ic.textContent = icon;
+    const chev = document.createElement('span'); chev.className = 'acc-chev'; chev.textContent = '▾';
+    head.appendChild(ic); head.appendChild(title); head.appendChild(chev);
+    card.appendChild(head); card.appendChild(body);
+    if (key === 'danger') card.classList.add('acc-danger');
+    const isOpen = open.has(key);
+    card.classList.toggle('open', isOpen);
+    head.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    head.onclick = () => toggleAcc(card, key);
+  });
+}
+
+function toggleAcc(card, key) {
+  const nowOpen = !card.classList.contains('open');
+  card.classList.toggle('open', nowOpen);
+  card.querySelector('.acc-head').setAttribute('aria-expanded', nowOpen ? 'true' : 'false');
+  const open = new Set((() => { try { return JSON.parse(localStorage.getItem('rf_acc_open') || '[]'); } catch (e) { return []; } })());
+  if (nowOpen) open.add(key); else open.delete(key);
+  localStorage.setItem('rf_acc_open', JSON.stringify([...open]));
 }
 
 function saveProfile() {
