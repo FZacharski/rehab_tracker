@@ -172,6 +172,12 @@ html[data-font="large"] .celebrate-card { zoom: 1.14; }
 .accent-dot:focus, .accent-dot:focus-visible { outline: none; }
 .accent-dot.active { border-color: var(--text); box-shadow: 0 0 0 3px var(--surface2); }
 .share-link-box { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 10px 12px; }
+/* pod-zakładki (Postęp) */
+.sub-tabs { background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); margin: -4px -2px 14px; }
+.sub-panel { display: none; }
+.sub-panel.active { display: flex; animation: fpIn .22s ease; }
+@keyframes fpIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
 /* akordeon ustawień */
 .acc { padding: 0 !important; overflow: hidden; }
 .acc-head { display: flex; align-items: center; gap: 12px; width: 100%; padding: 16px; background: none; border: none; font-family: inherit; color: var(--text); cursor: pointer; text-align: left; }
@@ -660,7 +666,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
     </svg>
   </div>
   <div class="splash-title">RehabFlow</div>
-  <div class="splash-version">TRACKER REHABILITACJI · v3.7.8</div>
+  <div class="splash-version">TRACKER REHABILITACJI · v3.7.9</div>
   <div class="splash-divider"></div>
   <div class="splash-quote" id="splash-quote"></div>
   <div class="splash-author" id="splash-author"></div>
@@ -840,80 +846,90 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
     <!-- ══ PAGE: POSTĘP ══ -->
     <div class="page" id="page-progress">
       <div class="topbar"><div><div class="topbar-title" data-i18n>Postęp</div><div class="topbar-sub" data-i18n>Twoje statystyki</div></div></div>
-      <div class="p-page gap-12">
-        <!-- week summary -->
-        <div class="card" id="week-summary"></div>
-
-        <div class="week-grid" id="week-cards"></div>
-        <div class="card">
-          <div class="section-hdr"><span class="section-title" data-i18n>Ukończenie dzienne</span></div>
-          <div class="chart-wrap" id="chart-bars"></div>
-          <div class="chart-labels" id="chart-labels"></div>
+      <div class="p-page">
+        <div class="tab-row sub-tabs" style="position:sticky;top:0;z-index:30">
+          <button class="tab-btn active" data-sub="stats" onclick="switchSubTab('stats')" data-i18n>Statystyki</button>
+          <button class="tab-btn" data-sub="charts" onclick="switchSubTab('charts')" data-i18n>Wykresy</button>
+          <button class="tab-btn" data-sub="meas" onclick="switchSubTab('meas')" data-i18n>Pomiary</button>
+          <button class="tab-btn" data-sub="data" onclick="switchSubTab('data')" data-i18n>Dane</button>
         </div>
-        <div class="card">
-          <div class="section-hdr">
-            <span class="section-title" data-i18n>Samopoczucie</span>
-            <span class="chart-legend">
-              <span><i style="background:#F472B6"></i><span data-i18n>Ból</span></span>
-              <span><i style="background:#818CF8"></i><span data-i18n>Trudność</span></span>
-            </span>
+
+        <!-- ── STATYSTYKI ── -->
+        <div class="sub-panel gap-12 active" id="subp-stats">
+          <div class="card" id="week-summary"></div>
+          <div class="week-grid" id="week-cards"></div>
+          <div class="card">
+            <div class="section-hdr"><span class="section-title" data-i18n>Podsumowanie</span></div>
+            <div class="stat-grid" style="grid-template-columns:repeat(3,1fr)" id="summary-stats"></div>
           </div>
-          <div class="chart-box" id="wellbeing-chart"></div>
+          <div id="archive-area"></div>
         </div>
 
-        <div class="card">
-          <div class="section-hdr"><span class="section-title" data-i18n>Najlepsze dni tygodnia</span></div>
-          <div id="weekday-chart"></div>
-        </div>
-
-        <div class="card" id="ex-eff-card">
-          <div class="section-hdr"><span class="section-title" data-i18n>Skuteczność ćwiczeń</span></div>
-          <div id="ex-eff-list"></div>
-        </div>
-
-        <!-- measurements -->
-        <div class="card">
-          <div class="section-hdr"><span class="section-title" data-i18n>Pomiary postępu</span></div>
-          <div class="form-row" style="grid-template-columns:1.3fr 1fr">
-            <select class="form-input" id="meas-type" onchange="measCancelEdit();renderMeasures()">
-              <option value="rom" data-i18n>Zakres ruchu (°)</option>
-              <option value="obwod" data-i18n>Obwód (cm)</option>
-              <option value="waga" data-i18n>Waga (kg)</option>
-              <option value="inne" data-i18n>Inne</option>
-            </select>
-            <input class="form-input" id="meas-val" type="number" step="0.1" inputmode="decimal" data-i18n-ph placeholder="Wartość">
+        <!-- ── WYKRESY ── -->
+        <div class="sub-panel gap-12" id="subp-charts">
+          <div class="card">
+            <div class="section-hdr"><span class="section-title" data-i18n>Ukończenie dzienne</span></div>
+            <div class="chart-wrap" id="chart-bars"></div>
+            <div class="chart-labels" id="chart-labels"></div>
           </div>
-          <div class="form-row mt-8" style="grid-template-columns:1fr 1fr">
-            <input class="form-input" id="meas-date" type="date">
-            <button class="btn btn-secondary" id="meas-add-btn" onclick="addMeasure()" data-i18n>+ Dodaj pomiar</button>
+          <div class="card">
+            <div class="section-hdr">
+              <span class="section-title" data-i18n>Samopoczucie</span>
+              <span class="chart-legend">
+                <span><i style="background:#F472B6"></i><span data-i18n>Ból</span></span>
+                <span><i style="background:#818CF8"></i><span data-i18n>Trudność</span></span>
+              </span>
+            </div>
+            <div class="chart-box" id="wellbeing-chart"></div>
           </div>
-          <div class="chart-box" id="meas-chart" style="display:none;margin-top:12px"></div>
-          <div id="meas-list" class="mt-8"></div>
-        </div>
-
-        <!-- zdjęcia postępu -->
-        <div class="card">
-          <div class="section-hdr">
-            <span class="section-title" data-i18n>Zdjęcia postępu</span>
-            <button class="section-action" onclick="document.getElementById('photo-input').click()" data-i18n>+ Dodaj</button>
+          <div class="card">
+            <div class="section-hdr"><span class="section-title" data-i18n>Najlepsze dni tygodnia</span></div>
+            <div id="weekday-chart"></div>
           </div>
-          <div class="photo-strip" id="photo-strip"><div class="text-xs text-muted">Dokumentuj postęp zdjęciami (np. zakres ruchu, obrzęk). Zdjęcia zostają tylko na tym urządzeniu.</div></div>
-          <input type="file" id="photo-input" accept="image/*" style="display:none" onchange="addPhoto(this)">
+          <div class="card" id="ex-eff-card">
+            <div class="section-hdr"><span class="section-title" data-i18n>Skuteczność ćwiczeń</span></div>
+            <div id="ex-eff-list"></div>
+          </div>
         </div>
 
-        <div class="card">
-          <div class="section-hdr"><span class="section-title" data-i18n>Podsumowanie</span></div>
-          <div class="stat-grid" style="grid-template-columns:repeat(3,1fr)" id="summary-stats"></div>
+        <!-- ── POMIARY ── -->
+        <div class="sub-panel gap-12" id="subp-meas">
+          <div class="card">
+            <div class="section-hdr"><span class="section-title" data-i18n>Pomiary postępu</span></div>
+            <div class="form-row" style="grid-template-columns:1.3fr 1fr">
+              <select class="form-input" id="meas-type" onchange="measCancelEdit();renderMeasures()">
+                <option value="rom" data-i18n>Zakres ruchu (°)</option>
+                <option value="obwod" data-i18n>Obwód (cm)</option>
+                <option value="waga" data-i18n>Waga (kg)</option>
+                <option value="inne" data-i18n>Inne</option>
+              </select>
+              <input class="form-input" id="meas-val" type="number" step="0.1" inputmode="decimal" data-i18n-ph placeholder="Wartość">
+            </div>
+            <div class="form-row mt-8" style="grid-template-columns:1fr 1fr">
+              <input class="form-input" id="meas-date" type="date">
+              <button class="btn btn-secondary" id="meas-add-btn" onclick="addMeasure()" data-i18n>+ Dodaj pomiar</button>
+            </div>
+            <div class="chart-box" id="meas-chart" style="display:none;margin-top:12px"></div>
+            <div id="meas-list" class="mt-8"></div>
+          </div>
+          <div class="card">
+            <div class="section-hdr">
+              <span class="section-title" data-i18n>Zdjęcia postępu</span>
+              <button class="section-action" onclick="document.getElementById('photo-input').click()" data-i18n>+ Dodaj</button>
+            </div>
+            <div class="photo-strip" id="photo-strip"><div class="text-xs text-muted" data-i18n>Dokumentuj postęp zdjęciami (np. zakres ruchu, obrzęk). Zdjęcia zostają tylko na tym urządzeniu.</div></div>
+            <input type="file" id="photo-input" accept="image/*" style="display:none" onchange="addPhoto(this)">
+          </div>
         </div>
 
-        <!-- archive -->
-        <div id="archive-area"></div>
-
-        <button class="btn btn-primary btn-full" onclick="openReport()" data-i18n>📄 Raport dla fizjoterapeuty</button>
-        <button class="btn btn-primary btn-full" onclick="exportHTML()" data-i18n>💾 Kopia zapasowa (czytelna na telefonie)</button>
-        <button class="btn btn-secondary btn-full" onclick="exportJSON()" data-i18n>📤 Eksportuj dane (JSON)</button>
-        <button class="btn btn-secondary btn-full" onclick="document.getElementById('import-file').click()" data-i18n>📥 Importuj dane</button>
-        <input type="file" id="import-file" accept=".json,.html,application/json,text/html" style="display:none" onchange="importJSON(this)">
+        <!-- ── DANE ── -->
+        <div class="sub-panel gap-12" id="subp-data">
+          <button class="btn btn-primary btn-full" onclick="openReport()" data-i18n>📄 Raport dla fizjoterapeuty</button>
+          <button class="btn btn-primary btn-full" onclick="exportHTML()" data-i18n>💾 Kopia zapasowa (czytelna na telefonie)</button>
+          <button class="btn btn-secondary btn-full" onclick="exportJSON()" data-i18n>📤 Eksportuj dane (JSON)</button>
+          <button class="btn btn-secondary btn-full" onclick="document.getElementById('import-file').click()" data-i18n>📥 Importuj dane</button>
+          <input type="file" id="import-file" accept=".json,.html,application/json,text/html" style="display:none" onchange="importJSON(this)">
+        </div>
       </div>
     </div>
 
@@ -1076,7 +1092,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
           <div class="section-title" style="margin-bottom:14px" data-i18n>Aplikacja</div>
           <button class="btn btn-secondary btn-full" id="install-btn" style="display:none" onclick="promptInstall()" data-i18n>📲 Zainstaluj na telefonie</button>
           <div class="text-xs text-muted mt-8" style="text-align:center">
-            RehabFlow v3.7.8 · dane przechowywane lokalnie na urządzeniu<br>
+            RehabFlow v3.7.9 · dane przechowywane lokalnie na urządzeniu<br>
             <a href="prywatnosc.html" style="color:var(--violet)" data-i18n>Polityka prywatności</a>
           </div>
         </div>
@@ -2824,6 +2840,23 @@ function renderProgress() {
   renderSummaryStats();
   renderArchive();
   renderPhotoSection();
+  applySubTab(); // przywróć ostatnią pod-zakładkę
+}
+
+const SUB_TABS = ['stats', 'charts', 'meas', 'data'];
+function applySubTab() {
+  let tab = localStorage.getItem('rf_prog_tab');
+  if (!SUB_TABS.includes(tab)) tab = 'stats';
+  SUB_TABS.forEach(s => {
+    document.getElementById('subp-' + s).classList.toggle('active', s === tab);
+    document.querySelector(`.sub-tabs .tab-btn[data-sub="${s}"]`).classList.toggle('active', s === tab);
+  });
+}
+function switchSubTab(tab) {
+  if (!SUB_TABS.includes(tab)) return;
+  localStorage.setItem('rf_prog_tab', tab);
+  applySubTab();
+  document.getElementById('page-container').scrollTop = 0;
 }
 
 function avgPainInRange(from, len) {
