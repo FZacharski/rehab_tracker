@@ -13,8 +13,8 @@
      (SUPABASE.md). Klucz anon jest z założenia publiczny; bezpieczeństwo zapewnia RLS
      po stronie bazy. Dopóki puste, przycisk szybkiego udostępniania jest wyłączony,
      a użytkownik może nadal skonfigurować własny projekt w sekcji „Zaawansowane". */
-  const DEFAULT_URL = '';
-  const DEFAULT_ANON_KEY = '';
+  const DEFAULT_URL = 'https://svyptdkgwrdbuwtooyli.supabase.co';
+  const DEFAULT_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2eXB0ZGtnd3JkYnV3dG9veWxpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5OTM5OTgsImV4cCI6MjEwMDU2OTk5OH0.08EaFlKsmiRBILUpc8tLjH3kgDvwFgExH52rPyAysqY';
 
   const KEY = 'rehabflow_sync_v1';
 
