@@ -9,6 +9,26 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="RehabFlow">
 <meta name="description" content="RehabFlow — Twój dziennik rehabilitacji">
+<script>
+/* anty-FOUC: ustaw motyw/akcent/font na <html> PRZED pierwszym malowaniem,
+   inaczej strona błyska domyślnym ciemnym/fioletem/normalną czcionką, zanim
+   zadziała init na końcu body */
+(function () {
+  try {
+    var d = JSON.parse(localStorage.getItem('rehabflow_v3') || localStorage.getItem('rehab_pwa_v2') || '{}');
+    var el = document.documentElement;
+    var th = d.theme;
+    if (th !== 'dark' && th !== 'light' && th !== 'auto') th = 'dark';
+    if (th === 'auto') th = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    el.setAttribute('data-theme', th);
+    if (['ocean', 'emerald', 'amber'].indexOf(d.accent) >= 0) el.setAttribute('data-accent', d.accent);
+    if (d.fontScale === 'large') el.setAttribute('data-font', 'large');
+    // dopasuj kolor paska stanu do faktycznego motywu
+    var mt = document.querySelector('meta[name=theme-color]');
+    if (mt) mt.setAttribute('content', th === 'light' ? '#F3F2FB' : '#0A0D20');
+  } catch (e) {}
+})();
+</script>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" type="image/png" href="icon-192.png">
@@ -175,8 +195,7 @@ html[data-font="large"] .celebrate-card { zoom: 1.14; }
 /* pod-zakładki (Postęp) */
 .sub-tabs { background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); margin: -4px -2px 14px; }
 .sub-panel { display: none; }
-.sub-panel.active { display: flex; animation: fpIn .22s ease; }
-@keyframes fpIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.sub-panel.active { display: flex; }
 
 /* akordeon ustawień */
 .acc { padding: 0 !important; overflow: hidden; }
@@ -675,7 +694,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
     </svg>
   </div>
   <div class="splash-title">RehabFlow</div>
-  <div class="splash-version">TRACKER REHABILITACJI · v3.8.0</div>
+  <div class="splash-version">TRACKER REHABILITACJI · v3.8.1</div>
   <div class="splash-divider"></div>
   <div class="splash-quote" id="splash-quote"></div>
   <div class="splash-author" id="splash-author"></div>
@@ -1110,7 +1129,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
           <div class="section-title" style="margin-bottom:14px" data-i18n>Aplikacja</div>
           <button class="btn btn-secondary btn-full" id="install-btn" style="display:none" onclick="promptInstall()" data-i18n>📲 Zainstaluj na telefonie</button>
           <div class="text-xs text-muted mt-8" style="text-align:center">
-            RehabFlow v3.8.0 · dane przechowywane lokalnie na urządzeniu<br>
+            RehabFlow v3.8.1 · dane przechowywane lokalnie na urządzeniu<br>
             <a href="prywatnosc.html" style="color:var(--violet)" data-i18n>Polityka prywatności</a>
           </div>
         </div>
