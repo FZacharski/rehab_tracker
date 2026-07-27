@@ -105,6 +105,24 @@ th { color: var(--text3); font-size: 10.5px; text-transform: uppercase; letter-s
 .prog-item input:focus { border-color: var(--violet); }
 .prog-x { background: none; border: none; color: var(--text3); font-size: 15px; cursor: pointer; padding: 2px 6px; }
 .x-lbl { font-size: 10px; color: var(--text3); }
+.prog-item { flex-wrap: wrap; }
+.prog-days { flex-basis: 100%; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; margin-top: 9px; padding-top: 9px; border-top: 1px solid var(--border); }
+.day-chip { flex: 0 0 auto; width: 32px; padding: 6px 0; text-align: center; border-radius: 8px; border: 1.5px solid var(--border); background: var(--surface); color: var(--text3); font-family: inherit; font-size: 11.5px; font-weight: 700; cursor: pointer; transition: background .15s, color .15s, border-color .15s; }
+.day-chip.on { background: var(--grad); border-color: transparent; color: #fff; }
+.day-lbl { font-size: 11px; color: var(--text3); margin-left: 4px; }
+
+.pat-card { border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface2); margin-bottom: 9px; overflow: hidden; }
+.pat-card.open { border-color: var(--violet); }
+.pat-head { width: 100%; display: flex; align-items: center; gap: 10px; padding: 13px 14px; background: none; border: none; cursor: pointer; text-align: left; font-family: inherit; color: var(--text); }
+.pat-head-main { flex: 1; min-width: 0; }
+.pat-name { font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pat-sub { font-size: 12px; color: var(--text3); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pat-caret { flex-shrink: 0; color: var(--text3); font-size: 12px; }
+.pat-body { padding: 2px 14px 14px; }
+.pat-body h3:first-child { margin-top: 6px; }
+.pat-actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+.btn-sm { padding: 8px 14px; font-size: 12.5px; }
+.btn-ghost { background: var(--surface); border: 1px solid var(--border); color: var(--text2); }
 
 .toast { position: fixed; top: 18px; left: 50%; transform: translateX(-50%) translateY(-90px); background: var(--surface2); color: var(--text); border: 1px solid var(--border); padding: 11px 22px; border-radius: 26px; font-size: 14px; font-weight: 600; z-index: 2000; transition: transform .35s cubic-bezier(.34,1.56,.64,1); box-shadow: 0 4px 28px rgba(168,85,247,.35); }
 .toast.show { transform: translateX(-50%) translateY(0); }
@@ -221,6 +239,7 @@ canvas { width: 100%; }
 'use strict';
 
 const DAYS_PL = ['Nd','Pn','Wt','Śr','Cz','Pt','Sb'];
+const DAY_ORDER = [1,2,3,4,5,6,0]; // kolejność wyświetlania: Pn…Nd (0=Nd wg RFCore)
 const MONTHS_PL = ['stycznia','lutego','marca','kwietnia','maja','czerwca','lipca','sierpnia','września','października','listopada','grudnia'];
 const MEAS_LABELS = { rom: 'Zakres ruchu', obwod: 'Obwód', waga: 'Waga', inne: 'Inne' };
 const MEAS_UNITS  = { rom: '°', obwod: 'cm', waga: 'kg', inne: '' };
@@ -292,7 +311,7 @@ async function loadLivePatient() {
       ? await RFSync.fetchByShareCode(url, key, code)
       : await RFSync.fetchByShareCodeBuiltIn(code);
     if (custom) localStorage.setItem(LIVE_KEY, JSON.stringify({ url, key }));
-    renderPatient(data);
+    upsertPatient(data, code);
     showToast('Dane pacjenta pobrane na żywo ✓');
   } catch (e) { showToast('Błąd: ' + e.message); }
 }
@@ -311,35 +330,149 @@ function loadPatientFile(file) {
       }
       const d = JSON.parse(txt);
       if (!d || typeof d !== 'object' || !Array.isArray(d.exercises) || !d.days) throw new Error('bad');
-      renderPatient(d);
+      upsertPatient(d, null);
       showToast('Dane pacjenta wczytane ✓');
     } catch { showToast('To nie jest plik kopii zapasowej RehabFlow'); }
   };
   r.readAsText(file);
 }
 
-function renderPatient(d) {
-  switchFTab('view'); // upewnij się, że podgląd jest widoczny
-  const area = document.getElementById('patient-area');
-  const ids = d.exercises.map(e => e.id);
+/* ════ LISTA PACJENTÓW (zapisani lokalnie, zwijane karty) ════ */
+const PATIENTS_KEY = 'fizjo_patients';
+let patients = [];
+try { patients = JSON.parse(localStorage.getItem(PATIENTS_KEY)) || []; } catch (e) { patients = []; }
+if (!Array.isArray(patients)) patients = [];
+let expandedId = null;
+
+function savePatients() {
+  try { localStorage.setItem(PATIENTS_KEY, JSON.stringify(patients)); }
+  catch (e) { showToast('Pamięć przeglądarki pełna — listy nie zapisano'); }
+}
+
+function patientIdOf(d, code) {
+  if (code) return 'c:' + code.toUpperCase();
+  const p = d.profile || {};
+  return 'f:' + ((p.name || '?') + '|' + (d.startDate || '')).toLowerCase();
+}
+
+/* dodaj lub zaktualizuj pacjenta na liście i rozwiń go */
+function upsertPatient(d, code) {
+  const id = patientIdOf(d, code);
+  const entry = { id: id, code: code ? code.toUpperCase() : null, data: d, savedAt: RFCore.keyFromDate(new Date()) };
+  const i = patients.findIndex(p => p.id === id);
+  if (i >= 0) patients[i] = entry; else patients.unshift(entry);
+  savePatients();
+  expandedId = id;
+  switchFTab('view');
+  renderPatients();
+}
+
+function togglePatient(idx) {
+  const id = patients[idx] && patients[idx].id;
+  expandedId = (expandedId === id) ? null : id;
+  renderPatients();
+}
+
+function removePatient(idx) {
+  const p = patients[idx];
+  if (!p) return;
+  if (!confirm(`Usunąć „${(p.data.profile || {}).name || 'pacjenta'}" z listy? Danych na serwerze to nie zmienia.`)) return;
+  patients.splice(idx, 1);
+  savePatients();
+  renderPatients();
+}
+
+async function refreshPatient(idx) {
+  const p = patients[idx];
+  if (!p || !p.code) return;
+  showToast('Odświeżanie…');
+  try {
+    let data;
+    if (RFSync.hasBuiltIn()) data = await RFSync.fetchByShareCodeBuiltIn(p.code);
+    else {
+      const s = JSON.parse(localStorage.getItem(LIVE_KEY)) || {};
+      if (!s.url || !s.key) throw new Error('brak konfiguracji projektu');
+      data = await RFSync.fetchByShareCode(s.url, s.key, p.code);
+    }
+    upsertPatient(data, p.code);
+    showToast('Zaktualizowano ✓');
+  } catch (e) { showToast('Błąd: ' + e.message); }
+}
+
+function patientSummary(d) {
+  const ex = d.exercises || [];
   const todayK = RFCore.keyFromDate(new Date());
   const weeks = d.programWeeks || 4;
   const start = d.startDate || todayK;
-  const st = RFCore.cycleStats(d.days, ids, start, weeks, todayK);
-  const streak = RFCore.computeStreak(d.days, ids, todayK);
+  const st = RFCore.cycleStats(d.days, ex, start, weeks, todayK);
+  const streak = RFCore.computeStreak(d.days, ex, todayK);
+  return { streak: streak, doneDays: st.doneDays, elapsed: st.elapsed, avgPain: st.avgPain };
+}
+
+function renderPatients() {
+  const area = document.getElementById('patient-area');
+  if (!patients.length) { area.innerHTML = ''; return; }
+  area.innerHTML = `<div class="card">
+    <h2 style="margin-bottom:4px">Pacjenci (${patients.length})</h2>
+    <p class="xs" style="margin-bottom:12px">Zapisani lokalnie na tym urządzeniu. Kliknij pacjenta, aby rozwinąć podgląd.</p>
+    ${patients.map((p, i) => patientCardHTML(p, i)).join('')}
+  </div>`;
+  // wykres bólu tylko dla rozwiniętej karty (canvas istnieje w DOM dopiero po rozwinięciu)
+  patients.forEach((p, i) => {
+    if (p.id !== expandedId) return;
+    const d = p.data, ex = d.exercises || [];
+    const todayK = RFCore.keyFromDate(new Date());
+    drawPain(d, ex, d.startDate || todayK, d.programWeeks || 4, todayK, i);
+  });
+}
+
+function patientCardHTML(p, i) {
+  const d = p.data, s = patientSummary(d);
+  const open = p.id === expandedId;
+  const sub = [
+    '🔥 ' + s.streak,
+    s.doneDays + '/' + s.elapsed + ' dni',
+    s.avgPain !== null ? 'ból ' + s.avgPain : null,
+    p.code ? 'kod ' + esc(p.code) : null,
+  ].filter(Boolean).join(' · ');
+  return `<div class="pat-card${open ? ' open' : ''}">
+    <button type="button" class="pat-head" onclick="togglePatient(${i})">
+      <div class="pat-head-main">
+        <div class="pat-name">👤 ${esc((d.profile || {}).name || 'Pacjent (bez imienia)')}</div>
+        <div class="pat-sub">${sub}</div>
+      </div>
+      <span class="pat-caret">${open ? '▲' : '▼'}</span>
+    </button>
+    ${open ? `<div class="pat-body">${patientDetailHTML(d, i)}
+      <div class="pat-actions">
+        ${p.code ? `<button class="btn btn-secondary btn-sm" onclick="refreshPatient(${i})">↻ Odśwież na żywo</button>` : ''}
+        <button class="btn btn-ghost btn-sm" onclick="removePatient(${i})">🗑 Usuń z listy</button>
+      </div>
+    </div>` : ''}
+  </div>`;
+}
+
+function patientDetailHTML(d, cid) {
+  const ex = d.exercises || [];
+  const todayK = RFCore.keyFromDate(new Date());
+  const weeks = d.programWeeks || 4;
+  const start = d.startDate || todayK;
+  const st = RFCore.cycleStats(d.days, ex, start, weeks, todayK);
+  const streak = RFCore.computeStreak(d.days, ex, todayK);
   const p = d.profile || {};
 
-  /* siatka frekwencji */
+  /* siatka frekwencji — mianownik = ćwiczenia zaplanowane na dany dzień */
   let att = '';
   for (let i = 0; i < weeks * 7; i++) {
     const k = RFCore.addDays(start, i);
-    const done = RFCore.doneCount(d.days, ids, k);
+    const planned = RFCore.idsForDay(ex, k).length;
+    const done = RFCore.doneCount(d.days, ex, k);
     let cls = 'att-cell';
-    if (k > todayK) cls += ' future';
-    else if (ids.length && done >= ids.length) cls += ' full';
+    if (k > todayK || planned === 0) cls += ' future';   // przyszłość lub dzień odpoczynku — bez oceny
+    else if (done >= planned) cls += ' full';
     else if (done > 0) cls += ' partial';
     else cls += ' missed';
-    att += `<div class="${cls}" title="${fmtShort(k)}: ${done}/${ids.length}"></div>`;
+    att += `<div class="${cls}" title="${fmtShort(k)}: ${done}/${planned}"></div>`;
   }
 
   /* dziennik */
@@ -349,53 +482,57 @@ function renderPatient(d) {
     const k = RFCore.addDays(start, i);
     if (k > todayK) break;
     const dd = d.days[k] || {};
-    const done = RFCore.doneCount(d.days, ids, k);
+    const planned = RFCore.idsForDay(ex, k).length;
+    const done = RFCore.doneCount(d.days, ex, k);
+    const cell = planned === 0 ? '<span class="muted">odpocz.</span>' : done + '/' + planned;
     rows += `<tr><td>${fmtShort(k)} ${DAYS_PL[RFCore.dateFromKey(k).getDay()]}</td>
-      <td style="text-align:center">${done}/${ids.length}</td>
+      <td style="text-align:center">${cell}</td>
       <td style="text-align:center">${dd.pain || '–'}</td>
       <td style="text-align:center">${dd.difficulty || '–'}</td></tr>`;
-    if (dd.note && dd.note.trim()) noted.push({ k, note: dd.note });
+    if (dd.note && dd.note.trim()) noted.push({ k: k, note: dd.note });
   }
 
   const meas = (d.measurements || []).slice().sort((a, b) => a.date < b.date ? -1 : 1);
   const measRows = meas.map(m => `<tr><td>${fmtShort(m.date)}</td><td>${MEAS_LABELS[m.type] || m.type}</td><td>${m.value}${MEAS_UNITS[m.type] || ''}</td></tr>`).join('');
 
-  area.innerHTML = `
-    <div class="card">
-      <h2>👤 ${esc(p.name || 'Pacjent (bez imienia)')}</h2>
-      <div class="muted">
-        ${p.diagnosis ? `Diagnoza: <strong>${esc(p.diagnosis)}</strong><br>` : ''}
-        ${p.injuryDate ? `Uraz: ${fmtLong(p.injuryDate)} · ` : ''}Program: ${fmtLong(start)} (${weeks} tyg.)
-      </div>
-      <div class="stat-grid" style="margin-top:14px">
-        <div class="stat-chip"><div class="stat-val">${st.doneDays}/${st.elapsed}</div><div class="stat-lbl">Pełne dni</div></div>
-        <div class="stat-chip"><div class="stat-val">${streak}</div><div class="stat-lbl">Streak</div></div>
-        <div class="stat-chip"><div class="stat-val">${d.bestStreak || 0}</div><div class="stat-lbl">Rekord</div></div>
-        <div class="stat-chip"><div class="stat-val">${st.avgPain !== null ? st.avgPain : '–'}</div><div class="stat-lbl">Śr. ból</div></div>
-      </div>
-      <h3>Frekwencja (${weeks * 7} dni)</h3>
-      <div class="att-grid">${att}</div>
-      <h3>Poziom bólu</h3>
-      <canvas id="pt-pain" height="80"></canvas>
-      <h3>Aktualny program pacjenta (${d.exercises.length})</h3>
-      <div class="t-scroll"><table>
-        <tr><th>Ćwiczenie</th><th>Dawka</th><th>Typ</th></tr>
-        ${d.exercises.map(e => `<tr><td>${esc(e.name)}</td><td>${e.sets}×${e.reps}</td><td>${esc(e.type)}</td></tr>`).join('') || '<tr><td colspan="3">brak</td></tr>'}
-      </table></div>
-      ${measRows ? `<h3>Pomiary</h3><div class="t-scroll"><table><tr><th>Data</th><th>Rodzaj</th><th>Wartość</th></tr>${measRows}</table></div>` : ''}
-      <h3>Dziennik</h3>
-      <div class="t-scroll"><table>
-        <tr><th>Dzień</th><th>Ćwicz.</th><th>Ból</th><th>Trudn.</th></tr>${rows || '<tr><td colspan="4">brak danych</td></tr>'}
-      </table></div>
-      ${noted.length ? `<h3>Notatki pacjenta</h3>${noted.slice(-10).map(n => `<div class="note-q"><strong class="xs">${fmtShort(n.k)}</strong> ${esc(n.note)}</div>`).join('')}` : ''}
-      <p class="xs" style="margin-top:14px">⚕️ Dane wczytane lokalnie — nic nie zostało nigdzie wysłane.</p>
-    </div>`;
+  /* program z harmonogramem (dni tygodnia) */
+  const progRows = ex.map(e => {
+    const daily = !Array.isArray(e.days) || e.days.length === 0 || e.days.length === 7;
+    const sched = daily ? 'codziennie' : DAY_ORDER.filter(wd => e.days.indexOf(wd) >= 0).map(wd => DAYS_PL[wd]).join(' ');
+    return `<tr><td>${esc(e.name)}</td><td>${e.sets}×${e.reps}</td><td>${esc(sched)}</td></tr>`;
+  }).join('') || '<tr><td colspan="3">brak</td></tr>';
 
-  drawPain(d, ids, start, weeks, todayK);
+  return `
+    <div class="muted" style="margin-bottom:4px">
+      ${p.diagnosis ? `Diagnoza: <strong>${esc(p.diagnosis)}</strong><br>` : ''}
+      ${p.injuryDate ? `Uraz: ${fmtLong(p.injuryDate)} · ` : ''}Program: ${fmtLong(start)} (${weeks} tyg.)
+    </div>
+    <div class="stat-grid" style="margin-top:12px">
+      <div class="stat-chip"><div class="stat-val">${st.doneDays}/${st.elapsed}</div><div class="stat-lbl">Pełne dni</div></div>
+      <div class="stat-chip"><div class="stat-val">${streak}</div><div class="stat-lbl">Streak</div></div>
+      <div class="stat-chip"><div class="stat-val">${d.bestStreak || 0}</div><div class="stat-lbl">Rekord</div></div>
+      <div class="stat-chip"><div class="stat-val">${st.avgPain !== null ? st.avgPain : '–'}</div><div class="stat-lbl">Śr. ból</div></div>
+    </div>
+    <h3>Frekwencja (${weeks * 7} dni)</h3>
+    <div class="att-grid">${att}</div>
+    <h3>Poziom bólu</h3>
+    <canvas id="pt-pain-${cid}" height="80"></canvas>
+    <h3>Program pacjenta (${ex.length})</h3>
+    <div class="t-scroll"><table>
+      <tr><th>Ćwiczenie</th><th>Dawka</th><th>Dni</th></tr>
+      ${progRows}
+    </table></div>
+    ${measRows ? `<h3>Pomiary</h3><div class="t-scroll"><table><tr><th>Data</th><th>Rodzaj</th><th>Wartość</th></tr>${measRows}</table></div>` : ''}
+    <h3>Dziennik</h3>
+    <div class="t-scroll"><table>
+      <tr><th>Dzień</th><th>Ćwicz.</th><th>Ból</th><th>Trudn.</th></tr>${rows || '<tr><td colspan="4">brak danych</td></tr>'}
+    </table></div>
+    ${noted.length ? `<h3>Notatki pacjenta</h3>${noted.slice(-10).map(n => `<div class="note-q"><strong class="xs">${fmtShort(n.k)}</strong> ${esc(n.note)}</div>`).join('')}` : ''}
+    <p class="xs" style="margin-top:14px">⚕️ Dane przetwarzane lokalnie na Twoim urządzeniu.</p>`;
 }
 
-function drawPain(d, ids, start, weeks, todayK) {
-  const canvas = document.getElementById('pt-pain');
+function drawPain(d, ex, start, weeks, todayK, cid) {
+  const canvas = document.getElementById('pt-pain-' + cid);
   if (!canvas) return;
   const dpr = window.devicePixelRatio || 1;
   canvas.width = canvas.offsetWidth * dpr;
@@ -472,6 +609,16 @@ function progEdit(i, field, val) {
   prog[i][field] = parseInt(val, 10) || 1;
 }
 
+/* harmonogram ćwiczenia: brak/null lub 7 dni = codziennie; inaczej tablica dni [0..6] */
+function progToggleDay(i, wd) {
+  let cur = Array.isArray(prog[i].days) && prog[i].days.length ? prog[i].days.slice() : [0,1,2,3,4,5,6];
+  const at = cur.indexOf(wd);
+  if (at >= 0) cur.splice(at, 1); else cur.push(wd);
+  if (cur.length === 0) cur = [0,1,2,3,4,5,6];         // nie pozwól na pusty plan → wróć do „codziennie"
+  prog[i].days = (cur.length === 7) ? null : cur;       // wszystkie 7 = codziennie (null)
+  renderProg();
+}
+
 function progRemove(i) {
   prog.splice(i, 1);
   renderProg();
@@ -480,13 +627,20 @@ function progRemove(i) {
 function renderProg() {
   document.getElementById('p-count').textContent = prog.length;
   const el = document.getElementById('prog-list');
-  el.innerHTML = prog.length ? prog.map((e, i) => `
+  el.innerHTML = prog.length ? prog.map((e, i) => {
+    const daily = !Array.isArray(e.days) || e.days.length === 0 || e.days.length === 7;
+    const chips = DAY_ORDER.map(wd =>
+      `<button type="button" class="day-chip${daily || e.days.indexOf(wd) >= 0 ? ' on' : ''}" onclick="progToggleDay(${i},${wd})">${DAYS_PL[wd]}</button>`
+    ).join('');
+    return `
     <div class="prog-item">
       <div class="prog-name" title="${esc(e.name)}">${TYPE_EMOJI[e.type] || '💫'} ${esc(e.name)}</div>
       <div style="text-align:center"><input type="number" min="1" value="${e.sets}" onchange="progEdit(${i},'sets',this.value)"><div class="x-lbl">serie</div></div>
       <div style="text-align:center"><input type="number" min="1" value="${e.reps}" onchange="progEdit(${i},'reps',this.value)"><div class="x-lbl">powt.</div></div>
       <button class="prog-x" onclick="progRemove(${i})" title="Usuń">✕</button>
-    </div>`).join('') : '<p class="xs">Dodawaj ćwiczenia z biblioteki poniżej lub wpisz własne.</p>';
+      <div class="prog-days">${chips}<span class="day-lbl">${daily ? 'codziennie' : 'w wybrane dni'}</span></div>
+    </div>`;
+  }).join('') : '<p class="xs">Dodawaj ćwiczenia z biblioteki poniżej lub wpisz własne.</p>';
 }
 
 function downloadProgram() {
@@ -499,7 +653,10 @@ function downloadProgram() {
     author: document.getElementById('p-author').value.trim(),
     notes: document.getElementById('p-notes').value.trim(),
     createdAt: RFCore.keyFromDate(new Date()),
-    exercises: prog,
+    exercises: prog.map(e => {
+      const daily = !Array.isArray(e.days) || e.days.length === 0 || e.days.length === 7;
+      return daily ? { ...e, days: null } : e;
+    }),
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
@@ -512,6 +669,7 @@ function downloadProgram() {
 
 renderLib();
 renderProg();
+renderPatients();
 </script>
 </body>
 </html>
