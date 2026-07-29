@@ -25,6 +25,12 @@ font Outfit, animowane tło „aurora", glassmorphism.
   w podkatalogu GitHub Pages. Nie używać ścieżek zaczynających się od `/`.
 - Logika dat: klucze dni w formacie `YYYY-MM-DD` lokalnego czasu (funkcja `today()`).
 - Treści użytkownika renderowane przez `esc()` — utrzymywać przy nowym kodzie.
+- **Dane pacjenta w `fizjo.html` są NIEZAUFANE** — rekord w Supabase tworzy urządzenie
+  pacjenta, więc pole „liczbowe" może zawierać HTML. Wszystko wchodzi przez
+  `sanitizePatient()` w `upsertPatient()` (koercja typów, clamp, whitelist rodzajów
+  pomiaru, obcinanie stringów) — nie renderować surowego `d.*` z pominięciem tej
+  funkcji. Panel trzyma w localStorage dane WSZYSTKICH pacjentów, więc XSS tutaj
+  oznaczałby wyciek całej listy. Odpowiednik po stronie pacjenta: `sanitizeData()`.
 - `ui-common.js` — drobne rzeczy wspólne dla `index.html` i `fizjo.html`: `esc()`,
   `DAY_ORDER` (Pn…Nd), `MEAS_LABELS`, `MEAS_UNITS`. Nowa stała używana na obu
   stronach idzie TUTAJ, nie kopiowana. Uwaga: `DAYS_PL`/`MONTHS_PL` celowo NIE są

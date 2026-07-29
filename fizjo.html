@@ -335,11 +335,109 @@ function loadPatientFile(file) {
   r.readAsText(file);
 }
 
+/* ════ SANITYZACJA DANYCH PACJENTA ═════════════════════════════
+   Dane trafiają tu z pliku albo z serwera — w obu przypadkach są danymi
+   NIEZAUFANYMI (rekord w Supabase tworzy urządzenie pacjenta, więc może
+   zawierać cokolwiek). Bez koercji typów pole liczbowe typu `pain` mogłoby
+   wnieść HTML do innerHTML i wykonać skrypt w przeglądarce fizjoterapeuty,
+   a ta ma w localStorage dane wszystkich pacjentów. Odpowiednik
+   sanitizeData() z aplikacji pacjenta. */
+const DATE_KEY_RE = /^\d{4}-\d{2}-\d{2}$/;
+const MEAS_TYPES = ['rom', 'obwod', 'waga', 'inne'];
+
+function sInt(v, min, max, dflt) {
+  const n = parseInt(v, 10);
+  return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : dflt;
+}
+function sNum(v, min, max, dflt) {
+  const n = parseFloat(v);
+  return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : dflt;
+}
+function sStr(v, max) {
+  return typeof v === 'string' ? v.slice(0, max) : '';
+}
+function sDate(v) {
+  return (typeof v === 'string' && DATE_KEY_RE.test(v)) ? v : '';
+}
+
+function sanitizePatient(raw) {
+  const d = (raw && typeof raw === 'object') ? raw : {};
+  const p = (d.profile && typeof d.profile === 'object') ? d.profile : {};
+  const out = {
+    profile: {
+      name: sStr(p.name, 80),
+      diagnosis: sStr(p.diagnosis, 200),
+      therapist: sStr(p.therapist, 80),
+      therapistNotes: sStr(p.therapistNotes, 1000),
+      injuryDate: sDate(p.injuryDate),
+    },
+    startDate: sDate(d.startDate) || RFCore.keyFromDate(new Date()),
+    programWeeks: sInt(d.programWeeks, 1, 52, 4),
+    bestStreak: sInt(d.bestStreak, 0, 9999, 0),
+    xp: sInt(d.xp, 0, 9999999, 0),
+    exercises: [],
+    days: {},
+    measurements: [],
+  };
+
+  (Array.isArray(d.exercises) ? d.exercises : []).slice(0, 200).forEach((e, i) => {
+    if (!e || typeof e !== 'object') return;
+    out.exercises.push({
+      id: Number.isFinite(Number(e.id)) ? Number(e.id) : i,
+      name: sStr(e.name, 80) || 'Ćwiczenie',
+      sets: sInt(e.sets, 1, 99, 3),
+      reps: sInt(e.reps, 1, 999, 10),
+      seconds: sInt(e.seconds, 5, 600, 30),
+      mode: e.mode === 'time' ? 'time' : 'reps',
+      type: sStr(e.type, 30) || 'Inne',
+      days: Array.isArray(e.days)
+        ? [...new Set(e.days.filter(x => Number.isInteger(x) && x >= 0 && x <= 6))]
+        : null,
+    });
+  });
+
+  const days = (d.days && typeof d.days === 'object' && !Array.isArray(d.days)) ? d.days : {};
+  Object.keys(days).slice(0, 4000).forEach(k => {
+    if (!DATE_KEY_RE.test(k)) return;
+    const dd = days[k];
+    if (!dd || typeof dd !== 'object') return;
+    out.days[k] = {
+      completed: (Array.isArray(dd.completed) ? dd.completed : [])
+        .filter(x => Number.isFinite(Number(x))).map(Number).slice(0, 200),
+      pain: sInt(dd.pain, 0, 10, 0),
+      difficulty: sInt(dd.difficulty, 0, 10, 0),
+      note: sStr(dd.note, 2000),
+      excused: dd.excused === true,
+    };
+  });
+
+  (Array.isArray(d.measurements) ? d.measurements : []).slice(0, 1000).forEach(m => {
+    if (!m || typeof m !== 'object') return;
+    const date = sDate(m.date);
+    if (!date) return;
+    out.measurements.push({
+      date: date,
+      type: MEAS_TYPES.indexOf(m.type) >= 0 ? m.type : 'inne',
+      value: sNum(m.value, -99999, 99999, 0),
+    });
+  });
+
+  return out;
+}
+
 /* ════ LISTA PACJENTÓW (zapisani lokalnie, zwijane karty) ════ */
 const PATIENTS_KEY = 'fizjo_patients';
 let patients = [];
 try { patients = JSON.parse(localStorage.getItem(PATIENTS_KEY)) || []; } catch (e) { patients = []; }
 if (!Array.isArray(patients)) patients = [];
+/* rekordy zapisane wcześniej też przepuszczamy przez sanityzację */
+patients = patients.filter(p => p && typeof p === 'object' && p.data)
+  .map(p => ({
+    id: sStr(p.id, 120),
+    code: p.code ? sStr(p.code, 12).toUpperCase() : null,
+    savedAt: sDate(p.savedAt),
+    data: sanitizePatient(p.data),
+  }));
 let expandedId = null;
 
 function savePatients() {
@@ -354,7 +452,8 @@ function patientIdOf(d, code) {
 }
 
 /* dodaj lub zaktualizuj pacjenta na liście i rozwiń go */
-function upsertPatient(d, code) {
+function upsertPatient(raw, code) {
+  const d = sanitizePatient(raw); // jedyny punkt wejścia danych — plik i podgląd live
   const id = patientIdOf(d, code);
   const entry = { id: id, code: code ? code.toUpperCase() : null, data: d, savedAt: RFCore.keyFromDate(new Date()) };
   const i = patients.findIndex(p => p.id === id);
@@ -485,19 +584,19 @@ function patientDetailHTML(d, cid) {
     const cell = planned === 0 ? '<span class="muted">odpocz.</span>' : done + '/' + planned;
     rows += `<tr><td>${fmtShort(k)} ${DAYS_PL[RFCore.dateFromKey(k).getDay()]}</td>
       <td style="text-align:center">${cell}</td>
-      <td style="text-align:center">${dd.pain || '–'}</td>
-      <td style="text-align:center">${dd.difficulty || '–'}</td></tr>`;
+      <td style="text-align:center">${esc(dd.pain || '–')}</td>
+      <td style="text-align:center">${esc(dd.difficulty || '–')}</td></tr>`;
     if (dd.note && dd.note.trim()) noted.push({ k: k, note: dd.note });
   }
 
   const meas = (d.measurements || []).slice().sort((a, b) => a.date < b.date ? -1 : 1);
-  const measRows = meas.map(m => `<tr><td>${fmtShort(m.date)}</td><td>${MEAS_LABELS[m.type] || m.type}</td><td>${m.value}${MEAS_UNITS[m.type] || ''}</td></tr>`).join('');
+  const measRows = meas.map(m => `<tr><td>${fmtShort(m.date)}</td><td>${esc(MEAS_LABELS[m.type] || m.type)}</td><td>${esc(m.value)}${MEAS_UNITS[m.type] || ''}</td></tr>`).join('');
 
   /* program z harmonogramem (dni tygodnia) */
   const progRows = ex.map(e => {
     const daily = !Array.isArray(e.days) || e.days.length === 0 || e.days.length === 7;
     const sched = daily ? 'codziennie' : DAY_ORDER.filter(wd => e.days.indexOf(wd) >= 0).map(wd => DAYS_PL[wd]).join(' ');
-    return `<tr><td>${esc(e.name)}</td><td>${e.sets}×${e.reps}</td><td>${esc(sched)}</td></tr>`;
+    return `<tr><td>${esc(e.name)}</td><td>${esc(e.sets)}×${esc(e.reps)}</td><td>${esc(sched)}</td></tr>`;
   }).join('') || '<tr><td colspan="3">brak</td></tr>';
 
   return `
@@ -508,7 +607,7 @@ function patientDetailHTML(d, cid) {
     <div class="stat-grid" style="margin-top:12px">
       <div class="stat-chip"><div class="stat-val">${st.doneDays}/${st.elapsed}</div><div class="stat-lbl">Pełne dni</div></div>
       <div class="stat-chip"><div class="stat-val">${streak}</div><div class="stat-lbl">Streak</div></div>
-      <div class="stat-chip"><div class="stat-val">${d.bestStreak || 0}</div><div class="stat-lbl">Rekord</div></div>
+      <div class="stat-chip"><div class="stat-val">${esc(d.bestStreak || 0)}</div><div class="stat-lbl">Rekord</div></div>
       <div class="stat-chip"><div class="stat-val">${st.avgPain !== null ? st.avgPain : '–'}</div><div class="stat-lbl">Śr. ból</div></div>
     </div>
     <h3>Frekwencja (${weeks * 7} dni)</h3>
