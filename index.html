@@ -707,7 +707,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
     </svg>
   </div>
   <div class="splash-title">RehabFlow</div>
-  <div class="splash-version">TRACKER REHABILITACJI · v3.8.6</div>
+  <div class="splash-version">TRACKER REHABILITACJI · v3.8.7</div>
   <div class="splash-divider"></div>
   <div class="splash-quote" id="splash-quote"></div>
   <div class="splash-author" id="splash-author"></div>
@@ -1142,7 +1142,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
           <div class="section-title" style="margin-bottom:14px" data-i18n>Aplikacja</div>
           <button class="btn btn-secondary btn-full" id="install-btn" style="display:none" onclick="promptInstall()" data-i18n>📲 Zainstaluj na telefonie</button>
           <div class="text-xs text-muted mt-8" style="text-align:center">
-            RehabFlow v3.8.6 · dane przechowywane lokalnie na urządzeniu<br>
+            RehabFlow v3.8.7 · dane przechowywane lokalnie na urządzeniu<br>
             <a href="prywatnosc.html" style="color:var(--violet)" data-i18n>Polityka prywatności</a>
           </div>
         </div>
@@ -3697,6 +3697,8 @@ function renderSyncCard() {
     ${ready ? `
       <div class="text-xs text-muted mt-8">${tt('Ostatnia synchronizacja: ')}${last ? new Date(last).toLocaleString(RFI18N.getLang() === 'en' ? 'en-GB' : 'pl-PL') : tt('jeszcze nie')}</div>
       ${link ? `<div class="share-link-box mt-8"><code style="font-size:12px;word-break:break-all;color:var(--text2)">${esc(link)}</code></div>` : ''}
+      <button class="btn btn-secondary btn-full mt-8" onclick="regenerateCode()">${tt('🔁 Nowy kod (unieważnij stary link)')}</button>
+      <div class="text-xs text-muted mt-8">${tt('Zmieniasz fizjoterapeutę lub link trafił nie tam, gdzie trzeba? Nowy kod natychmiast unieważnia poprzedni.')}</div>
       <button class="btn btn-secondary btn-full mt-8" onclick="syncLogout()">${tt('Wyłącz udostępnianie')}</button>` : ''}
     <button type="button" class="section-action mt-8" onclick="toggleSyncAdvanced()">${tt('Zaawansowane')} ${syncAdvancedOpen ? '▴' : '▾'}</button>
     <div style="display:${syncAdvancedOpen ? 'block' : 'none'};margin-top:10px">${advancedBlock()}</div>`;
@@ -3746,9 +3748,30 @@ async function syncVerifyCode() {
   } catch (e) { showToast(tf('Błąd: {0}', e.message)); }
 }
 
-function syncLogout() {
-  if (!confirm(tt('Wylogować z synchronizacji na tym urządzeniu? Lokalne dane zostają.'))) return;
-  RFSync.logout(); renderSyncCard();
+/* nowy kod udostępnienia — stary link fizjoterapeuty przestaje działać */
+async function regenerateCode() {
+  if (!confirm(tt('Wygenerować nowy kod?\n\nPoprzedni link przestanie działać — fizjoterapeuta straci podgląd, dopóki nie wyślesz mu nowego.'))) return;
+  syncBusy = true; renderSyncCard();
+  try {
+    await RFSync.regenerateShareCode();
+    await RFSync.push(D);              // dane pod nowym kodem
+    showToast(tt('Nowy kod gotowy — wyślij link ponownie 🔁'));
+  } catch (e) { showToast(tt('Błąd: ') + e.message); }
+  finally { syncBusy = false; renderSyncCard(); }
+}
+
+/* Wyłączenie udostępniania musi też wyczyścić dane po stronie serwera —
+   inaczej stary link fizjoterapeuty nadal by je otwierał. */
+async function syncLogout() {
+  if (!confirm(tt('Wyłączyć udostępnianie?\n\nDane zostaną usunięte z serwera, a link fizjoterapeuty przestanie działać. Twoja historia na tym urządzeniu zostaje.'))) return;
+  syncBusy = true; renderSyncCard();
+  try {
+    await RFSync.stopSharing();
+    showToast(tt('Udostępnianie wyłączone — dane usunięte z serwera ✓'));
+  } catch (e) {
+    showToast(tt('Nie udało się wyczyścić danych na serwerze: ') + e.message);
+  }
+  finally { syncBusy = false; renderSyncCard(); }
 }
 
 /* nadpisz lokalny stan danymi z chmury (bez ponownego push) */

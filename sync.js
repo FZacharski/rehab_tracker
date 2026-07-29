@@ -122,6 +122,36 @@
 
   function logout() { S.session = null; S.lastSyncAt = null; S.anonymous = false; save(); }
 
+  /* Wygeneruj NOWY kod udostępnienia — stary link fizjoterapeuty przestaje
+     działać natychmiast (RPC szuka po share_code, a ten się właśnie zmienił).
+     Do użycia przy zmianie terapeuty albo gdy link trafił nie tam, gdzie trzeba. */
+  async function regenerateShareCode() {
+    if (!configured() || !loggedIn()) throw new Error('Najpierw udostępnij dane fizjoterapeucie');
+    const fresh = genCode();
+    await http('/rest/v1/patient_state?user_id=eq.' + encodeURIComponent(S.session.user_id), {
+      method: 'PATCH',
+      body: JSON.stringify({ share_code: fresh, updated_at: new Date().toISOString() }),
+    }, true);
+    S.shareCode = fresh; save();
+    return fresh;
+  }
+
+  /* Całkowicie zakończ udostępnianie: usuń kod ORAZ dane z serwera.
+     Sam logout() czyścił tylko sesję lokalnie — wiersz z kodem zostawał w bazie,
+     więc stary link fizjoterapeuty nadal otwierał dane. Tabela nie ma polityki
+     DELETE (tylko own_update), więc czyścimy wiersz przez UPDATE: share_code
+     na null (przestaje cokolwiek znajdować) i data na pusty obiekt. */
+  async function stopSharing() {
+    if (configured() && loggedIn()) {
+      await http('/rest/v1/patient_state?user_id=eq.' + encodeURIComponent(S.session.user_id), {
+        method: 'PATCH',
+        body: JSON.stringify({ share_code: null, data: {}, updated_at: new Date().toISOString() }),
+      }, true);
+    }
+    S.shareCode = null;
+    logout();
+  }
+
   /* kod udostępnienia dla fizjoterapeuty (bez 0/O/1/I — łatwy do podyktowania) */
   function genCode() {
     const a = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -193,6 +223,7 @@
   root.RFSync = {
     hasBuiltIn, configured, usingCustomProject, loggedIn, isAnonymous, email, shareCode, lastSyncAt,
     setConfig, signInAnonymously, requestCode, verifyCode, logout,
+    regenerateShareCode, stopSharing,
     push, pull, remoteIsNewer, markSynced, schedulePush,
     fetchByShareCode, fetchByShareCodeBuiltIn,
     _url: () => S.url || '', _anonKey: () => S.anonKey || '',

@@ -82,6 +82,13 @@ revoke all on function public.get_patient_by_code(text) from public;
 grant execute on function public.get_patient_by_code(text) to anon, authenticated;
 ```
 
+**Odwoływanie dostępu.** Pacjent może w Ustawieniach wygenerować nowy kod
+(`RFSync.regenerateShareCode()` — UPDATE `share_code`) albo całkiem wyłączyć
+udostępnianie (`RFSync.stopSharing()` — UPDATE `share_code` na null i `data`
+na `{}`). W obu przypadkach poprzedni link fizjoterapeuty natychmiast przestaje
+cokolwiek znajdować, bo RPC szuka wyłącznie po `share_code`. Obie operacje
+mieszczą się w polityce `own_update` — nie trzeba dodawać polityki DELETE.
+
 ## Krok 3: włącz logowanie anonimowe (klucz do jednego przycisku)
 
 Authentication → Providers → **Anonymous Sign-Ins** → włącz.
