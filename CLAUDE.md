@@ -25,6 +25,18 @@ font Outfit, animowane tło „aurora", glassmorphism.
   w podkatalogu GitHub Pages. Nie używać ścieżek zaczynających się od `/`.
 - Logika dat: klucze dni w formacie `YYYY-MM-DD` lokalnego czasu (funkcja `today()`).
 - Treści użytkownika renderowane przez `esc()` — utrzymywać przy nowym kodzie.
+- `ui-common.js` — drobne rzeczy wspólne dla `index.html` i `fizjo.html`: `esc()`,
+  `DAY_ORDER` (Pn…Nd), `MEAS_LABELS`, `MEAS_UNITS`. Nowa stała używana na obu
+  stronach idzie TUTAJ, nie kopiowana. Uwaga: `DAYS_PL`/`MONTHS_PL` celowo NIE są
+  wspólne — w index.html podmienia je i18n, fizjo.html jest tylko po polsku.
+- **Zapis danych tylko przez `persistData()`/`saveData()`** — mają obsługę błędu
+  (tryb prywatny Safari, zablokowana pamięć, przepełniony limit) i ostrzegają
+  użytkownika raz na sesję. Nie wołać `localStorage.setItem(STORE_KEY, …)` wprost.
+- **Dostępność:** klikalny `<div>`/`<span>` musi dostać `role="button"` +
+  `tabindex="0"` (+ `aria-label`/`aria-pressed`, gdy treść tego nie oddaje).
+  Enter/Spację obsługuje jeden delegowany listener — nie dodawać `onkeydown`
+  do każdego elementu. Nie zamieniać takich kart na `<button>`: zawierają własne
+  linki/przyciski, a zagnieżdżone elementy interaktywne to niepoprawny HTML.
 
 ## Deployment
 

@@ -609,6 +609,11 @@
     'Pobrano nowsze dane z chmury ☁️': 'Newer data pulled from the cloud ☁️',
     'Wylogować z synchronizacji na tym urządzeniu? Lokalne dane zostają.': 'Sign out of sync on this device? Local data stays.',
     'Kod skopiowany ✓': 'Code copied ✓',
+    'oznacz jako wykonane': 'mark as done',
+    'odznacz jako wykonane': 'unmark as done',
+    'edytuj dzień': 'edit day',
+    '⚠️ Brak miejsca — zrób kopię zapasową i usuń stare zdjęcia postępu': '⚠️ Out of space — make a backup and delete old progress photos',
+    '⚠️ Nie można zapisać danych — sprawdź uprawnienia pamięci przeglądarki': '⚠️ Cannot save data — check your browser storage permissions',
 
     /* cytaty */
     'Każdy dzień to nowy krok naprzód.': 'Every day is a new step forward.',

@@ -234,17 +234,15 @@ canvas { width: 100%; }
 
 <script src="core.js"></script>
 <script src="exdb.js"></script>
+<script src="ui-common.js"></script>
 <script src="sync.js"></script>
 <script>
 'use strict';
 
 const DAYS_PL = ['Nd','Pn','Wt','Śr','Cz','Pt','Sb'];
-const DAY_ORDER = [1,2,3,4,5,6,0]; // kolejność wyświetlania: Pn…Nd (0=Nd wg RFCore)
+/* esc, DAY_ORDER, MEAS_LABELS, MEAS_UNITS pochodzą z ui-common.js */
 const MONTHS_PL = ['stycznia','lutego','marca','kwietnia','maja','czerwca','lipca','sierpnia','września','października','listopada','grudnia'];
-const MEAS_LABELS = { rom: 'Zakres ruchu', obwod: 'Obwód', waga: 'Waga', inne: 'Inne' };
-const MEAS_UNITS  = { rom: '°', obwod: 'cm', waga: 'kg', inne: '' };
 
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function fmtShort(k) { const d = RFCore.dateFromKey(k); return `${d.getDate()}.${String(d.getMonth()+1).padStart(2,'0')}`; }
 function fmtLong(k) { const d = RFCore.dateFromKey(k); return `${d.getDate()} ${MONTHS_PL[d.getMonth()]} ${d.getFullYear()}`; }
 

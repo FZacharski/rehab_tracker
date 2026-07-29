@@ -671,6 +671,15 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
   .modal-sheet { transition-duration: .01s; }
   .celebrate-card { transition-duration: .15s; }
 }
+
+/* Widoczny fokus dla nawigacji klawiaturą — tylko :focus-visible, więc
+   dotyk i mysz nie pokazują obwódki. Karty klikalne mają role="button". */
+[role="button"]:focus-visible, button:focus-visible, a:focus-visible,
+input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 3px solid var(--violet);
+  outline-offset: 2px;
+  border-radius: var(--r-md);
+}
 </style>
 </head>
 <body>
@@ -698,7 +707,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
     </svg>
   </div>
   <div class="splash-title">RehabFlow</div>
-  <div class="splash-version">TRACKER REHABILITACJI · v3.8.4</div>
+  <div class="splash-version">TRACKER REHABILITACJI · v3.8.5</div>
   <div class="splash-divider"></div>
   <div class="splash-quote" id="splash-quote"></div>
   <div class="splash-author" id="splash-author"></div>
@@ -1133,7 +1142,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
           <div class="section-title" style="margin-bottom:14px" data-i18n>Aplikacja</div>
           <button class="btn btn-secondary btn-full" id="install-btn" style="display:none" onclick="promptInstall()" data-i18n>📲 Zainstaluj na telefonie</button>
           <div class="text-xs text-muted mt-8" style="text-align:center">
-            RehabFlow v3.8.4 · dane przechowywane lokalnie na urządzeniu<br>
+            RehabFlow v3.8.5 · dane przechowywane lokalnie na urządzeniu<br>
             <a href="prywatnosc.html" style="color:var(--violet)" data-i18n>Polityka prywatności</a>
           </div>
         </div>
@@ -1361,6 +1370,7 @@ input[type=time].form-input, input[type=date].form-input { color-scheme: dark; }
 <script src="core.js"></script>
 <script src="i18n.js"></script>
 <script src="exdb.js"></script>
+<script src="ui-common.js"></script>
 <script src="sync.js"></script>
 <script>
 'use strict';
@@ -1508,8 +1518,30 @@ function loadData() {
   return defaultData();
 }
 
+/* Zapis stanu do localStorage. Zapis MOŻE się nie udać (tryb prywatny Safari,
+   zablokowana pamięć witryny, wyczerpany limit) — bez tej obsługi pacjent
+   odhaczałby ćwiczenia, widział animacje i nie wiedział, że nic się nie zapisuje.
+   Ostrzegamy raz na sesję, żeby nie zasypywać toastami przy każdej zmianie. */
+let storageFailed = false;
+function persistData() {
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify(D));
+    storageFailed = false;
+    return true;
+  } catch (e) {
+    if (!storageFailed) {
+      storageFailed = true;
+      const full = e && (e.name === 'QuotaExceededError' || e.code === 22);
+      showToast(full
+        ? tt('⚠️ Brak miejsca — zrób kopię zapasową i usuń stare zdjęcia postępu')
+        : tt('⚠️ Nie można zapisać danych — sprawdź uprawnienia pamięci przeglądarki'));
+    }
+    return false;
+  }
+}
+
 function saveData() {
-  localStorage.setItem(STORE_KEY, JSON.stringify(D));
+  persistData();
   if (window.RFSync) RFSync.schedulePush(() => D); // auto-sync (no-op, gdy wyłączony)
 }
 
@@ -1552,7 +1584,7 @@ function getDay(k) {
   return d;
 }
 
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+/* esc(), DAY_ORDER, MEAS_LABELS, MEAS_UNITS pochodzą z ui-common.js */
 function exXP(ex) { return RFCore.exerciseXP(ex); }
 /* opis dawki ćwiczenia: „3 serie × 10 powt." lub „3 serie × 30 s" */
 function exDose(ex) {
@@ -2027,7 +2059,7 @@ function renderDayStrip() {
     if (!(k > t) && isFull(k)) cls += ' done';
     else if (isPast && D.exercises.length > 0 && !isRestDay(k) && !isExcused(k)) cls += ' missed';
     const dn = dateFromKey(k);
-    strip.innerHTML += `<div class="${cls}" onclick="openDayEdit('${k}')">
+    strip.innerHTML += `<div class="${cls}" onclick="openDayEdit('${k}')" role="button" tabindex="0" aria-label="${DAYS_PL[dn.getDay()]} ${dn.getDate()} — ${tt('edytuj dzień')}">
       <div class="day-name">${DAYS_PL[dn.getDay()]}</div>
       <div class="day-num">${dn.getDate()}</div>
       <div class="day-dot"></div>
@@ -2080,7 +2112,7 @@ function renderExList() {
     const daysTxt = (Array.isArray(ex.days) && ex.days.length > 0 && ex.days.length < 7)
       ? ' · ' + ex.days.slice().sort((a,b) => ((a+6)%7)-((b+6)%7)).map(d => DAYS_PL[d]).join(' ')
       : '';
-    return `<div class="ex-card${done ? ' done' : ''}${offToday ? ' off-today' : ''}" onclick="toggleEx(${ex.id}, event)">
+    return `<div class="ex-card${done ? ' done' : ''}${offToday ? ' off-today' : ''}" onclick="toggleEx(${ex.id}, event)" role="button" tabindex="0" aria-pressed="${done ? 'true' : 'false'}" aria-label="${esc(ex.name)} — ${done ? tt('odznacz jako wykonane') : tt('oznacz jako wykonane')}">
       <div class="ex-check"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-10"/></svg></div>
       <div class="ex-info">
         <div class="ex-name">${esc(ex.name)}</div>
@@ -2218,7 +2250,7 @@ function renderNotesJournal() {
   box.innerHTML = `<div class="gap-12">${entries.map(k => {
     const dd = D.days[k], d = dateFromKey(k);
     const meta = [dd.pain ? `😣 ${dd.pain}/10` : '', dd.difficulty ? `💪 ${dd.difficulty}/10` : ''].filter(Boolean).join(' · ');
-    return `<div class="card" style="border-left:3px solid var(--violet);cursor:pointer" onclick="closeModal('notes-modal');openDayEdit('${k}')">
+    return `<div class="card" style="border-left:3px solid var(--violet);cursor:pointer" onclick="closeModal('notes-modal');openDayEdit('${k}')" role="button" tabindex="0">
       <div class="text-xs text-muted">${DAYS_PL[d.getDay()]}, ${d.getDate()} ${MONTHS_PL[d.getMonth()]} ${d.getFullYear()}${meta ? ' · ' + meta : ''}</div>
       <div class="text-sm mt-4" style="line-height:1.5">${esc(dd.note)}</div>
     </div>`;
@@ -2640,7 +2672,7 @@ function renderMissions() {
   const claimable = list.some(m => !claimed.has(m.id) && Math.min(m.target, m.prog(ws)) >= m.target);
   area.innerHTML = `
     <div class="card${missionsOpen ? ' missions-open' : ''}" style="padding:12px 16px">
-    <div class="missions-head" onclick="toggleMissions()">
+    <div class="missions-head" onclick="toggleMissions()" role="button" tabindex="0" aria-expanded="${missionsOpen ? 'true' : 'false'}">
       <span>🎯</span>
       <span class="mh-title">${tt('Misje tygodnia')}</span>
       <span class="mh-count">${doneCnt}/${list.length}${missionsOpen ? '' : ' · ' + tt('reset w poniedziałek')}</span>
@@ -2721,7 +2753,7 @@ function renderCalendar() {
   document.getElementById('cal-prev').disabled = calMonth <= minMonth;
   document.getElementById('cal-next').disabled = calMonth >= maxMonth;
 
-  grid.innerHTML = [1,2,3,4,5,6,0].map(i => `<div class="cal-hdr">${DAYS_PL[i]}</div>`).join('');
+  grid.innerHTML = DAY_ORDER.map(i => `<div class="cal-hdr">${DAYS_PL[i]}</div>`).join('');
   const lead = (first.getDay() + 6) % 7; // Pn=0
   for (let i = 0; i < lead; i++) grid.innerHTML += `<div></div>`;
   for (let day = 1; day <= daysInMonth; day++) {
@@ -2741,7 +2773,7 @@ function renderCalendar() {
     else if (isPast && inProgram && D.exercises.length > 0) cls += ' missed';
     if (!inProgram && !isToday) cls += ' outside';
     if (k === selectedCalDay) cls += ' selected'; // zaznaczenie przetrwa nawigację miesięcy
-    grid.innerHTML += `<div class="${cls}" style="--i:${day-1}" data-k="${k}" onclick="showCalDetail('${k}')">${day}<div class="cal-dot" style="${inProgram ? '' : 'visibility:hidden'}"></div></div>`;
+    grid.innerHTML += `<div class="${cls}" style="--i:${day-1}" data-k="${k}" onclick="showCalDetail('${k}')" role="button" tabindex="0" aria-label="${day} ${MONTHS_PL[first.getMonth()]}">${day}<div class="cal-dot" style="${inProgram ? '' : 'visibility:hidden'}"></div></div>`;
   }
   renderMonthSummary(y, mo);
   renderHeatmap();
@@ -2860,7 +2892,7 @@ function openDayEdit(k) {
   const doneIds = new Set(dd.completed || []);
   document.getElementById('dm-list').innerHTML = D.exercises.length
     ? D.exercises.map(ex => `
-      <div class="dm-row${doneIds.has(ex.id) ? ' done' : ''}" data-exid="${ex.id}" onclick="dmToggle(this)">
+      <div class="dm-row${doneIds.has(ex.id) ? ' done' : ''}" data-exid="${ex.id}" onclick="dmToggle(this)" role="button" tabindex="0" aria-pressed="${doneIds.has(ex.id) ? 'true' : 'false'}" aria-label="${esc(ex.name)}">
         <div class="ex-check"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-10"/></svg></div>
         <div class="dm-name">${esc(ex.name)}</div>
       </div>`).join('')
@@ -3109,7 +3141,7 @@ function renderWeekdayChart() {
     poss[wd]++;
     if (isFull(k)) full[wd]++;
   }
-  const order = [1,2,3,4,5,6,0]; // Pn..Nd
+  const order = DAY_ORDER; // Pn..Nd
   if (!poss.some(p => p > 0)) {
     el.innerHTML = `<div class="text-xs text-muted" style="padding:8px 2px">${tt('Dane pojawią się po pierwszych treningach.')}</div>`;
     return;
@@ -3155,8 +3187,7 @@ function renderExEffectiveness() {
 }
 
 /* ══ MEASUREMENTS ═══════════════════════════════════════════ */
-const MEAS_LABELS = { rom: 'Zakres ruchu', obwod: 'Obwód', waga: 'Waga', inne: 'Inne' };
-const MEAS_UNITS  = { rom: '°', obwod: 'cm', waga: 'kg', inne: '' };
+/* MEAS_LABELS / MEAS_UNITS w ui-common.js (wspólne z panelem fizjoterapeuty) */
 
 let editingMeasIdx = null; // indeks edytowanego pomiaru w D.measurements
 
@@ -3723,7 +3754,7 @@ function syncLogout() {
 /* nadpisz lokalny stan danymi z chmury (bez ponownego push) */
 function adoptRemote(row) {
   D = sanitizeData(row.data || {});
-  localStorage.setItem(STORE_KEY, JSON.stringify(D));
+  persistData();
   RFSync.markSynced(row.updated_at);
   applyLang(); applyTheme(); applyAccent(); applyFont(); renderPage(currentPage);
 }
@@ -3756,7 +3787,7 @@ function renderLibrary() {
   const items = EX_DB.filter(e => q ? (e.n + ' ' + exName(e)).toLowerCase().includes(q) : e.g === libGroup);
   document.getElementById('lib-list').innerHTML = items.length
     ? items.map(e => `
-      <div class="lib-item" style="display:flex;gap:11px;align-items:flex-start" onclick="pickFromLibrary('${e.id}')">
+      <div class="lib-item" style="display:flex;gap:11px;align-items:flex-start" onclick="pickFromLibrary('${e.id}')" role="button" tabindex="0" aria-label="${esc(exName(e))}">
         <div class="type-ico" style="--tc:${TYPE_COLOR[e.t] || '#94A3B8'}">${TYPE_EMOJI[e.t] || '💫'}</div>
         <div style="flex:1;min-width:0">
           <div class="lib-name">${esc(exName(e))}</div>
@@ -3795,7 +3826,7 @@ function setExMode(mode) {
 
 function renderDowPicker() {
   // kolejność Pn..Nd, wartości getDay(): Pn=1 ... Sb=6, Nd=0
-  const order = [1,2,3,4,5,6,0];
+  const order = DAY_ORDER;
   document.getElementById('ex-days').innerHTML = order.map(d =>
     `<button type="button" class="dow-chip${exDaysSel.has(d) ? ' on' : ''}" onclick="toggleDow(${d})">${DAYS_PL[d]}</button>`).join('');
 }
@@ -3948,7 +3979,7 @@ function renderOnboard() {
       <div class="ob-sub">${tt('Gotowy zestaw ćwiczeń dopasowany do urazu — zawsze możesz go później zmienić.')}</div>
       <div class="ob-body">
         ${PROGRAMS.map(p => `
-          <div class="ob-prog${p.id === obProgram ? ' sel' : ''}" onclick="obProgram='${p.id}';renderOnboard()">
+          <div class="ob-prog${p.id === obProgram ? ' sel' : ''}" onclick="obProgram='${p.id}';renderOnboard()" role="button" tabindex="0" aria-pressed="${p.id === obProgram ? 'true' : 'false'}">
             <div class="ob-prog-icon">${p.icon}</div>
             <div><div class="ob-prog-name">${tt(p.name)}</div><div class="ob-prog-desc">${tt(p.desc)}${p.ex.length ? tf(' · {0} ćwiczeń', p.ex.length) : ''}</div></div>
           </div>`).join('')}
@@ -3970,7 +4001,7 @@ function renderOnboard() {
       <div class="ob-sub">${tt('Dni odpoczynku nie przerywają Twojej passy.<br>Możesz to później zmienić dla każdego ćwiczenia osobno.')}</div>
       <div class="ob-body">
         <div class="dow-row" id="ob-days">
-          ${[1,2,3,4,5,6,0].map(d => `<button type="button" class="dow-chip${obDaysSel.has(d) ? ' on' : ''}" onclick="obToggleDow(${d})">${DAYS_PL[d]}</button>`).join('')}
+          ${DAY_ORDER.map(d => `<button type="button" class="dow-chip${obDaysSel.has(d) ? ' on' : ''}" onclick="obToggleDow(${d})">${DAYS_PL[d]}</button>`).join('')}
         </div>
         <div class="xs" style="color:rgba(255,255,255,.5);font-size:11.5px;margin-top:10px;text-align:center">${obDaysSel.size === 7 ? tt('Codziennie — pełna mobilizacja! 💪') : obDaysSel.size === 0 ? tt('Wybierz przynajmniej jeden dzień') : tf('{0} {1} treningowe w tygodniu', obDaysSel.size, P(obDaysSel.size,'dzień','dni','dni'))}</div>
       </div>
@@ -4072,12 +4103,27 @@ document.addEventListener('keydown', e => {
   if (e.key !== 'Tab') return;
   const sheet = document.querySelector('.modal-overlay.open .modal-sheet');
   if (!sheet) return;
-  const f = [...sheet.querySelectorAll('input:not([type=hidden]), textarea, select, button')]
+  const f = [...sheet.querySelectorAll('input:not([type=hidden]), textarea, select, button, [role=button][tabindex="0"]')]
     .filter(x => !x.disabled && x.offsetParent !== null);
   if (!f.length) return;
   const first = f[0], last = f[f.length - 1];
   if (e.shiftKey && (document.activeElement === first || document.activeElement === sheet)) { e.preventDefault(); last.focus(); }
   else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+});
+
+/* Klikalne karty (ćwiczenie, dzień kalendarza, pozycja biblioteki…) to <div>-y —
+   nie da się ich obsłużyć klawiaturą jak <button>. Nie zmieniamy ich na <button>,
+   bo zawierają własne przyciski/linki (zagnieżdżone elementy interaktywne to
+   niepoprawny HTML). Zamiast tego: role="button" + tabindex="0" w markupie
+   i jedna delegowana obsługa Enter/Spacji tutaj. */
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar') return;
+  const el = e.target.closest('[role=button][tabindex="0"]');
+  if (!el || el.getAttribute('aria-disabled') === 'true') return;
+  // nie przechwytuj, gdy fokus jest na zagnieżdżonym przycisku/linku/polu
+  if (e.target !== el && e.target.closest('button, a, input, textarea, select')) return;
+  e.preventDefault();
+  el.click();
 });
 
 let toastTimer;
@@ -4407,7 +4453,7 @@ async function renderPhotoSection() {
   strip.innerHTML = photos.map(p => {
     const u = URL.createObjectURL(p.blob);
     photoURLs.push(u);
-    return `<div class="photo-thumb" onclick="openPhotoViewer(${p.id}, '${u}', '${p.date}')">
+    return `<div class="photo-thumb" onclick="openPhotoViewer(${p.id}, '${u}', '${p.date}')" role="button" tabindex="0" aria-label="${tt('Zdjęcie postępu')} ${formatShort(p.date)}">
       <img src="${u}" alt="Zdjęcie z ${formatShort(p.date)}" loading="lazy">
       <div class="ph-date">${formatShort(p.date)}</div>
     </div>`;
@@ -4635,6 +4681,21 @@ if ('serviceWorker' in navigator) {
         }
       });
     });
+
+    /* Aktywne sprawdzanie aktualizacji: bez tego przeglądarka potrafi zwlekać
+       nawet dobę, a użytkownik siedzi na starych plikach z cache SW.
+       Sprawdzamy przy starcie i po powrocie do aplikacji (nie częściej niż co 15 min). */
+    let lastCheck = 0;
+    const checkUpdate = () => {
+      if (Date.now() - lastCheck < 900000) return;
+      lastCheck = Date.now();
+      reg.update().catch(() => {});
+    };
+    checkUpdate();
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') checkUpdate();
+    });
+    window.addEventListener('online', checkUpdate);
   }).catch(() => {});
 }
 
